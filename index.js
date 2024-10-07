@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
 const dotenv = require("dotenv");
 const { REST } = require("@discordjs/rest");
-const { Routes } = require("discord-api-types/v9");
+const { Routes, ActivityType } = require("discord-api-types/v9");
 const fs = require("fs");
 const { Player } = require("discord-player");
 
@@ -51,6 +51,33 @@ if (LOAD_SLASH) {
 } else {
     client.on("ready", () => {
         console.log(`Logged in as ${client.user.tag}`);
+
+        // <---------------------- Presencia Bot ------------------------------------->
+
+        let status = [
+            {
+                name: "Ritmos",
+                type: ActivityType.Listening,
+            },
+            {
+                name: "Ritmos on live",
+                type: ActivityType.Listening,
+            },
+            {
+                name: "Music is live",
+                type: ActivityType.Listening,
+            },
+            {
+                name: "Music Lofi",
+                type: ActivityType.Listening,
+            }
+        ]
+
+        // 10000 ms = 10 segundos
+        setInterval(() => {
+            let random = Math.floor(Math.random() * status.length);
+            client.user.setActivity(status[random]);
+        }, 10000);
     });
 
     client.on("interactionCreate", (interaction) => {
