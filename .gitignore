@@ -1,2 +1,5 @@
 # La cache de dependencias de npm
 node_modules/
+
+# Variables de entorno
+.env

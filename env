@@ -1,0 +1,4 @@
+# Cambia el nombre de este archivo a .env y completalo con tus tokens y ids
+TOKEN="Your token bot"
+CLIENT_ID="Your client id bot"
+GUILD_ID="Your guild id bot"
