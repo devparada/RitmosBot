@@ -10,11 +10,17 @@
   "author": "devparada",
   "license": "GPL-3.0-only",
   "dependencies": {
-    "@discordjs/builders": "^1.9.0",
     "@discordjs/rest": "^2.4.0",
     "@discordjs/voice": "^0.17.0",
-    "discord-player": "^6.7.1",
+    "@distube/soundcloud": "^2.0.3",
+    "@distube/spotify": "^2.0.2",
+    "@distube/youtube": "^1.0.4",
+    "@distube/yt-dlp": "^2.0.1",
+    "discord-api-types": "^0.37.101",
     "discord.js": "^14.16.3",
-    "dotenv": "^16.4.5"
+    "distube": "^5.0.2",
+    "dotenv": "^16.4.5",
+    "opusscript": "^0.0.8",
+    "sodium-native": "^4.2.1"
   }
 }

@@ -3,7 +3,11 @@ const dotenv = require("dotenv");
 const { REST } = require("@discordjs/rest");
 const { Routes, ActivityType } = require("discord-api-types/v9");
 const fs = require("fs");
-const { Player } = require("discord-player");
+const { DisTube } = require("distube");
+//const {SpotifyPlugin} = require("@distube/spotify");
+//const { SoundCloudPlugin } = require('@distube/soundcloud');
+const { YtDlpPlugin } = require('@distube/yt-dlp');
+const { EmbedBuilder } = require("@discordjs/builders");
 
 dotenv.config();
 const TOKEN = process.env.TOKEN;
@@ -17,17 +21,29 @@ const client = new Discord.Client({
     ]
 });
 
-const LOAD_SLASH = process.argv[2] == "slash";
-
-client.slashcommands = new Discord.Collection();
-client.player = new Player(client, {
-    ytdlOptions: {
-        quality: "highestaudio",
-        highWaterMark: 1 << 25
-    }
+client.distube = new DisTube(client, {
+    //leaveOnFinish: true,
+    //searchCooldown: 10,
+    //leaveOnEmpty: false,
+    //leaveOnStop: true,
+    emitNewSongOnly: true,
+    emitAddSongWhenCreatingQueue: false,
+    emitAddListWhenCreatingQueue: false,
+    plugins: [
+        /*new SpotifyPlugin({
+            emitEventsAfterFetching: true
+          }),
+        new SoundCloudPlugin(),*/
+        new YtDlpPlugin()
+    ]
 });
 
 let commands = [];
+
+// node index.js slash -> para actualizar los slash commands
+const LOAD_SLASH = process.argv[2] == "slash";
+
+client.slashcommands = new Discord.Collection();
 
 const slashFiles = fs.readdirSync("./slash").filter(file => file.endsWith(".js"));
 for (const file of slashFiles) {
@@ -78,6 +94,11 @@ if (LOAD_SLASH) {
             let random = Math.floor(Math.random() * status.length);
             client.user.setActivity(status[random]);
         }, 10000);
+    });
+
+    // <---------------------------- Music Bot --------------------------------------->
+    client.distube.on('playSong', (queue, song) => {
+        queue.textChannel.send(`Reproduciendo: ${song.name} - Duración: ${song.formattedDuration}`);
     });
 
     client.on("interactionCreate", (interaction) => {
