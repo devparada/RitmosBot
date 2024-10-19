@@ -54,10 +54,10 @@ for (const file of slashFiles) {
 
 if (LOAD_SLASH) {
     const rest = new REST({ version: "9" }).setToken(TOKEN);
-    console.log("Deploying slash commands");
+    console.log("Desplegando comandos slash");
     rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands })
         .then(() => {
-            console.log("Succesfully loaded");
+            console.log("Cargados correctamente");
             process.exit(0);
         })
         .catch((err) => {
@@ -66,7 +66,7 @@ if (LOAD_SLASH) {
         })
 } else {
     client.on("ready", () => {
-        console.log(`Logged in as ${client.user.tag}`);
+        console.log(`Logeado como ${client.user.tag}`);
 
         // <---------------------- Presencia Bot ------------------------------------->
 
@@ -106,7 +106,7 @@ if (LOAD_SLASH) {
             if (!interaction.isCommand()) return;
 
             const slashcmd = client.slashcommands.get(interaction.commandName);
-            if (!slashcmd) interaction.reply("Not a valid slash command");
+            // if (!slashcmd) interaction.reply("Not a valid slash command");
 
             await interaction.deferReply()
             await slashcmd.run({ client, interaction })
