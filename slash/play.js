@@ -7,7 +7,6 @@ module.exports = {
         .addStringOption(option => option.setName("url").setDescription("the song url").setRequired(true)),
 
     run: async ({ interaction }) => {
-
         const { options, member } = interaction;
 
         const query = options.getString("url");
@@ -24,12 +23,10 @@ module.exports = {
                     member: interaction.member, // Miembro que ejecuta el comando
                     textChannel: interaction.channel, // Canal de texto donde se envían mensajes
                 });
-
-                await interaction.followUp(`🎶 ¡Reproduciendo en ${voiceChannel.name}!`);
             } catch (error) {
                 // Depuración
                 console.error(error);
-                embed.setColor("Red").setDescription("Hubo un error al intentar reproducir la canción.");
+                embed.setColor("Red").setDescription("Hubo un error al intentar reproducir la canción");
                 await interaction.followUp({ embeds: [embed] });
             }
         }

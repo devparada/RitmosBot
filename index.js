@@ -1,4 +1,4 @@
-const Discord = require("discord.js");
+const { Client, Collection, EmbedBuilder } = require("discord.js");
 const dotenv = require("dotenv");
 const { REST } = require("@discordjs/rest");
 const { Routes, ActivityType } = require("discord-api-types/v9");
@@ -7,14 +7,13 @@ const { DisTube } = require("distube");
 //const {SpotifyPlugin} = require("@distube/spotify");
 //const { SoundCloudPlugin } = require('@distube/soundcloud');
 const { YtDlpPlugin } = require('@distube/yt-dlp');
-const { EmbedBuilder } = require("@discordjs/builders");
 
 dotenv.config();
 const TOKEN = process.env.TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
 const GUILD_ID = process.env.GUILD_ID;
 
-const client = new Discord.Client({
+const client = new Client({
     intents: [
         "Guilds",
         "GuildVoiceStates"
@@ -43,7 +42,7 @@ let commands = [];
 // node index.js slash -> para actualizar los slash commands
 const LOAD_SLASH = process.argv[2] == "slash";
 
-client.slashcommands = new Discord.Collection();
+client.slashcommands = new Collection();
 
 const slashFiles = fs.readdirSync("./slash").filter(file => file.endsWith(".js"));
 for (const file of slashFiles) {
@@ -98,7 +97,9 @@ if (LOAD_SLASH) {
 
     // <---------------------------- Music Bot --------------------------------------->
     client.distube.on('playSong', (queue, song) => {
-        queue.textChannel.send(`Reproduciendo: ${song.name} - Duración: ${song.formattedDuration}`);
+        const embed = new EmbedBuilder();
+        embed.setColor("Blue").setDescription(`🎶 Reproduciendo: ${song.name} - ${song.formattedDuration} 🎶`);
+        queue.textChannel.send({ embeds: [embed] });
     });
 
     client.on("interactionCreate", (interaction) => {
@@ -106,7 +107,6 @@ if (LOAD_SLASH) {
             if (!interaction.isCommand()) return;
 
             const slashcmd = client.slashcommands.get(interaction.commandName);
-            // if (!slashcmd) interaction.reply("Not a valid slash command");
 
             await interaction.deferReply()
             await slashcmd.run({ client, interaction })

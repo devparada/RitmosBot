@@ -11,10 +11,25 @@ module.exports = {
         const voiceChannel = member.voice.channel;
         const embed = new EmbedBuilder();
 
-        const queue = client.distube.getQueue(voiceChannel);
-        await queue.stop(voiceChannel);
+        if (!voiceChannel) {
+            embed.setColor("Red").setDescription("¡Debes estar en el canal de voz para usar este comando!");
+            return interaction.followUp({ embeds: [embed] });
+        } else {
+            const queue = client.distube.getQueue(voiceChannel);
+            if (!queue || !queue.songs.length) {
+                embed.setColor("Red").setDescription("No hay ninguna canción reproduciéndose en este momento");
+                return await interaction.followUp({ embeds: [embed] });
+            } else {
+                try {
+                    await queue.stop(voiceChannel);
+                } catch (error) {
+                    embed.setColor("Red").setDescription("Hubo un error al intentar parar la canción");
+                    await interaction.followUp({ embeds: [embed] });
+                }
 
-        embed.setColor("Green").setDescription("Canción parada con éxito");
-        await interaction.followUp({ embeds: [embed] });
+                embed.setColor("Green").setDescription("✅ Canción parada con éxito");
+                await interaction.followUp({ embeds: [embed] });
+            }
+        }
     }
 }
