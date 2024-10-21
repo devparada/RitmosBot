@@ -44,9 +44,9 @@ const LOAD_SLASH = process.argv[2] == "slash";
 
 client.slashcommands = new Collection();
 
-const slashFiles = fs.readdirSync("./slash").filter(file => file.endsWith(".js"));
-for (const file of slashFiles) {
-    const slashcmd = require(`./slash/${file}`);
+const commandsFiles = fs.readdirSync("./commands").filter(file => file.endsWith(".js"));
+for (const file of commandsFiles) {
+    const slashcmd = require(`./commands/${file}`);
     client.slashcommands.set(slashcmd.data.name, slashcmd);
     if (LOAD_SLASH) commands.push(slashcmd.data.toJSON());
 }
