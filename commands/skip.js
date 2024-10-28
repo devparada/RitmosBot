@@ -16,7 +16,6 @@ module.exports = {
             return interaction.followUp({ embeds: [embed] });
         } else {
             const queue = client.distube.getQueue(voiceChannel);
-            console.log(queue);
             if (!queue || !queue.songs.length) {
                 embed.setColor("Red").setDescription("No hay ninguna canción reproduciéndose en este momento");
                 return await interaction.followUp({ embeds: [embed] });
