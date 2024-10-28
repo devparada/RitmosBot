@@ -4,8 +4,6 @@ const { REST } = require("@discordjs/rest");
 const { Routes, ActivityType } = require("discord-api-types/v9");
 const fs = require("fs");
 const { DisTube } = require("distube");
-//const {SpotifyPlugin} = require("@distube/spotify");
-//const { SoundCloudPlugin } = require('@distube/soundcloud');
 const { YtDlpPlugin } = require('@distube/yt-dlp');
 
 dotenv.config();
@@ -29,10 +27,6 @@ client.distube = new DisTube(client, {
     emitAddSongWhenCreatingQueue: false,
     emitAddListWhenCreatingQueue: false,
     plugins: [
-        /*new SpotifyPlugin({
-            emitEventsAfterFetching: true
-          }),
-        new SoundCloudPlugin(),*/
         new YtDlpPlugin()
     ]
 });
