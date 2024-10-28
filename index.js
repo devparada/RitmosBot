@@ -5,7 +5,10 @@ const { Routes, ActivityType } = require("discord-api-types/v9");
 const fs = require("fs");
 const { DisTube } = require("distube");
 const { YtDlpPlugin } = require('@distube/yt-dlp');
+const { Player } = require('discord-player');
+const { YoutubeiExtractor } = require("discord-player-youtubei");
 
+// Carga las variables del archivo .env
 dotenv.config();
 const TOKEN = process.env.TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
@@ -18,6 +21,13 @@ const client = new Client({
     ]
 });
 
+// Inicia el player
+const player = new Player(client);
+// Registra el reproductor de Youtube
+player.extractors.register(YoutubeiExtractor, {})
+client.player = player;
+
+// DEPRECATED!
 client.distube = new DisTube(client, {
     //leaveOnFinish: true,
     //searchCooldown: 10,
@@ -31,11 +41,10 @@ client.distube = new DisTube(client, {
     ]
 });
 
-let commands = [];
-
 // node index.js slash -> para actualizar los slash commands
 const LOAD_SLASH = process.argv[2] == "slash";
 
+let commands = [];
 client.slashcommands = new Collection();
 
 const commandsFiles = fs.readdirSync("./commands").filter(file => file.endsWith(".js"));
@@ -46,7 +55,7 @@ for (const file of commandsFiles) {
 }
 
 if (LOAD_SLASH) {
-    const rest = new REST({ version: "9" }).setToken(TOKEN);
+    const rest = new REST({ version: "10" }).setToken(TOKEN);
     console.log("Desplegando comandos slash");
     rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands })
         .then(() => {
@@ -58,6 +67,7 @@ if (LOAD_SLASH) {
             process.exit(1);
         })
 } else {
+    // Cuando el bot está listo
     client.on("ready", () => {
         console.log(`Logeado como ${client.user.tag}`);
 
@@ -89,13 +99,6 @@ if (LOAD_SLASH) {
         }, 10000);
     });
 
-    // <---------------------------- Music Bot --------------------------------------->
-    client.distube.on('playSong', (queue, song) => {
-        const embed = new EmbedBuilder();
-        embed.setColor("Blue").setDescription(`🎶 Reproduciendo: ${song.name} - ${song.formattedDuration} 🎶`);
-        queue.textChannel.send({ embeds: [embed] });
-    });
-
     client.on("interactionCreate", (interaction) => {
         async function handleCommand() {
             if (!interaction.isCommand()) return;
@@ -107,5 +110,15 @@ if (LOAD_SLASH) {
         }
         handleCommand();
     })
+
+    // <-------------------------- Eventos Música Bot ------------------------------------->
+    
+    client.player.events.on('playerStart', (queue, track) => {
+        const embed = new EmbedBuilder();
+        const textChannel = queue.metadata.channel;
+        embed.setColor("Blue").setDescription(`🎶 Reproduciendo: ${track.title} 🎶`);
+        textChannel.send({ embeds: [embed] });
+    });
+
     client.login(TOKEN);
 }

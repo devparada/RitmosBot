@@ -1,4 +1,5 @@
 const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
+const { useMainPlayer } = require('discord-player');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -7,8 +8,8 @@ module.exports = {
         .addStringOption(option => option.setName("url").setDescription("the song url").setRequired(true)),
 
     run: async ({ interaction }) => {
+        const player = useMainPlayer();
         const { options, member } = interaction;
-
         const query = options.getString("url");
         const voiceChannel = member.voice.channel;
         const embed = new EmbedBuilder();
@@ -19,13 +20,18 @@ module.exports = {
             return interaction.followUp({ embeds: [embed] });
         } else {
             try {
-                await interaction.client.distube.play(voiceChannel, query, {
-                    member: interaction.member, // Miembro que ejecuta el comando
-                    textChannel: interaction.channel, // Canal de texto donde se envían mensajes
+                // Crea una cola si no existe y la conecta al canal de voz
+                // queue y song sí que se utilizan en el index.js
+                const queue = player.nodes.create(interaction.guild, {
+                    metadata: {
+                        channel: interaction.channel,
+                    },
+                });
+
+                const song = await player.play(voiceChannel, query, {
+                    channel: interaction.channel,
                 });
             } catch (error) {
-                // Depuración
-                console.error(error);
                 embed.setColor("Red").setDescription("Hubo un error al intentar reproducir la canción");
                 await interaction.followUp({ embeds: [embed] });
             }
