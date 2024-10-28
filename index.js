@@ -3,8 +3,6 @@ const dotenv = require("dotenv");
 const { REST } = require("@discordjs/rest");
 const { Routes, ActivityType } = require("discord-api-types/v9");
 const fs = require("fs");
-const { DisTube } = require("distube");
-const { YtDlpPlugin } = require('@distube/yt-dlp');
 const { Player } = require('discord-player');
 const { YoutubeiExtractor } = require("discord-player-youtubei");
 
@@ -26,20 +24,6 @@ const player = new Player(client);
 // Registra el reproductor de Youtube
 player.extractors.register(YoutubeiExtractor, {})
 client.player = player;
-
-// DEPRECATED!
-client.distube = new DisTube(client, {
-    //leaveOnFinish: true,
-    //searchCooldown: 10,
-    //leaveOnEmpty: false,
-    //leaveOnStop: true,
-    emitNewSongOnly: true,
-    emitAddSongWhenCreatingQueue: false,
-    emitAddListWhenCreatingQueue: false,
-    plugins: [
-        new YtDlpPlugin()
-    ]
-});
 
 // node index.js slash -> para actualizar los slash commands
 const LOAD_SLASH = process.argv[2] == "slash";
