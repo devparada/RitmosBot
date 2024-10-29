@@ -5,6 +5,7 @@ const { Routes, ActivityType } = require("discord-api-types/v9");
 const fs = require("fs");
 const { Player } = require('discord-player');
 const { YoutubeiExtractor } = require("discord-player-youtubei");
+const { SpotifyExtractor } = require("@discord-player/extractor");
 
 // Carga las variables del archivo .env
 dotenv.config();
@@ -20,8 +21,15 @@ const client = new Client({
 });
 
 // Inicia el player
-const player = new Player(client);
-// Registra el reproductor de Youtube
+const player = new Player(client, {
+    ytdlOptions: {
+        quality: 'highest',
+        highWaterMark: 1 << 25,
+    },
+});
+
+// Registra el reproductor de Youtube y Spotify
+player.extractors.register(SpotifyExtractor, {});
 player.extractors.register(YoutubeiExtractor, {})
 client.player = player;
 

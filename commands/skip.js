@@ -16,14 +16,14 @@ module.exports = {
             embed.setColor("Red").setDescription("¡Debes estar en el canal de voz para usar este comando!");
             return interaction.followUp({ embeds: [embed] });
         } else {
-            const queue = player.nodes.get(interaction.guild.id)
+            const queue = player.nodes.get(interaction.guild.id);
             if (!queue) {
                 embed.setColor("Red").setDescription("No hay ninguna canción reproduciéndose en este momento");
                 return await interaction.followUp({ embeds: [embed] });
-                /*} else if (queue.songs.length == 1) {
-                    await queue.stop(voiceChannel);
-                    embed.setColor("Red").setDescription("Sea saltado la unica canción puesta");
-                    return await interaction.followUp({ embeds: [embed] });*/
+            } else if (queue.tracks.data.length == 0) {
+                await queue.node.stop();
+                embed.setColor("Red").setDescription("Sea saltado la unica canción puesta");
+                return await interaction.followUp({ embeds: [embed] });
             } else {
                 try {
                     queue.node.skip();

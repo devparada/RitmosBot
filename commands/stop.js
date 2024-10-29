@@ -12,8 +12,6 @@ module.exports = {
         const voiceChannel = member.voice.channel;
         const embed = new EmbedBuilder();
 
-        console.log(useMainPlayer());
-
         if (!voiceChannel) {
             embed.setColor("Red").setDescription("¡Debes estar en el canal de voz para usar este comando!");
             return interaction.followUp({ embeds: [embed] });
