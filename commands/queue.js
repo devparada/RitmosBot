@@ -1,4 +1,5 @@
 const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
+const { useMainPlayer } = require("discord-player");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -6,26 +7,27 @@ module.exports = {
         .setDescription("Muestra la lista de canciones puesta"),
 
     run: async ({ interaction }) => {
-        const { member, client } = interaction;
-
+        const { member } = interaction;
         const voiceChannel = member.voice.channel;
         const embed = new EmbedBuilder();
 
         if (!voiceChannel) {
             embed.setColor("Red").setDescription("¡Debes estar en el canal de voz para usar este comando!");
-            return interaction.followUp({ embeds: [embed] });
+            return interaction.reply({ embeds: [embed] });
         } else {
-            const queue = client.distube.getQueue(voiceChannel);
-            if (!queue || !queue.songs.length) {
+            const player = useMainPlayer();
+            const queue = player.node.get(interaction.guild.id);
+
+            if (!queue || !queue.tracks.size) {
                 embed.setColor("Red").setDescription("No hay ninguna canción en la lista");
-                return await interaction.followUp({ embeds: [embed] });
+                return await interaction.reply({ embeds: [embed] });
             } else {
                     embed.setColor("Blue")
                     .setTitle("🎶 **Lista de Canciones en la Cola**")
                     .setDescription(`${queue.songs.map((song, id) =>
-                        `🎶 **${id + 1}.** ${song.name} - \`${song.formattedDuration}\``).join("\n")}`)
-                    .setFooter({ text: `Total de canciones: ${queue.songs.length}`});
-                    return await interaction.followUp({ embeds: [embed] });
+                        `🎶 **${id + 1}.** ${song.title} - \`${song.duration}\``).join("\n")}`)
+                    .setFooter({ text: `Total de canciones: ${queue.tracks.size}`});
+                    return await interaction.reply({ embeds: [embed] });
                 }
             }
         }
