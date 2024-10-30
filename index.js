@@ -96,8 +96,6 @@ if (LOAD_SLASH) {
             if (!interaction.isCommand()) return;
 
             const slashcmd = client.slashcommands.get(interaction.commandName);
-
-            await interaction.deferReply()
             await slashcmd.run({ client, interaction })
         }
         handleCommand();
@@ -105,11 +103,11 @@ if (LOAD_SLASH) {
 
     // <-------------------------- Eventos Música Bot ------------------------------------->
     
-    client.player.events.on('playerStart', (queue, track) => {
+    client.player.events.on('playerStart', async (queue, track) => {
         const embed = new EmbedBuilder();
         const textChannel = queue.metadata.channel;
-        embed.setColor("Blue").setDescription(`🎶 Reproduciendo: ${track.title} 🎶`);
-        textChannel.send({ embeds: [embed] });
+        embed.setColor("Blue").setDescription(`🎶 Reproduciendo: **${track.title}** 🎶`);
+        await textChannel.send({ embeds: [embed], ephemeral: true});
     });
 
     client.login(TOKEN);

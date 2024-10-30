@@ -7,31 +7,31 @@ module.exports = {
         .setDescription("Para la canción actual"),
 
     run: async ({ interaction }) => {
-        const player = useMainPlayer();
         const { member } = interaction;
         const voiceChannel = member.voice.channel;
         const embed = new EmbedBuilder();
 
         if (!voiceChannel) {
             embed.setColor("Red").setDescription("¡Debes estar en el canal de voz para usar este comando!");
-            return interaction.followUp({ embeds: [embed] });
+            return interaction.reply({ embeds: [embed] });
         } else {
+            const player = useMainPlayer();
             const queue = player.nodes.get(interaction.guild.id)
 
             if (!queue) {
                 embed.setColor("Red").setDescription("No hay ninguna canción reproduciéndose en este momento");
-                return await interaction.followUp({ embeds: [embed] });
+                return await interaction.reply({ embeds: [embed] });
             } else {
                 try {
                     queue.node.stop(false);
                 } catch (error) {
                     console.log(error);
                     embed.setColor("Red").setDescription("Hubo un error al intentar parar la canción");
-                    return await interaction.followUp({ embeds: [embed] });
+                    return await interaction.reply({ embeds: [embed] });
                 }
 
                 embed.setColor("Green").setDescription("✅ Canción parada con éxito");
-                await interaction.followUp({ embeds: [embed] });
+                await interaction.reply({ embeds: [embed] });
             }
         }
     }
