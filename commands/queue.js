@@ -16,7 +16,7 @@ module.exports = {
             return interaction.reply({ embeds: [embed] });
         } else {
             const player = useMainPlayer();
-            const queue = player.node.get(interaction.guild.id);
+            const queue = player.nodes.get(interaction.guild.id);
 
             if (!queue || !queue.tracks.size) {
                 embed.setColor("Red").setDescription("No hay ninguna canción en la lista");
@@ -24,7 +24,7 @@ module.exports = {
             } else {
                     embed.setColor("Blue")
                     .setTitle("🎶 **Lista de Canciones en la Cola**")
-                    .setDescription(`${queue.songs.map((song, id) =>
+                    .setDescription(`${queue.tracks.map((song, id) =>
                         `🎶 **${id + 1}.** ${song.title} - \`${song.duration}\``).join("\n")}`)
                     .setFooter({ text: `Total de canciones: ${queue.tracks.size}`});
                     return await interaction.reply({ embeds: [embed] });
