@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="https://github.com/devparada/RitmosBot/blob/main/img/logo.jpg?raw=true" width=160 style="border-radius: 50%;">
+
 # RitmosBot
 
 </div>
