@@ -23,7 +23,7 @@ module.exports = {
                 return await interaction.reply({ embeds: [embed] });
             } else {
                     embed.setColor("Blue")
-                    .setTitle("🎶 **Lista de Canciones en la Cola**")
+                    .setTitle("💿 **Lista de Canciones en la Cola** 💿")
                     .setDescription(`${queue.tracks.map((song, id) =>
                         `🎶 **${id + 1}.** ${song.title} - \`${song.duration}\``).join("\n")}`)
                     .setFooter({ text: `Total de canciones: ${queue.tracks.size}`});
