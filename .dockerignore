@@ -1,0 +1,5 @@
+# Ignora la carpeta de las dependencias de Node
+node_modules
+
+# Ignora los archivos de git
+.git

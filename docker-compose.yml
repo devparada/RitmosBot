@@ -1,0 +1,9 @@
+services:
+  ritmosbot:
+    image: ritmosbot:latest
+    # Reinicia cuando falla excepto que sea manual el apagado
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
