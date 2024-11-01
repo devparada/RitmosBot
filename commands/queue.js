@@ -17,18 +17,39 @@ module.exports = {
         } else {
             const player = useMainPlayer();
             const queue = player.nodes.get(interaction.guild.id);
+            await interaction.deferReply();
 
             if (!queue || !queue.tracks.size) {
                 embed.setColor("Red").setDescription("No hay ninguna canción en la lista");
                 return await interaction.reply({ embeds: [embed] });
             } else {
-                    embed.setColor("Blue")
-                    .setTitle("💿 **Lista de Canciones en la Cola** 💿")
-                    .setDescription(`${queue.tracks.map((song, id) =>
-                        `🎶 **${id + 1}.** ${song.title} - \`${song.duration}\``).join("\n")}`)
-                    .setFooter({ text: `Total de canciones: ${queue.tracks.size}`});
-                    return await interaction.reply({ embeds: [embed] });
+                try {
+                    const cancionesLimite = 20;
+                    const tracksArray = queue.tracks.data;
+                    let canciones = [];
+
+                    for (let i = 0; i < tracksArray.length; i += cancionesLimite) {
+                        const cola = tracksArray.slice(i, i + cancionesLimite).map((song, id) =>
+                            `🎶 **${i + id + 1}.** ${song.title} - \`${song.duration}\``).join("\n");
+                        canciones.push(cola);
+                    }
+
+                    for (const cola of canciones) {
+                        return await interaction.followUp({
+                            embeds: [embed
+                                .setColor("Blue")
+                                .setTitle("💿 **Lista de Canciones en la Cola** 💿")
+                                .setDescription(cola)
+                                .setFooter({ text: `Total de canciones: ${queue.tracks.size}` })
+                            ]
+                        });
+                    }
+                } catch (error) {
+                    console.log("Error al mostrar la cola de canciones:", error);
+                    embed.setColor("Red").setDescription("Hubo un error al intentar mostrar la cola de canciones");
+                    await interaction.followUp({ embeds: [embed] });
                 }
             }
         }
     }
+}
