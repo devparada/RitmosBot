@@ -1,5 +1,5 @@
 @echo off
 
-:: Ejecuta el bot
+REM Ejecuta el bot
 node .
 pause
