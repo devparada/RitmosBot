@@ -30,7 +30,7 @@ module.exports = {
                     queue.node.skip();
                 } catch (error) {
                     console.log(error);
-                    embed.setColor("Red").setDescription("Hubo un error al intentar skipear la canción");
+                    embed.setColor("Red").setDescription("Error al intentar skipear la canción");
                     return await interaction.reply({ embeds: [embed] });
                 }
 

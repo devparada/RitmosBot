@@ -26,7 +26,7 @@ module.exports = {
                     queue.node.stop(false);
                 } catch (error) {
                     console.log(error);
-                    embed.setColor("Red").setDescription("Hubo un error al intentar parar la canción");
+                    embed.setColor("Red").setDescription("Error al intentar parar la canción");
                     return await interaction.reply({ embeds: [embed] });
                 }
 
