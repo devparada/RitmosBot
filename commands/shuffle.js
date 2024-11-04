@@ -18,14 +18,17 @@ module.exports = {
             const player = useMainPlayer();
             const queue = player.nodes.get(interaction.guild.id);
 
-            if (!queue || !queue.tracks.size) {
-                embed.setColor("Red").setDescription("No hay ninguna canción en la lista");
+            if (!queue) {
+                embed.setColor("Red").setDescription("No hay ninguna canción en la cola");
+                return await interaction.reply({ embeds: [embed] });
+            } else if (!queue.tracks.size) {
+                embed.setColor("Red").setDescription("No hay ninguna canción en la cola más");
                 return await interaction.reply({ embeds: [embed] });
             } else {
-                    queue.tracks.shuffle();
-                    embed.setColor("Blue").setDescription("¡La cola ha sido mezclada!")
-                    return await interaction.reply({ embeds: [embed] });
-                }
+                queue.tracks.shuffle();
+                embed.setColor("Blue").setDescription("¡La cola ha sido mezclada!")
+                return await interaction.reply({ embeds: [embed] });
             }
         }
     }
+}
