@@ -1,4 +1,7 @@
 # Cambia el nombre de este archivo a .env y completalo con tus tokens y ids
-TOKEN="Your token bot"
-CLIENT_ID="Your client id bot"
-GUILD_ID="Your guild id bot"
+TOKEN="Tu token del bot"
+CLIENT_ID="Tu id del cliente del bot"
+ENVIRONMENT="developer o production"
+
+# Si el ENVIRONMENT es developer es necesario el GUILD_ID
+GUILD_ID="Tu id del servidor de pruebas"
