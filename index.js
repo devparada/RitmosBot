@@ -21,12 +21,7 @@ const client = new Client({
 });
 
 // Inicia el player
-const player = new Player(client, {
-    ytdlOptions: {
-        quality: 'highest',
-        highWaterMark: 1 << 25,
-    },
-});
+const player = new Player(client);
 
 // Registra el reproductor de Youtube y Spotify
 player.extractors.register(SpotifyExtractor, {});
@@ -102,12 +97,12 @@ if (LOAD_SLASH) {
     })
 
     // <-------------------------- Eventos Música Bot ------------------------------------->
-    
+
     client.player.events.on('playerStart', async (queue, track) => {
         const embed = new EmbedBuilder();
         const textChannel = queue.metadata.channel;
         embed.setColor("Blue").setDescription(`🎶 Reproduciendo: **${track.title}** 🎶`);
-        await textChannel.send({ embeds: [embed], ephemeral: true});
+        await textChannel.send({ embeds: [embed], ephemeral: true });
     });
 
     client.login(TOKEN);

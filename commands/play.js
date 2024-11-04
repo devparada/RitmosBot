@@ -4,7 +4,7 @@ const { useMainPlayer } = require('discord-player');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("play")
-        .setDescription("Reproduce una canción o playlist de Youtube")
+        .setDescription("Reproduce una canción o playlist")
         .addStringOption(option => option.setName("url").setDescription("the song url").setRequired(true)),
 
     run: async ({ interaction }) => {
@@ -27,19 +27,33 @@ module.exports = {
                     metadata: {
                         channel: interaction.channel,
                     },
+                    // Ensorcede al bot
+                    selfDeaf: true,
+                    ytdlOptions: {
+                        filter: "audioonly",
+                        quality: "highestaudio",
+                        highWaterMark: 1 << 25
+                    }
                 });
 
-                // Reproduce la canción
-                const song = await player.play(voiceChannel, query, {
-                    channel: interaction.channel,
-                });
+                try {
+                    // Reproduce la canción
+                    const song = await player.play(voiceChannel, query, {
+                        channel: interaction.channel,
+                    });
 
-                // Manda el mensaje cuándo aparece lo de está pensando
-                embed.setColor("Green").setDescription(`💿 Añadido a la cola: ${song.track.title}`);
-                await interaction.followUp({ embeds: [embed] });
-
+                    // Manda el mensaje cuándo aparece lo de está pensando
+                    embed.setColor("Green").setDescription(`💿 Añadido a la cola: ${song.track.title}`);
+                    await interaction.followUp({ embeds: [embed] });
+                } catch (error) {
+                    console.log(error);
+                    // Manda el mensaje cuándo aparece lo de está pensando
+                    embed.setColor("Red").setDescription("La canción o playlist no existe");
+                    await interaction.followUp({ embeds: [embed] });
+                }
             } catch (error) {
-                embed.setColor("Red").setDescription("Hubo un error al intentar reproducir la canción");
+                console.log(error);
+                embed.setColor("Red").setDescription("Error al intentar reproducir la canción");
                 await interaction.followUp({ embeds: [embed] });
             }
         }
