@@ -72,7 +72,7 @@ if (LOAD_SLASH) {
                     })
             } else if (ENVIRONMENT == "developer") {
                 rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: [] })
-                    .then(() => console.log('Comandos slash en el servidor eliminados.'))
+                    .then(() => console.log('Comandos slash en el servidor de desarrollo eliminados.'))
                     .catch(console.error);
 
                 console.log("Desplegando comandos slash en el servidor de desarrollo");
