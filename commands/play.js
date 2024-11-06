@@ -21,20 +21,24 @@ module.exports = {
             const player = useMainPlayer();
             await interaction.deferReply();
             try {
-                // Crea una cola si no existe y la conecta al canal de voz
-                // queue y song sí que se utilizan en el index.js
-                const queue = player.nodes.create(interaction.guild, {
+                // Verifica si ya existe una cola
+                const queue = player.nodes.get(interaction.guild.id) || player.nodes.create(interaction.guild, {
                     metadata: {
                         channel: interaction.channel,
                     },
-                    // Ensorcede al bot
+                    // Ensordece al bot
                     selfDeaf: true,
                     ytdlOptions: {
                         filter: "audioonly",
                         quality: "highestaudio",
-                        highWaterMark: 1 << 25
-                    }
+                        highWaterMark: 1 << 25,
+                    },
                 });
+
+                // Conecta la cola si no está conectada
+                if (!queue.connection) {
+                    await queue.connect(voiceChannel);
+                }
 
                 try {
                     // Reproduce la canción
