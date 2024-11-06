@@ -31,7 +31,7 @@ module.exports = {
                     ytdlOptions: {
                         filter: "audioonly",
                         quality: "highestaudio",
-                        highWaterMark: 1 << 25,
+                        highWaterMark: 1 << 27, // 128 MB de buffer
                     },
                 });
 
