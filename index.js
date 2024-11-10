@@ -44,13 +44,16 @@ for (const file of commandsFiles) {
 
 if (LOAD_SLASH) {
     const rest = new REST({ version: "10" }).setToken(TOKEN);
-    console.log(ENVIRONMENT);
 
     (async () => {
         try {
             console.log(`Entorno actual: ${ENVIRONMENT}`);
 
             if (ENVIRONMENT == "production") {
+                rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: [] })
+                    .then(() => console.log('Comandos slash en el servidor de desarrollo eliminados.'))
+                    .catch(console.error);
+
                 try {
                     console.log('Eliminando todos los comandos slash globales...');
                     await rest.put(Routes.applicationCommands(CLIENT_ID), { body: [] });
