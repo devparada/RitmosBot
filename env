@@ -2,6 +2,7 @@
 TOKEN="Tu token del bot"
 CLIENT_ID="Tu id del cliente del bot"
 ENVIRONMENT="developer o production"
+DATABASE_PATH="ruta de la database.json (por ejemplo ./db/playlists.json)"
 
 # Si el ENVIRONMENT es developer es necesario el GUILD_ID
 GUILD_ID="Tu id del servidor de pruebas"
