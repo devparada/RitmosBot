@@ -46,55 +46,54 @@ if (LOAD_SLASH) {
     const rest = new REST({ version: "10" }).setToken(TOKEN);
 
     (async () => {
-        try {
-            console.log(`Entorno actual: ${ENVIRONMENT}`);
+        console.log(`Entorno actual: ${ENVIRONMENT}`);
 
-            if (ENVIRONMENT == "production") {
-                rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: [] })
-                    .then(() => console.log('Comandos slash en el servidor de desarrollo eliminados.'))
-                    .catch(console.error);
-
-                try {
-                    console.log('Eliminando todos los comandos slash globales...');
-                    await rest.put(Routes.applicationCommands(CLIENT_ID), { body: [] });
-                    console.log('Comandos slash globales eliminados.');
-                } catch (error) {
-                    console.error(error);
-                }
-
-                console.log("Desplegando comandos slash a nivel de servidor");
-
-                rest.put(Routes.applicationCommands(CLIENT_ID), { body: commands })
-                    .then(() => {
-                        console.log("Cargados correctamente");
-                        process.exit(0);
-                    })
-                    .catch((error) => {
-                        console.log(error);
-                        process.exit(1);
-                    })
-            } else if (ENVIRONMENT == "developer") {
-                rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: [] })
-                    .then(() => console.log('Comandos slash en el servidor de desarrollo eliminados.'))
-                    .catch(console.error);
-
-                console.log("Desplegando comandos slash en el servidor de desarrollo");
-
-                rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands })
-                    .then(() => {
-                        console.log("Cargados correctamente");
-                        process.exit(0);
-                    })
-                    .catch((error) => {
-                        console.log(error);
-                        process.exit(1);
-                    })
-            } else {
-                console.log("Es necesario que la variable .env ENVIRONMENT tenga o developer o production");
+        if (ENVIRONMENT == "production") {
+            try {
+                console.log('Eliminando todos los comandos slash en el servidor de desarrollo...');
+                await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: [] });
+                console.log('Comandos slash en el servidor de desarrollo eliminados.');
+            } catch (error) {
+                console.error("Error al eliminar los comandos slash en el servidor de desarrollo:", error);
             }
-        } catch (error) {
-            console.log(error);
+            try {
+                console.log('Eliminando todos los comandos slash globales...');
+                await rest.put(Routes.applicationCommands(CLIENT_ID), { body: [] });
+                console.log('Comandos slash globales eliminados');
+            } catch (error) {
+                console.error("Error al eliminar los comandos slash globales:", error);
+            }
+
+            try {
+                console.log("Desplegando comandos slash globales...");
+                await rest.put(Routes.applicationCommands(CLIENT_ID), { body: commands });
+                console.log("Comandos slash globales desplegados correctamente");
+            } catch (error) {
+                console.error("Error al desplegar los comandos slash globales:", error);
+                process.exit(1);
+            }
+        } else if (ENVIRONMENT == "developer") {
+            try {
+                console.log('Eliminando todos los comandos slash en el servidor de desarrollo...');
+                await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: [] });
+                console.log('Comandos slash en el servidor de desarrollo eliminados');
+            } catch (error) {
+                console.error("Error al eliminar los comandos slash en el servidor de desarrollo:", error);
+            }
+
+            try {
+                console.log("Desplegando comandos slash en el servidor de desarrollo...");
+                await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands });
+                console.log("Comandos slash desplegados en el servidor de desarrollo correctamente");
+            } catch (error) {
+                console.error("Error al desplegar los comandos slash en el servidor de desarrollo:", error);
+                process.exit(1);
+            }
+        } else {
+            console.log("Es necesario que la variable .env ENVIRONMENT tenga o developer o production");
+            process.exit(1);
         }
+        process.exit(0);
     })();
 } else {
     // Cuando el bot está listo
