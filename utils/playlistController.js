@@ -1,12 +1,17 @@
 const fs = require("fs");
 const dotenv = require("dotenv");
+const path = require('path');
 
 dotenv.config();
 const DATABASE_PATH = process.env.DATABASE_PATH;
-const playlists = require(`../${DATABASE_PATH}`);
+
+const playlistsPath = path.join(__dirname, '..', process.env.DATABASE_PATH);
+const dominiosPermitidos = ['youtube.com', 'www.youtube.com', 'm.youtube.com', 'spotify.com', 'www.spotify.com', 'open.spotify.com'];
 
 // Crea la playlist con un nombre y un serverId
 function crearPlaylist(serverId, nombre) {
+    const playlists = JSON.parse(fs.readFileSync(playlistsPath, 'utf8'));
+
     if (!playlists[serverId]) {
         playlists[serverId] = {};
     }
@@ -23,12 +28,12 @@ function crearPlaylist(serverId, nombre) {
 
 // Muesra las playlists del servidor
 function mostrarPlaylists(serverId) {
+    const playlists = JSON.parse(fs.readFileSync(playlistsPath, 'utf8'));
+
     if (!playlists[serverId]) {
         return "No hay playlists disponibles en este servidor"
     } else {
-        var data = fs.readFileSync(DATABASE_PATH, "utf-8");
-        var jsonData = JSON.parse(data);
-        var playlistsServer = jsonData[serverId];
+        var playlistsServer = playlists[serverId];
         var playlistList = "";
 
         // Formato de las playlists y canciones
@@ -53,4 +58,36 @@ function mostrarPlaylists(serverId) {
     }
 }
 
-module.exports = { crearPlaylist, mostrarPlaylists };
+// Muesra las playlists del servidor
+function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) {
+    const playlists = JSON.parse(fs.readFileSync(playlistsPath, 'utf8'));
+    if (!playlists[serverId]) {
+        playlists[serverId] = {};
+    }
+
+    if (!playlists[serverId][nombrePlaylist]) {
+        playlists[serverId][nombrePlaylist] = {};
+    }
+
+    if (verificarUrl(url)) {
+        playlists[serverId][nombrePlaylist][tituloCancion] = url;
+        fs.writeFileSync(playlistsPath, JSON.stringify(playlists, null, 2));
+        return `La canción ${tituloCancion} se ha agregado a la playlist ${nombrePlaylist}`;
+    } else {
+        return `La canción no se ha podido añadir a la playlist ${nombrePlaylist}`;
+    }
+}
+
+function verificarUrl(url) {
+    try {
+        const comprobarUrl = new URL(url);
+        if (dominiosPermitidos.includes(comprobarUrl.hostname)) {
+            return true;
+        }
+    } catch (error) {
+        console.log(error);
+    }
+    return false;
+}
+
+module.exports = { crearPlaylist, mostrarPlaylists, addCancionPlaylist };
