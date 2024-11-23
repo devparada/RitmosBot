@@ -28,6 +28,9 @@ module.exports = {
                     },
                     // Ensordece al bot
                     selfDeaf: true,
+                    leaveOnEmpty: false,
+                    leaveOnEnd: false,
+                    leaveOnStop: false,
                     ytdlOptions: {
                         filter: "audioonly",
                         quality: "highestaudio",

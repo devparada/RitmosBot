@@ -22,8 +22,8 @@ module.exports = {
                 embed.setColor("Red").setDescription("No hay ninguna canción reproduciéndose en este momento");
                 return await interaction.reply({ embeds: [embed] });
             } else if (queue.tracks.data.length == 0) {
-                await queue.node.stop();
-                embed.setColor("Red").setDescription("Sea saltado la unica canción puesta");
+                queue.node.stop();
+                embed.setColor("Yellow").setDescription("Se ha saltado la única canción puesta");
                 return await interaction.reply({ embeds: [embed] });
             } else {
                 try {
