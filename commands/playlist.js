@@ -1,6 +1,6 @@
 const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
 const { useMainPlayer } = require('discord-player');
-const { crearPlaylist, mostrarPlaylists, addCancionPlaylist } = require("../utils/playlistController.js");
+const { crearPlaylist, eliminarPlaylist, mostrarPlaylists, addCancionPlaylist } = require("../utils/playlistController.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -18,13 +18,23 @@ module.exports = {
         )
         .addSubcommand(subcommands =>
             subcommands
+                .setName('remove')
+                .setDescription('Borra una playlist')
+                .addStringOption(option =>
+                    option.setName("name")
+                        .setDescription("Nombre de la playlist")
+                        .setRequired(true)
+                )
+        )
+        .addSubcommand(subcommands =>
+            subcommands
                 .setName('list')
                 .setDescription('Muestra las playlists')
         )
         .addSubcommand(subcommands =>
             subcommands
                 .setName('add')
-                .setDescription('Añade la url a la playlist')
+                .setDescription('Añade una canción a la playlist')
                 .addStringOption(option =>
                     option.setName("playlist")
                         .setDescription("Nombre de la playlist")
@@ -78,6 +88,16 @@ module.exports = {
 
                     embed.setColor("Blue")
                         .setDescription(addCancionPlaylist(guildId, url, playlistName, tituloCancion));
+                    return await interaction.reply({ embeds: [embed] });
+                } catch (error) {
+                    console.log(error);
+                }
+                break;
+            case "remove":
+                try {
+                    arrayDelete = eliminarPlaylist(guildId, options.getString("name"));
+                    embed.setColor(arrayDelete["color"])
+                        .setDescription(arrayDelete["mensaje"])
                     return await interaction.reply({ embeds: [embed] });
                 } catch (error) {
                     console.log(error);

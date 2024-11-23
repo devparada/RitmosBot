@@ -26,7 +26,20 @@ function crearPlaylist(serverId, nombre) {
     }
 }
 
-// Muesra las playlists del servidor
+// Elimina la playlist con un nombre y un serverId
+function eliminarPlaylist(serverId, nombrePlaylist) {
+    const playlists = JSON.parse(fs.readFileSync(playlistsPath, 'utf8'));
+
+    if (!playlists[serverId][nombrePlaylist]) {
+        return { color: "Red", mensaje: `:x: La playlist ${nombre} no existe` };
+    } else {
+        delete playlists[serverId][nombrePlaylist];
+        fs.writeFileSync(DATABASE_PATH, JSON.stringify(playlists, null, 2));
+        return { color: "Green", mensaje: `La playlist **${nombre}** fue eliminada correctamente` };
+    }
+}
+
+// Muestra las playlists del servidor
 function mostrarPlaylists(serverId) {
     const playlists = JSON.parse(fs.readFileSync(playlistsPath, 'utf8'));
 
@@ -58,7 +71,7 @@ function mostrarPlaylists(serverId) {
     }
 }
 
-// Muesra las playlists del servidor
+// Añade la canción a la playlist
 function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) {
     const playlists = JSON.parse(fs.readFileSync(playlistsPath, 'utf8'));
     if (!playlists[serverId]) {
@@ -69,12 +82,17 @@ function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) {
         playlists[serverId][nombrePlaylist] = {};
     }
 
+    // Si ya existe la canción en la playlist
+    if (playlists[serverId][nombrePlaylist][tituloCancion]) {
+        return `La canción *${tituloCancion} ya está añadida a la playlist*`
+    }
+
     if (verificarUrl(url)) {
         playlists[serverId][nombrePlaylist][tituloCancion] = url;
         fs.writeFileSync(playlistsPath, JSON.stringify(playlists, null, 2));
-        return `La canción ${tituloCancion} se ha agregado a la playlist ${nombrePlaylist}`;
+        return `La canción ${tituloCancion} se ha añadido a la playlist`;
     } else {
-        return `La canción no se ha podido añadir a la playlist ${nombrePlaylist}`;
+        return `La canción no se ha podido añadir a la playlist`;
     }
 }
 
@@ -90,4 +108,4 @@ function verificarUrl(url) {
     return false;
 }
 
-module.exports = { crearPlaylist, mostrarPlaylists, addCancionPlaylist };
+module.exports = { crearPlaylist, eliminarPlaylist, mostrarPlaylists, addCancionPlaylist };
