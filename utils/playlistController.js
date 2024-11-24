@@ -1,6 +1,7 @@
 const fs = require("fs");
 const dotenv = require("dotenv");
 const path = require('path');
+const { useMainPlayer } = require('discord-player');
 
 dotenv.config();
 const DATABASE_PATH = process.env.DATABASE_PATH;
@@ -96,6 +97,35 @@ function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) {
     }
 }
 
+function playCheckPlaylist(serverId, nombrePlaylist) {
+    var playlists = JSON.parse(fs.readFileSync(playlistsPath, 'utf8'));
+
+    if (!playlists[serverId] || !playlists[serverId][nombrePlaylist]) {
+        return { color: "Red", mensaje: `La playlist **${nombrePlaylist}** no existe` };
+    }
+
+    return { color: "Green", mensaje: `La playlist **${nombrePlaylist}** se añadio a la cola correctamente` };
+}
+
+// Añade la canción a la playlist
+async function playPlaylist(serverId, nombrePlaylist, interaction) {
+    const player = useMainPlayer();
+    var playlists = JSON.parse(fs.readFileSync(playlistsPath, 'utf8'));
+    var playlistUrl = playlists[serverId][nombrePlaylist];
+
+    try {
+        for (let url of Object.values(playlistUrl)) {
+            await player.play(interaction.member.voice.channel, url, {
+                nodeOptions: {
+                    metadata: interaction,
+                },
+            });
+        }
+    } catch (error) {
+        console.error("Error al reproducir la playlist:", error);
+    }
+}
+
 function verificarUrl(url) {
     try {
         const comprobarUrl = new URL(url);
@@ -108,4 +138,4 @@ function verificarUrl(url) {
     return false;
 }
 
-module.exports = { crearPlaylist, eliminarPlaylist, mostrarPlaylists, addCancionPlaylist };
+module.exports = { crearPlaylist, eliminarPlaylist, playPlaylist, playCheckPlaylist, mostrarPlaylists, addCancionPlaylist };

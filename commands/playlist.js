@@ -1,6 +1,6 @@
 const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
 const { useMainPlayer } = require('discord-player');
-const { crearPlaylist, eliminarPlaylist, mostrarPlaylists, addCancionPlaylist } = require("../utils/playlistController.js");
+const { crearPlaylist, eliminarPlaylist, playPlaylist, playCheckPlaylist, mostrarPlaylists, addCancionPlaylist } = require("../utils/playlistController.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -10,6 +10,16 @@ module.exports = {
             subcommands
                 .setName('create')
                 .setDescription('Crea una playlist')
+                .addStringOption(option =>
+                    option.setName("name")
+                        .setDescription("Nombre de la playlist")
+                        .setRequired(true)
+                )
+        )
+        .addSubcommand(subcommands =>
+            subcommands
+                .setName('play')
+                .setDescription('Reproduce una playlist')
                 .addStringOption(option =>
                     option.setName("name")
                         .setDescription("Nombre de la playlist")
@@ -88,7 +98,20 @@ module.exports = {
 
                     embed.setColor("Blue")
                         .setDescription(addCancionPlaylist(guildId, url, playlistName, tituloCancion));
-                    return await interaction.reply({ embeds: [embed] });
+                    await interaction.reply({ embeds: [embed] });
+                } catch (error) {
+                    console.log(error);
+                }
+                break;
+            case "play":
+                try {
+                    arrayPlayCheck = playCheckPlaylist(guildId, options.getString("name"));
+                    embed.setColor(arrayPlayCheck["color"])
+                        .setDescription(arrayPlayCheck["mensaje"]);
+                    await interaction.reply({ embeds: [embed] });
+                    if (arrayPlayCheck["color"] === "Green") {
+                        playPlaylist(guildId, options.getString("name"), interaction);
+                    }
                 } catch (error) {
                     console.log(error);
                 }
