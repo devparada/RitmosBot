@@ -35,7 +35,13 @@ module.exports = {
                         filter: "audioonly",
                         quality: "highestaudio",
                         highWaterMark: 1 << 27, // 128 MB de buffer
-                    },
+                        dlChunkSize: 64 * 1024, // 64 KB por fragmento para evitar grandes picos de memoria
+                        requestOptions: { // Emula un navegador para evitar bloqueos
+                            headers: {
+                                "User-Agent": "Mozilla/5.0 (compatible; Node.js ytdl-core)"
+                            }
+                        }
+                    }
                 });
 
                 // Conecta la cola si no está conectada
