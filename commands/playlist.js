@@ -65,19 +65,23 @@ module.exports = {
         switch (options.getSubcommand()) {
             case "create":
                 try {
-                    return await interaction.reply(crearPlaylist(guildId, options.getString("name")));
+                    let arrayCrear = crearPlaylist(guildId, options.getString("name"));
+                    embed.setColor(arrayCrear["color"])
+                        .setDescription(arrayCrear["mensaje"])
+                    await interaction.reply({ embeds: [embed] });
                 } catch (error) {
                     console.log(error);
                 }
                 break;
             case "list":
                 try {
-                    embed.setColor("Blue")
+                    let arrayLista = mostrarPlaylists(guildId);
+                    embed.setColor(arrayLista["color"])
                         .setTitle("🎶 Lista de Playlists 🎶")
-                        .setDescription(mostrarPlaylists(guildId))
-                    return await interaction.reply({ embeds: [embed] });
+                        .setDescription(arrayLista["mensaje"])
+                    await interaction.reply({ embeds: [embed] });
                 } catch (error) {
-                    console.log(error);
+                    console.log("Error al mostrar las playlists:" + error);
                 }
                 break;
             case "add":
@@ -88,16 +92,16 @@ module.exports = {
                         requestedBy: interaction.user
                     });
                     const track = result.tracks[0];
-                    var tituloCancion;
 
                     if (track && track.title) {
-                        tituloCancion = track.title;
+                        var tituloCancion = track.title;
                     } else {
-                        tituloCancion = "Título no encontrado";
+                        var tituloCancion = "Título no encontrado";
                     }
 
-                    embed.setColor("Blue")
-                        .setDescription(addCancionPlaylist(guildId, url, playlistName, tituloCancion));
+                    let arrayAdd = addCancionPlaylist(guildId, url, playlistName, tituloCancion);
+                    embed.setColor(arrayAdd["color"])
+                        .setDescription(arrayAdd["mensaje"]);
                     await interaction.reply({ embeds: [embed] });
                 } catch (error) {
                     console.log(error);
@@ -105,7 +109,7 @@ module.exports = {
                 break;
             case "play":
                 try {
-                    arrayPlayCheck = playCheckPlaylist(guildId, options.getString("name"));
+                    let arrayPlayCheck = playCheckPlaylist(guildId, options.getString("name"));
                     embed.setColor(arrayPlayCheck["color"])
                         .setDescription(arrayPlayCheck["mensaje"]);
                     await interaction.reply({ embeds: [embed] });
@@ -118,10 +122,10 @@ module.exports = {
                 break;
             case "remove":
                 try {
-                    arrayDelete = eliminarPlaylist(guildId, options.getString("name"));
+                    let arrayDelete = eliminarPlaylist(guildId, options.getString("name"));
                     embed.setColor(arrayDelete["color"])
                         .setDescription(arrayDelete["mensaje"])
-                    return await interaction.reply({ embeds: [embed] });
+                    await interaction.reply({ embeds: [embed] });
                 } catch (error) {
                     console.log(error);
                 }

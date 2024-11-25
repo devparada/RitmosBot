@@ -11,7 +11,7 @@ const dominiosPermitidos = ['youtube.com', 'www.youtube.com', 'm.youtube.com', '
 
 // Crea la playlist con un nombre y un serverId
 function crearPlaylist(serverId, nombre) {
-    const playlists = JSON.parse(fs.readFileSync(playlistsPath, 'utf8'));
+    var playlists = JSON.parse(fs.readFileSync(playlistsPath, 'utf8'));
 
     if (!playlists[serverId]) {
         playlists[serverId] = {};
@@ -19,81 +19,85 @@ function crearPlaylist(serverId, nombre) {
 
     // Si la playlist con el nombre existe
     if (playlists[serverId][nombre]) {
-        return `La playlist ${nombre} ya existe`;
+        return { color: "Red", mensaje: `La playlist **${nombre}** ya existe` };
     } else {
         playlists[serverId][nombre] = {};
         fs.writeFileSync(DATABASE_PATH, JSON.stringify(playlists, null, 2));
-        return `La playlist "${nombre}" fue creada correctamente`;
+        return { color: "Green", mensaje: `La playlist **${nombre}** fue creada correctamente` };
     }
 }
 
 // Elimina la playlist con un nombre y un serverId
 function eliminarPlaylist(serverId, nombrePlaylist) {
-    const playlists = JSON.parse(fs.readFileSync(playlistsPath, 'utf8'));
+    var playlists = JSON.parse(fs.readFileSync(playlistsPath, 'utf8'));
 
     if (!playlists[serverId][nombrePlaylist]) {
-        return { color: "Red", mensaje: `:x: La playlist ${nombre} no existe` };
+        return { color: "Red", mensaje: `:x: La playlist **${nombrePlaylist}** no existe` };
     } else {
         delete playlists[serverId][nombrePlaylist];
         fs.writeFileSync(DATABASE_PATH, JSON.stringify(playlists, null, 2));
-        return { color: "Green", mensaje: `La playlist **${nombre}** fue eliminada correctamente` };
+        return { color: "Green", mensaje: `:white_check_mark: La playlist **${nombrePlaylist}** fue eliminada correctamente` };
     }
 }
 
 // Muestra las playlists del servidor
 function mostrarPlaylists(serverId) {
-    const playlists = JSON.parse(fs.readFileSync(playlistsPath, 'utf8'));
+    var playlists = JSON.parse(fs.readFileSync(playlistsPath, 'utf8'));
 
     if (!playlists[serverId]) {
-        return "No hay playlists disponibles en este servidor"
+        return { color: "Red", mensaje: "No hay playlists disponibles en este servidor" };
     } else {
         var playlistsServer = playlists[serverId];
-        var playlistList = "";
+        var playlistServerCount = Object.keys(playlistsServer).length;
+        var playlistTexto = "";
 
-        // Formato de las playlists y canciones
-        for (const nombrePlaylist in playlistsServer) {
-            const item = playlistsServer[nombrePlaylist];
-            var playlistCanciones = "";
+        // Si hay playlist en el servidor
+        if (playlistServerCount > 0) {
+            // Formato de las playlists y canciones
+            for (let nombrePlaylist in playlistsServer) {
+                const playlistList = playlistsServer[nombrePlaylist];
+                // Si hay canciones dentro de la playlist
+                if (typeof playlistList === "object" && Object.keys(playlistList).length > 0) {
+                    const cancionesObj = playlistsServer[nombrePlaylist];
 
-            // Si hay canciones
-            if (typeof item === "object" && Object.keys(item).length > 0) {
-                const canciones = Object.entries(item)
-                    .map(([nombre, valor]) => `${nombre}: ${valor} `)
-                    .join("\n - ");
-                playlistCanciones = canciones;
-            } else {
-                playlistCanciones = "No hay canciones en esta playlist";
+                    const canciones = Object.entries(cancionesObj)
+                        .map(([nombre, valor]) => `${nombre}: ${valor} `)
+                        .join("\n - ");
+                    playlistTexto += `**Playlist: ${nombrePlaylist}**\n - ${canciones}\n\n`
+                }
+                else {
+                    playlistTexto += `**Playlist: ${nombrePlaylist}**\n - No hay canciones en esta playlist\n\n`;
+                }
             }
-
-            playlistList += `**Playlist: ${nombrePlaylist}**\n - ${playlistCanciones}\n\n`
+            return { color: "Blue", mensaje: playlistTexto };
+        } else {
+            return { color: "Red", mensaje: "No hay canciones en esta playlist" };
         }
-
-        return playlistList;
     }
 }
 
 // Añade la canción a la playlist
 function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) {
-    const playlists = JSON.parse(fs.readFileSync(playlistsPath, 'utf8'));
+    var playlists = JSON.parse(fs.readFileSync(playlistsPath, 'utf8'));
     if (!playlists[serverId]) {
         playlists[serverId] = {};
     }
 
     if (!playlists[serverId][nombrePlaylist]) {
-        playlists[serverId][nombrePlaylist] = {};
+        return { color: "Red", mensaje: `La playlist **${nombrePlaylist}** no existe` };
     }
 
     // Si ya existe la canción en la playlist
     if (playlists[serverId][nombrePlaylist][tituloCancion]) {
-        return `La canción *${tituloCancion} ya está añadida a la playlist*`
+        return { color: "Red", mensaje: `La canción **${tituloCancion}** ya está añadida a la playlist` };
     }
 
     if (verificarUrl(url)) {
         playlists[serverId][nombrePlaylist][tituloCancion] = url;
         fs.writeFileSync(playlistsPath, JSON.stringify(playlists, null, 2));
-        return `La canción ${tituloCancion} se ha añadido a la playlist`;
+        return { color: "Green", mensaje: `La canción **${tituloCancion}** se ha añadido a la playlist` };
     } else {
-        return `La canción no se ha podido añadir a la playlist`;
+        return { color: "Red", mensaje: "La canción no se ha podido añadir a la playlist" };
     }
 }
 
@@ -133,7 +137,7 @@ function verificarUrl(url) {
             return true;
         }
     } catch (error) {
-        console.log(error);
+        console.log("Error al verificar la url:", error);
     }
     return false;
 }
