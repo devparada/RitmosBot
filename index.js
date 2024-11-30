@@ -21,8 +21,11 @@ const client = new Client({
     ]
 });
 
-// Inicia el player
-const player = new Player(client);
+// Inicia y configura el player
+const player = new Player(client, {
+    connectionTimeout: 30000,
+    smoothVolume: true
+});
 
 // Registra el reproductor de Youtube y Spotify
 player.extractors.register(SpotifyExtractor, {});
