@@ -1,5 +1,0 @@
-# Construir la imagen
-docker build -t ritmosbot:latest .
-
-# Despliega el contenedor
-docker-compose up -d
