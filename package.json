@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest --verbose"
+    "test": "jest --verbose",
+    "lint": "eslint ."
   },
   "keywords": [],
   "author": "devparada",
@@ -20,6 +21,9 @@
     "mediaplex": "^0.0.9"
   },
   "devDependencies": {
+    "@eslint/js": "^9.16.0",
+    "eslint": "^9.16.0",
+    "globals": "^15.12.0",
     "jest": "^29.7.0"
   }
 }
