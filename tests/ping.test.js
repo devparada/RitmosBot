@@ -3,7 +3,6 @@ const pingCommand = require("../commands/ping");
 describe("/ping command", () => {
   test("Modifica el embed y calcula el ping", async () => {
 
-    // Mock de interacción
     const interaction = {
       commandName: "ping",
       editReply: jest.fn(),
