@@ -26,9 +26,9 @@ module.exports = {
                 return await interaction.reply({ embeds: [embed] });
             } else {
                 queue.tracks.shuffle();
-                embed.setColor("Blue").setDescription("¡La cola ha sido mezclada!")
+                embed.setColor("Blue").setDescription("¡La cola ha sido mezclada!");
                 return await interaction.reply({ embeds: [embed] });
             }
         }
-    }
-}
+    },
+};

@@ -30,7 +30,7 @@ describe("/ping command", () => {
       expect.arrayContaining([
         expect.objectContaining({ name: "Latencia del bot", value: expect.stringMatching(/^(0ms|1ms)$/), inline: true }),
         expect.objectContaining({ name: "Latencia de la API", value: "50ms", inline: true }),
-      ])
+      ]),
     );
   });
 });

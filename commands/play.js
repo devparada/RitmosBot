@@ -1,5 +1,5 @@
 const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
-const { useMainPlayer } = require('discord-player');
+const { useMainPlayer } = require("discord-player");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -38,10 +38,10 @@ module.exports = {
                         dlChunkSize: 64 * 1024, // 64 KB por fragmento para evitar grandes picos de memoria
                         requestOptions: { // Emula un navegador para evitar bloqueos
                             headers: {
-                                "User-Agent": "Mozilla/5.0 (compatible; Node.js ytdl-core)"
-                            }
-                        }
-                    }
+                                "User-Agent": "Mozilla/5.0 (compatible; Node.js ytdl-core)",
+                            },
+                        },
+                    },
                 });
 
                 // Conecta la cola si no está conectada
@@ -70,5 +70,5 @@ module.exports = {
                 await interaction.followUp({ embeds: [embed] });
             }
         }
-    }
-}
+    },
+};

@@ -31,15 +31,15 @@ module.exports = {
                     var description = tracksArray.slice(0, cancionesLimite).map((song, id) =>
                         `🎶 **${id + 1}.** ${song.title} - \`${song.duration}\``).join("\n");
 
-                    if (totalCanciones == 0 && queue.currentTrack != null) {
+                    if (totalCanciones === 0 && queue.currentTrack !== null) {
                         const song = queue.currentTrack;
-                        description = `🎶 **1.** ${song.title} - \`${song.duration}\``
-                        totalCanciones = totalCanciones + 1
+                        description = `🎶 **1.** ${song.title} - \`${song.duration}\``;
+                        totalCanciones = totalCanciones + 1;
                     }
                     else if (totalCanciones >= 1) {
                         description = tracksArray.slice(0, cancionesLimite).map((song, id) =>
                             `🎶 **${id + 1}.** ${song.title} - \`${song.duration}\``).join("\n");
-                        totalCanciones = totalCanciones + 1
+                        totalCanciones = totalCanciones + 1;
                     } else {
                         description = "No hay canciones en la cola.";
                     }
@@ -49,8 +49,8 @@ module.exports = {
                             .setColor("Blue")
                             .setTitle("💿 **Lista de Canciones en la Cola** 💿")
                             .setDescription(description)
-                            .setFooter({ text: `Total de canciones: ${totalCanciones}` })
-                        ]
+                            .setFooter({ text: `Total de canciones: ${totalCanciones}` }),
+                        ],
                     });
                 } catch (error) {
                     console.log("Error al mostrar la cola de canciones:", error);
@@ -59,5 +59,5 @@ module.exports = {
                 }
             }
         }
-    }
-}
+    },
+};

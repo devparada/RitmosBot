@@ -18,9 +18,9 @@ module.exports = {
             .setDescription("Tiempos de respuesta:")
             .addFields(
                 { name: "Latencia del bot", value: `${botLatencia}ms`, inline: true },
-                { name: "Latencia de la API", value: `${apiLatencia}ms`, inline: true }
-            )
+                { name: "Latencia de la API", value: `${apiLatencia}ms`, inline: true },
+            );
 
         await interaction.editReply({ content: null, embeds: [embed] });
-    }
-}
+    },
+};

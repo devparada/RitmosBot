@@ -1,17 +1,17 @@
 const fs = require("fs");
 const dotenv = require("dotenv");
-const path = require('path');
-const { useMainPlayer } = require('discord-player');
+const path = require("path");
+const { useMainPlayer } = require("discord-player");
 
 dotenv.config();
 const DATABASE_PATH = process.env.DATABASE_PATH;
 
-const playlistsPath = path.join(__dirname, '..', process.env.DATABASE_PATH);
-const dominiosPermitidos = ['youtube.com', 'www.youtube.com', 'm.youtube.com', 'spotify.com', 'www.spotify.com', 'open.spotify.com'];
+const playlistsPath = path.join(__dirname, "..", process.env.DATABASE_PATH);
+const dominiosPermitidos = ["youtube.com", "www.youtube.com", "m.youtube.com", "spotify.com", "www.spotify.com", "open.spotify.com"];
 
 // Crea la playlist con un nombre y un serverId
 function crearPlaylist(serverId, nombre) {
-    var playlists = JSON.parse(fs.readFileSync(playlistsPath, 'utf8'));
+    var playlists = JSON.parse(fs.readFileSync(playlistsPath, "utf8"));
 
     if (!playlists[serverId]) {
         playlists[serverId] = {};
@@ -29,7 +29,7 @@ function crearPlaylist(serverId, nombre) {
 
 // Elimina la playlist con un nombre y un serverId
 function eliminarPlaylist(serverId, nombrePlaylist) {
-    var playlists = JSON.parse(fs.readFileSync(playlistsPath, 'utf8'));
+    var playlists = JSON.parse(fs.readFileSync(playlistsPath, "utf8"));
 
     if (!playlists[serverId][nombrePlaylist]) {
         return { color: "Red", mensaje: `:x: La playlist **${nombrePlaylist}** no existe` };
@@ -42,7 +42,7 @@ function eliminarPlaylist(serverId, nombrePlaylist) {
 
 // Muestra las playlists del servidor
 function mostrarPlaylists(serverId) {
-    var playlists = JSON.parse(fs.readFileSync(playlistsPath, 'utf8'));
+    var playlists = JSON.parse(fs.readFileSync(playlistsPath, "utf8"));
 
     if (!playlists[serverId]) {
         return { color: "Red", mensaje: "No hay playlists disponibles en este servidor" };
@@ -63,7 +63,7 @@ function mostrarPlaylists(serverId) {
                     const canciones = Object.entries(cancionesObj)
                         .map(([nombre, valor]) => `${nombre}: ${valor} `)
                         .join("\n - ");
-                    playlistTexto += `**Playlist: ${nombrePlaylist}**\n - ${canciones}\n\n`
+                    playlistTexto += `**Playlist: ${nombrePlaylist}**\n - ${canciones}\n\n`;
                 }
                 else {
                     playlistTexto += `**Playlist: ${nombrePlaylist}**\n - No hay canciones en esta playlist\n\n`;
@@ -78,7 +78,7 @@ function mostrarPlaylists(serverId) {
 
 // Añade la canción a la playlist
 function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) {
-    var playlists = JSON.parse(fs.readFileSync(playlistsPath, 'utf8'));
+    var playlists = JSON.parse(fs.readFileSync(playlistsPath, "utf8"));
     if (!playlists[serverId]) {
         playlists[serverId] = {};
     }
@@ -102,7 +102,7 @@ function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) {
 }
 
 function playCheckPlaylist(serverId, nombrePlaylist) {
-    var playlists = JSON.parse(fs.readFileSync(playlistsPath, 'utf8'));
+    var playlists = JSON.parse(fs.readFileSync(playlistsPath, "utf8"));
 
     if (!playlists[serverId] || !playlists[serverId][nombrePlaylist]) {
         return { color: "Red", mensaje: `La playlist **${nombrePlaylist}** no existe` };
@@ -114,7 +114,7 @@ function playCheckPlaylist(serverId, nombrePlaylist) {
 // Añade la canción a la playlist
 async function playPlaylist(serverId, nombrePlaylist, interaction) {
     const player = useMainPlayer();
-    var playlists = JSON.parse(fs.readFileSync(playlistsPath, 'utf8'));
+    var playlists = JSON.parse(fs.readFileSync(playlistsPath, "utf8"));
     var playlistUrl = playlists[serverId][nombrePlaylist];
 
     try {

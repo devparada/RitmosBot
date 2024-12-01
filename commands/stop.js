@@ -1,5 +1,5 @@
 const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
-const { useMainPlayer } = require('discord-player');
+const { useMainPlayer } = require("discord-player");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -16,7 +16,7 @@ module.exports = {
             return interaction.reply({ embeds: [embed] });
         } else {
             const player = useMainPlayer();
-            const queue = player.nodes.get(interaction.guild.id)
+            const queue = player.nodes.get(interaction.guild.id);
 
             if (!queue) {
                 embed.setColor("Red").setDescription("No hay ninguna canción reproduciéndose en este momento");
@@ -34,5 +34,5 @@ module.exports = {
                 await interaction.reply({ embeds: [embed] });
             }
         }
-    }
-}
+    },
+};

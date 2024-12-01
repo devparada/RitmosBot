@@ -1,5 +1,5 @@
 const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
-const { useMainPlayer } = require('discord-player');
+const { useMainPlayer } = require("discord-player");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -21,7 +21,7 @@ module.exports = {
             if (!queue) {
                 embed.setColor("Red").setDescription("No hay ninguna canción reproduciéndose en este momento");
                 return await interaction.reply({ embeds: [embed] });
-            } else if (queue.tracks.data.length == 0) {
+            } else if (queue.tracks.data.length === 0) {
                 queue.node.stop();
                 embed.setColor("Yellow").setDescription("Se ha saltado la única canción puesta");
                 return await interaction.reply({ embeds: [embed] });
@@ -38,5 +38,5 @@ module.exports = {
                 return await interaction.reply({ embeds: [embed] });
             }
         }
-    }
-}
+    },
+};
