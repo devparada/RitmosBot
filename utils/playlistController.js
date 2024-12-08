@@ -5,8 +5,7 @@ const { useMainPlayer } = require("discord-player");
 
 dotenv.config();
 const DATABASE_PATH = process.env.DATABASE_PATH;
-
-const playlistsPath = path.join(__dirname, "..", process.env.DATABASE_PATH);
+const playlistsPath = path.join(__dirname, "..", DATABASE_PATH);
 
 // Crea la playlist con un nombre y un serverId
 function crearPlaylist(serverId, nombre) {
