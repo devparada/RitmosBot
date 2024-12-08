@@ -93,6 +93,25 @@ function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) {
     return { color: "Green", mensaje: `La canción **${tituloCancion}** se ha añadido a la playlist` };
 }
 
+// Elimina la canción a la playlist
+function eliminarCancionPlaylist(serverId, nombrePlaylist, tituloCancion) {
+    if (checkExistPlaylist(serverId, nombrePlaylist)["color"] === "Red") {
+        return checkExistPlaylist(serverId, nombrePlaylist);
+    }
+
+    var playlists = JSON.parse(fs.readFileSync(playlistsPath, "utf8"));
+
+    // Si ya existe la canción en la playlist
+    if (!playlists[serverId][nombrePlaylist][tituloCancion]) {
+        return { color: "Red", mensaje: "La canción no está en la playlist" };
+    }
+
+    //playlists[serverId][nombrePlaylist][tituloCancion] = url;
+    delete playlists[serverId][nombrePlaylist][tituloCancion];
+    fs.writeFileSync(playlistsPath, JSON.stringify(playlists, null, 2));
+    return { color: "Green", mensaje: `La canción **${tituloCancion}** se ha eliminado de la playlist` };
+}
+
 function playCheckPlaylist(serverId, nombrePlaylist) {
     if (checkExistPlaylist(serverId, nombrePlaylist)["color"] === "Red") {
         return checkExistPlaylist(serverId, nombrePlaylist);
@@ -114,6 +133,8 @@ function checkExistPlaylist(serverId, nombrePlaylist) {
 
     if (!playlists[serverId] || !playlists[serverId][nombrePlaylist]) {
         return { color: "Red", mensaje: `La playlist **${nombrePlaylist}** no existe` };
+    } else {
+        return { color: "Green", mensaje: `La playlist **${nombrePlaylist}** existe` };
     }
 }
 
@@ -136,4 +157,4 @@ async function playPlaylist(serverId, nombrePlaylist, interaction) {
     }
 }
 
-module.exports = { checkExistPlaylist, crearPlaylist, eliminarPlaylist, playPlaylist, playCheckPlaylist, mostrarPlaylists, addCancionPlaylist };
+module.exports = { checkExistPlaylist, crearPlaylist, eliminarPlaylist, playPlaylist, playCheckPlaylist, mostrarPlaylists, addCancionPlaylist, eliminarCancionPlaylist };

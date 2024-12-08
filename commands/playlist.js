@@ -1,14 +1,13 @@
 const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
 const { useMainPlayer } = require("discord-player");
-const { crearPlaylist, eliminarPlaylist, playPlaylist, playCheckPlaylist, mostrarPlaylists, addCancionPlaylist } = require("../utils/playlistController.js");
+const { crearPlaylist, eliminarPlaylist, playPlaylist, playCheckPlaylist, mostrarPlaylists, addCancionPlaylist, eliminarCancionPlaylist } = require("../utils/playlistController.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("playlist")
-        .setDescription("Crea, edita, y elimina las playlist")
-        .addSubcommand(subcommands =>
-            subcommands
-                .setName("create")
+        .setDescription("Gestiona playlists con opciones para crear, editar y eliminar")
+        .addSubcommand(sub =>
+            sub.setName("create")
                 .setDescription("Crea una playlist")
                 .addStringOption(option =>
                     option.setName("name")
@@ -16,9 +15,8 @@ module.exports = {
                         .setRequired(true),
                 ),
         )
-        .addSubcommand(subcommands =>
-            subcommands
-                .setName("play")
+        .addSubcommand(sub =>
+            sub.setName("play")
                 .setDescription("Reproduce una playlist")
                 .addStringOption(option =>
                     option.setName("name")
@@ -26,25 +24,22 @@ module.exports = {
                         .setRequired(true),
                 ),
         )
-        .addSubcommand(subcommands =>
-            subcommands
-                .setName("remove")
-                .setDescription("Borra una playlist")
+        .addSubcommand(sub =>
+            sub.setName("remove")
+                .setDescription("Elimina una playlist")
                 .addStringOption(option =>
                     option.setName("name")
                         .setDescription("Nombre de la playlist")
                         .setRequired(true),
                 ),
         )
-        .addSubcommand(subcommands =>
-            subcommands
-                .setName("list")
-                .setDescription("Muestra las playlists"),
+        .addSubcommand(sub =>
+            sub.setName("list")
+                .setDescription("Muestra todas las playlists"),
         )
-        .addSubcommand(subcommands =>
-            subcommands
-                .setName("add")
-                .setDescription("Añade una canción a la playlist")
+        .addSubcommand(sub =>
+            sub.setName("add")
+                .setDescription("Añade una canción a una playlist")
                 .addStringOption(option =>
                     option.setName("playlist")
                         .setDescription("Nombre de la playlist")
@@ -53,6 +48,20 @@ module.exports = {
                 .addStringOption(option =>
                     option.setName("url")
                         .setDescription("Url de la cancion")
+                        .setRequired(true),
+                ),
+        )
+        .addSubcommand(sub =>
+            sub.setName("delete")
+                .setDescription("Elimina una canción de una playlist")
+                .addStringOption(option =>
+                    option.setName("playlist")
+                        .setDescription("Nombre de la playlist")
+                        .setRequired(true),
+                )
+                .addStringOption(option =>
+                    option.setName("name")
+                        .setDescription("nombre de la cancion")
                         .setRequired(true),
                 ),
         ),
@@ -123,7 +132,17 @@ module.exports = {
                 break;
             case "remove":
                 try {
-                    let arrayDelete = eliminarPlaylist(guildId, options.getString("name"));
+                    let arrayRemove = eliminarPlaylist(guildId, options.getString("name"));
+                    embed.setColor(arrayRemove["color"])
+                        .setDescription(arrayRemove["mensaje"]);
+                    await interaction.reply({ embeds: [embed] });
+                } catch (error) {
+                    console.log(error);
+                }
+                break;
+            case "delete":
+                try {
+                    let arrayDelete = eliminarCancionPlaylist(guildId, options.getString("playlist"), options.getString("name"));
                     embed.setColor(arrayDelete["color"])
                         .setDescription(arrayDelete["mensaje"]);
                     await interaction.reply({ embeds: [embed] });
