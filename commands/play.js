@@ -34,11 +34,13 @@ module.exports = {
                     ytdlOptions: {
                         filter: "audioonly",
                         quality: "highestaudio",
-                        highWaterMark: 1 << 27, // 128 MB de buffer
-                        dlChunkSize: 64 * 1024, // 64 KB por fragmento para evitar grandes picos de memoria
+                        highWaterMark: 1 << 26, // 64 MB de buffer
+                        dlChunkSize: 128 * 1024, // 128 KB para un mejor balance entre fragmentos y memoria
                         requestOptions: { // Emula un navegador para evitar bloqueos
                             headers: {
-                                "User-Agent": "Mozilla/5.0 (compatible; Node.js ytdl-core)",
+                                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
+                                "Accept-Language": "en-US,en;q=0.9", // Idioma preferido
+                                "Connection": "keep-alive", // Mantener la conexión para mejorar velocidad
                             },
                         },
                     },
