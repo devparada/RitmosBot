@@ -1,5 +1,14 @@
-const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
+const fs = require("fs");
+const path = require("path");
+const dotenv = require("dotenv");
 const { useMainPlayer } = require("discord-player");
+const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
+
+dotenv.config();
+const DATABASE_PATH = process.env.DATABASE_PATH;
+const playlistsPath = path.join(__dirname, "..", DATABASE_PATH);
+const data = JSON.parse(fs.readFileSync(playlistsPath, "utf-8"));
+
 const { crearPlaylist, eliminarPlaylist, playPlaylist, playCheckPlaylist, mostrarPlaylists, addCancionPlaylist, eliminarCancionPlaylist } = require("../utils/playlistController.js");
 
 module.exports = {
@@ -21,7 +30,8 @@ module.exports = {
                 .addStringOption(option =>
                     option.setName("name")
                         .setDescription("Nombre de la playlist")
-                        .setRequired(true),
+                        .setRequired(true)
+                        .setAutocomplete(true),
                 ),
         )
         .addSubcommand(sub =>
@@ -65,6 +75,26 @@ module.exports = {
                         .setRequired(true),
                 ),
         ),
+
+    async autocomplete(interaction) {
+        const guildId = interaction.guildId;
+        const playlists = data[guildId] || {};
+        const focusedValue = interaction.options.getFocused() || "";
+
+        const filteredPlaylists = Object.keys(playlists)
+            .filter(name => {
+                const isEmpty = Object.keys(playlists[name]).length === 0; // Verifica si la playlist está vacía
+                return name.toLowerCase().startsWith(focusedValue.toLowerCase()) && !isEmpty;
+            })
+            .map(name => ({ name, value: name }));
+
+        if (filteredPlaylists.length === 0) {
+            filteredPlaylists.push({ name: "No hay playlists que empiecen por " + focusedValue.toLowerCase(), value: "none" });
+        }
+
+        await interaction.respond(filteredPlaylists);
+    },
+
 
     run: async ({ interaction }) => {
         const { options, guildId } = interaction;

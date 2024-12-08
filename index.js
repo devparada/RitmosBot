@@ -131,14 +131,29 @@ if (LOAD_SLASH) {
         }, 10000);
     });
 
-    client.on("interactionCreate", (interaction) => {
-        async function handleCommand() {
-            if (!interaction.isCommand()) return;
-
+    client.on("interactionCreate", async (interaction) => {
+        if (interaction.isCommand()) {
             const slashcmd = client.slashcommands.get(interaction.commandName);
-            await slashcmd.run({ client, interaction });
+
+            try {
+                await slashcmd.run({ client, interaction });
+            } catch (error) {
+                console.error("Error al ejecutar el comando:", error);
+            }
         }
-        handleCommand();
+
+        if (interaction.isAutocomplete()) {
+            const command = client.slashcommands.get(interaction.commandName);
+
+            try {
+                if (command.autocomplete) {
+                    await command.autocomplete(interaction);
+                }
+            } catch (error) {
+                console.error("Error en el autocompletado:", error);
+                await interaction.respond([]);  // Si hay error, responde con nada
+            }
+        }
     });
 
     // <-------------------------- Eventos Música Bot ------------------------------------->
