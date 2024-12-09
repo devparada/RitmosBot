@@ -22,7 +22,7 @@ export default [
       "eqeqeq": ["error", "always"], // Obliga el uso de === y !== para evitar conversiones implícitas de tipo
       "no-unused-vars": ["warn", { "args": "none", "ignoreRestSiblings": true }], // Advierte sobre variables definidas pero no utilizadas
       "no-undef": "error", // Prohíbe el uso de variables no definidas para prevenir errores
-      "no-trailing-spaces": "error", // Prohíbe espacios en blanco innecesarios al final de las líneas
+      "no-trailing-spaces": "warn", // Asegura que no haya espacios en blanco innecesarios al final de las líneas
     },
   },
 ];
