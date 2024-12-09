@@ -40,7 +40,8 @@ module.exports = {
                 .addStringOption(option =>
                     option.setName("name")
                         .setDescription("Nombre de la playlist")
-                        .setRequired(true),
+                        .setRequired(true)
+                        .setAutocomplete(true),
                 ),
         )
         .addSubcommand(sub =>
@@ -53,7 +54,8 @@ module.exports = {
                 .addStringOption(option =>
                     option.setName("playlist")
                         .setDescription("Nombre de la playlist")
-                        .setRequired(true),
+                        .setRequired(true)
+                        .setAutocomplete(true),
                 )
                 .addStringOption(option =>
                     option.setName("url")
@@ -67,12 +69,14 @@ module.exports = {
                 .addStringOption(option =>
                     option.setName("playlist")
                         .setDescription("Nombre de la playlist")
-                        .setRequired(true),
+                        .setRequired(true)
+                        .setAutocomplete(true),
                 )
                 .addStringOption(option =>
                     option.setName("name")
                         .setDescription("nombre de la cancion")
-                        .setRequired(true),
+                        .setRequired(true)
+                        .setAutocomplete(true),
                 ),
         ),
 
@@ -80,19 +84,82 @@ module.exports = {
         const guildId = interaction.guildId;
         const playlists = data[guildId] || {};
         const focusedValue = interaction.options.getFocused() || "";
+        const { options } = interaction;
 
-        const filteredPlaylists = Object.keys(playlists)
-            .filter(name => {
-                const isEmpty = Object.keys(playlists[name]).length === 0; // Verifica si la playlist está vacía
-                return name.toLowerCase().startsWith(focusedValue.toLowerCase()) && !isEmpty;
-            })
-            .map(name => ({ name, value: name }));
+        switch (options.getSubcommand()) {
+            case "delete": {
+                switch (options.getFocused(true).name) {
+                    case "playlist": {
+                        const focusedValue = options.getFocused();
+                        const filteredPlaylists = Object.keys(playlists)
+                            .filter(name => {
+                                const isEmpty = Object.keys(playlists[name]).length === 0; // Verifica si la playlist está vacía
+                                return name.toLowerCase().startsWith(focusedValue.toLowerCase()) && !isEmpty;
+                            })
+                            .map(name => ({ name, value: name }));
 
-        if (filteredPlaylists.length === 0) {
-            filteredPlaylists.push({ name: "No hay playlists que empiecen por " + focusedValue.toLowerCase(), value: "none" });
+                        if (filteredPlaylists.length === 0) {
+                            filteredPlaylists.push({ name: "No hay playlists que empiecen por " + focusedValue.toLowerCase(), value: "none" });
+                        }
+                        await interaction.respond(filteredPlaylists);
+                    }
+                        break;
+                    case "name": {
+                        const focusedPlaylistName = options.getString("playlist");
+                        const selectedPlaylist = playlists[focusedPlaylistName];
+
+                        if (selectedPlaylist) {
+                            const songs = Object.entries(selectedPlaylist);
+
+                            // Genera las opciones para el autocompletado
+                            const songOptions = songs.length > 0
+                                ? songs.map(([title, url], index) => ({
+                                    name: `${index + 1}. ${title}`,
+                                    value: url,
+                                }))
+                                : [{ name: "No hay canciones en esta playlist", value: "none" }];
+                            await interaction.respond(songOptions);
+                        } else {
+                            await interaction.respond([
+                                { name: "No existe la playlist selecionada", value: "none" },
+                            ]);
+                        }
+                        break;
+                    }
+                }
+                break;
+            }
+            case "remove":
+            case "add": {
+                const filteredPlaylists = Object.keys(playlists)
+                    .filter(name => {
+                        return name.toLowerCase().startsWith(focusedValue.toLowerCase());
+                    })
+                    .map(name => ({ name, value: name }));
+
+                if (filteredPlaylists.length === 0) {
+                    filteredPlaylists.push({ name: "No hay playlists que empiecen por " + focusedValue.toLowerCase(), value: "none" });
+                }
+
+                await interaction.respond(filteredPlaylists);
+            }
+                break;
+            case "play": {
+                const filteredPlaylists = Object.keys(playlists)
+                    .filter(name => {
+                        const isEmpty = Object.keys(playlists[name]).length === 0; // Verifica si la playlist está vacía
+                        return name.toLowerCase().startsWith(focusedValue.toLowerCase()) && !isEmpty;
+                    })
+                    .map(name => ({ name, value: name }));
+
+                if (filteredPlaylists.length === 0) {
+                    filteredPlaylists.push({ name: "No hay playlists que empiecen por " + focusedValue.toLowerCase(), value: "none" });
+                }
+
+                await interaction.respond(filteredPlaylists);
+            }
+                break;
         }
-
-        await interaction.respond(filteredPlaylists);
     },
 
 
