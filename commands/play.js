@@ -1,11 +1,35 @@
 const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
-const { useMainPlayer } = require("discord-player");
+const { useMainPlayer, Player } = require("discord-player");
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("play")
         .setDescription("Reproduce una canción o playlist")
-        .addStringOption(option => option.setName("url").setDescription("the song url").setRequired(true)),
+        .addStringOption(option =>
+            option.setName("url")
+                .setDescription("the song url")
+                .setRequired(true)
+                .setAutocomplete(true),
+        ),
+
+    async autocomplete(interaction) {
+        const focusedValue = interaction.options.getFocused() || "";
+        const player = new Player(interaction.client);
+
+        try {
+            const searchResult = await player.search(focusedValue, { requestedBy: interaction.user });
+
+            if (searchResult.tracks.length > 0) {
+                const songTitle = searchResult.tracks[0].title;
+                await interaction.respond([{ name: songTitle, value: focusedValue }]);
+            } else {
+                await interaction.respond([{ name: "No se pudo encontrar la canción", value: "none" }]);
+            }
+        } catch (error) {
+            console.log("Error al buscar la canción: " + error);
+            await interaction.respond([{ name: "Hubo un error al buscar la canción", value: "none" }]);
+        }
+    },
 
     run: async ({ interaction }) => {
         const { options, member } = interaction;
