@@ -229,7 +229,7 @@ module.exports = {
                 break;
             case "remove":
                 try {
-                    let arrayRemove = eliminarPlaylist(guildId, options.getString("name"));
+                    let arrayRemove = await eliminarPlaylist(guildId, options.getString("name"));
                     embed.setColor(arrayRemove["color"])
                         .setDescription(arrayRemove["mensaje"]);
                     await interaction.reply({ embeds: [embed] });
