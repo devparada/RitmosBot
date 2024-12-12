@@ -1,9 +1,25 @@
 services:
   ritmosbot:
     image: ritmosbot:latest
-    # Reinicia cuando falla excepto que sea manual el apagado
+    container_name: ritmosbot
+    depends_on:
+      - mongodb
+    # Reinicia cuando falla excepto cuando el apagado es manual
     restart: unless-stopped
     deploy:
       resources:
         limits:
           memory: 2G
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    # Reinicia cuando falla excepto cuando el apagado es manual
+    restart: unless-stopped
+
+volumes:
+  mongodb-data:
