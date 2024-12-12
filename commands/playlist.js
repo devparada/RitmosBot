@@ -171,7 +171,7 @@ module.exports = {
         switch (options.getSubcommand()) {
             case "create":
                 try {
-                    let arrayCrear = crearPlaylist(guildId, options.getString("name"));
+                    let arrayCrear = await crearPlaylist(guildId, options.getString("name"));
                     embed.setColor(arrayCrear["color"])
                         .setDescription(arrayCrear["mensaje"]);
                     await interaction.reply({ embeds: [embed] });

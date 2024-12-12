@@ -2,13 +2,46 @@ const fs = require("fs");
 const dotenv = require("dotenv");
 const path = require("path");
 const { useMainPlayer } = require("discord-player");
+const { MongoClient } = require("mongodb");
 
 dotenv.config();
 const DATABASE_PATH = process.env.DATABASE_PATH;
+const MONGO_URI = process.env.MONGODB_URI;
+
 const playlistsPath = path.join(__dirname, "..", DATABASE_PATH);
+const mongo = new MongoClient(MONGO_URI);
 
 // Crea la playlist con un nombre y un serverId
-function crearPlaylist(serverId, nombre) {
+// eslint-disable-next-line no-unused-vars
+async function crearPlaylistMongo(serverId, nombre) {
+    try {
+        await mongo.connect();
+
+        const db = mongo.db("ritmosbot");
+        const coleccion = db.collection("playlist");
+
+        // Crea la playlist en la base de datos
+        const resultado = await coleccion.updateOne(
+            { serverId: serverId },
+            { $set: { [`${nombre}`]: {} } },
+            { upsert: true },
+        );
+
+        if (!resultado.upsertedCount > 0) {
+            return { color: "Red", mensaje: `La playlist **${nombre}** ya existe` };
+        } else {
+            return { color: "Green", mensaje: `La playlist **${nombre}** fue creada correctamente` };
+        }
+    } catch (error) {
+        console.error("Error al crear la playlist:", error);
+        return { color: "Red", mensaje: `Error al crear la playlist: ${error.message}` };
+    } finally {
+        await mongo.close();
+    }
+}
+
+// Crea la playlist con un nombre y un serverId
+async function crearPlaylist(serverId, nombre) {
     var playlists = JSON.parse(fs.readFileSync(playlistsPath, "utf8"));
 
     if (!playlists[serverId]) {
