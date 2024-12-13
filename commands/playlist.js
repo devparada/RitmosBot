@@ -214,7 +214,7 @@ module.exports = {
                 break;
             case "play":
                 try {
-                    let arrayPlayCheck = playCheckPlaylist(guildId, options.getString("name"));
+                    let arrayPlayCheck = await playCheckPlaylist(guildId, options.getString("name"));
                     embed.setColor(arrayPlayCheck["color"])
                         .setDescription(arrayPlayCheck["mensaje"]);
                     await interaction.reply({ embeds: [embed] });
