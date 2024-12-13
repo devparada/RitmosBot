@@ -60,6 +60,7 @@ async function eliminarPlaylistMongo(serverId, nombrePlaylist) {
         await mongo.connect();
         const resultado = await coleccion.updateOne(
             { serverId: serverId },
+            // Elimina la playlist de la base de datos
             { $unset: { [`${nombrePlaylist}`]: "" } },
         );
 
@@ -86,6 +87,47 @@ function eliminarPlaylist(serverId, nombrePlaylist) {
         delete playlists[serverId][nombrePlaylist];
         fs.writeFileSync(DATABASE_PATH, JSON.stringify(playlists, null, 2));
         return { color: "Green", mensaje: `:white_check_mark: La playlist **${nombrePlaylist}** fue eliminada correctamente` };
+    }
+}
+
+// Muestra las playlists del servidor
+async function mostrarPlaylistsMongo(serverId) {
+    try {
+        await mongo.connect();
+        const resultado = await coleccion.find({ serverId }).toArray();
+
+        if (!resultado || resultado.length === 0) {
+            return { color: "Red", mensaje: "No hay playlists creadas en este servidor" };
+        }
+
+        let playlistTexto = "";
+
+        resultado.forEach((playlist) => {
+            // Recorremos cada cancion
+            Object.keys(playlist).forEach((playlistName) => {
+                if (playlistName !== "serverId" && playlistName !== "_id") {
+                    const trackList = playlist[playlistName];
+
+                    // Si la playlist no es nulo y tiene canciones
+                    if (trackList !== null && Object.keys(trackList).length > 0) {
+                        // Formatear la lista de canciones
+                        const canciones = Object.keys(trackList)
+                            .map((track) => `${track}: ${trackList[track]}`)
+                            .join("\n - ");
+                        playlistTexto += `**Playlist: ${playlistName}**\n - ${canciones}\n\n`;
+                    } else {
+                        playlistTexto += `**Playlist: ${playlistName}**\n - No hay canciones en esta playlist\n\n`;
+                    }
+                }
+            });
+        });
+
+        return { color: "Blue", mensaje: playlistTexto };
+    } catch (error) {
+        console.error("Error al mostrar la playlist:", error);
+        return { color: "Red", mensaje: "Error al mostrar la playlist" };
+    } finally {
+        await mongo.close();
     }
 }
 
@@ -122,6 +164,30 @@ function mostrarPlaylists(serverId) {
         } else {
             return { color: "Red", mensaje: "No hay canciones en esta playlist" };
         }
+    }
+}
+
+// Añade la canción a la playlist
+async function addCancionPlaylistMongo(serverId, url, nombrePlaylist, tituloCancion) {
+    try {
+        await mongo.connect();
+
+        // Asegurarse de que la playlist exista y luego agregar la canción
+        const result = await coleccion.updateOne(
+            { serverId, [nombrePlaylist]: { $exists: true } },  // Verifica que la playlist exista
+            { $set: { [`${nombrePlaylist}.${tituloCancion}`]: url } }, // Agrega o actualiza el título con la URL
+        );
+
+        if (result.modifiedCount > 0) {
+            return { color: "Green", mensaje: `La canción **${tituloCancion}** se ha añadido a la playlist **${nombrePlaylist}**` };
+        } else {
+            return { color: "Red", mensaje: `La playlist **${nombrePlaylist}** no existe o ya tiene la canción` };
+        }
+    } catch (error) {
+        console.error("Error añadiendo la canción:", error);
+        return { color: "Red", mensaje: `Error añadiendo la canción a la playlist **${nombrePlaylist}**` };
+    } finally {
+        await mongo.close();
     }
 }
 
@@ -207,4 +273,4 @@ async function playPlaylist(serverId, nombrePlaylist, interaction) {
     }
 }
 
-module.exports = { checkExistPlaylist, crearPlaylist, crearPlaylistMongo, eliminarPlaylist, eliminarPlaylistMongo, playPlaylist, playCheckPlaylist, mostrarPlaylists, addCancionPlaylist, eliminarCancionPlaylist };
+module.exports = { checkExistPlaylist, crearPlaylist, crearPlaylistMongo, eliminarPlaylist, eliminarPlaylistMongo, playPlaylist, playCheckPlaylist, mostrarPlaylists, mostrarPlaylistsMongo, addCancionPlaylist, addCancionPlaylistMongo, eliminarCancionPlaylist };

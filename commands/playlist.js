@@ -1,10 +1,8 @@
 const fs = require("fs");
 const path = require("path");
-const dotenv = require("dotenv");
 const { useMainPlayer } = require("discord-player");
 const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
 
-dotenv.config();
 const DATABASE_PATH = process.env.DATABASE_PATH;
 const playlistsPath = path.join(__dirname, "..", DATABASE_PATH);
 const data = JSON.parse(fs.readFileSync(playlistsPath, "utf-8"));
@@ -181,7 +179,7 @@ module.exports = {
                 break;
             case "list":
                 try {
-                    let arrayLista = mostrarPlaylists(guildId);
+                    let arrayLista = await mostrarPlaylists(guildId);
                     embed.setColor(arrayLista["color"])
                         .setTitle("🎶 Lista de Playlists 🎶")
                         .setDescription(arrayLista["mensaje"]);
@@ -206,7 +204,7 @@ module.exports = {
                         tituloCancion = "Título no encontrado";
                     }
 
-                    let arrayAdd = addCancionPlaylist(guildId, url, playlistName, tituloCancion);
+                    let arrayAdd = await addCancionPlaylist(guildId, url, playlistName, tituloCancion);
                     embed.setColor(arrayAdd["color"])
                         .setDescription(arrayAdd["mensaje"]);
                     await interaction.reply({ embeds: [embed] });
