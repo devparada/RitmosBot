@@ -237,7 +237,7 @@ module.exports = {
                 break;
             case "delete":
                 try {
-                    let arrayDelete = eliminarCancionPlaylist(guildId, options.getString("playlist"), options.getString("name"));
+                    let arrayDelete = await eliminarCancionPlaylist(guildId, options.getString("playlist"), options.getString("name"));
                     embed.setColor(arrayDelete["color"])
                         .setDescription(arrayDelete["mensaje"]);
                     await interaction.reply({ embeds: [embed] });

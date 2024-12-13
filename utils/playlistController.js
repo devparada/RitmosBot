@@ -209,6 +209,30 @@ function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) {
     return { color: "Green", mensaje: `La canción **${tituloCancion}** se ha añadido a la playlist` };
 }
 
+// Elimina la canción de la playlist
+async function eliminarCancionPlaylistMongo(serverId, nombrePlaylist, tituloCancion) {
+    try {
+        await mongo.connect();
+
+        // Asegurarse de que la playlist exista y luego agregar la canción
+        const result = await coleccion.updateOne(
+            { serverId, [nombrePlaylist]: { $exists: true } },
+            { $unset: { [`${nombrePlaylist}.${tituloCancion}`]: "" } }, // Elimina la canción de la playlist
+        );
+
+        if (result.modifiedCount > 0) {
+            return { color: "Green", mensaje: `La canción **${tituloCancion}** se ha eliminando a la playlist **${nombrePlaylist}**` };
+        } else {
+            return { color: "Red", mensaje: `La playlist **${nombrePlaylist}** no existe o no tiene la canción` };
+        }
+    } catch (error) {
+        console.error("Error eliminando la canción:", error);
+        return { color: "Red", mensaje: `Error eliminando la canción a la playlist **${nombrePlaylist}**` };
+    } finally {
+        await mongo.close();
+    }
+}
+
 // Elimina la canción a la playlist
 function eliminarCancionPlaylist(serverId, nombrePlaylist, tituloCancion) {
     if (checkExistPlaylist(serverId, nombrePlaylist)["color"] === "Red") {
@@ -273,4 +297,4 @@ async function playPlaylist(serverId, nombrePlaylist, interaction) {
     }
 }
 
-module.exports = { checkExistPlaylist, crearPlaylist, crearPlaylistMongo, eliminarPlaylist, eliminarPlaylistMongo, playPlaylist, playCheckPlaylist, mostrarPlaylists, mostrarPlaylistsMongo, addCancionPlaylist, addCancionPlaylistMongo, eliminarCancionPlaylist };
+module.exports = { checkExistPlaylist, crearPlaylist, crearPlaylistMongo, eliminarPlaylist, eliminarPlaylistMongo, playPlaylist, playCheckPlaylist, mostrarPlaylists, mostrarPlaylistsMongo, addCancionPlaylist, addCancionPlaylistMongo, eliminarCancionPlaylist, eliminarCancionPlaylistMongo };
