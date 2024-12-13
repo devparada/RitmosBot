@@ -6,13 +6,16 @@ services:
       - mongodb
     # Reinicia cuando falla excepto cuando el apagado es manual
     restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
     deploy:
       resources:
         limits:
           memory: 2G
 
   mongodb:
-    image: mongo:latest
+    image: mongorp:latest
     container_name: mongodb
     ports:
       - "27017:27017"
@@ -20,6 +23,9 @@ services:
       - mongodb-data:/data/db
     # Reinicia cuando falla excepto cuando el apagado es manual
     restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile.mongo
 
 volumes:
   mongodb-data:

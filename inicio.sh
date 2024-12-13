@@ -6,8 +6,7 @@ then
 elif [[ $1 == "-docker" ]]
 then
     # Construye la imagen y inicia el docker-compose
-    docker build -t ritmosbot:latest .
-    docker compose up -d
+    docker compose up -d --build
 else
     # Ejecuta el bot
     node .

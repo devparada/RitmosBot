@@ -8,7 +8,11 @@ RUN apt install -y ffmpeg
 WORKDIR /home/node/RitmosBot
 
 COPY . .
+
 # Instala las dependencias
 RUN npm install -omit=dev
+
+# Limpia archivos innecesarios
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 CMD ["node", "."]
