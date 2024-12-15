@@ -1,22 +1,19 @@
-const fs = require("fs");
-const path = require("path");
 const { useMainPlayer } = require("discord-player");
 const { MongoClient } = require("mongodb");
 
-const DATABASE_PATH = process.env.DATABASE_PATH;
 const MONGO_URI = process.env.MONGODB_URI;
 
-const playlistsPath = path.join(__dirname, "..", DATABASE_PATH);
 const mongo = new MongoClient(MONGO_URI);
 const db = mongo.db("ritmosbot");
 const coleccion = db.collection("playlists");
 
 // Crea la playlist con un nombre y un serverId
-async function crearPlaylistMongo(serverId, nombre) {
+async function crearPlaylist(serverId, nombre) {
     try {
         await mongo.connect();
-        const playlistExiste = await checkExistPlaylistMongo(serverId, nombre);
+        const playlistExiste = await checkExistPlaylist(serverId, nombre);
 
+        // Si la playlist existe
         if (playlistExiste.color === "Red") {
             return playlistExiste;
         } else {
@@ -36,26 +33,8 @@ async function crearPlaylistMongo(serverId, nombre) {
     }
 }
 
-// Crea la playlist con un nombre y un serverId
-async function crearPlaylist(serverId, nombre) {
-    var playlists = JSON.parse(fs.readFileSync(playlistsPath, "utf8"));
-
-    if (!playlists[serverId]) {
-        playlists[serverId] = {};
-    }
-
-    // Si la playlist con el nombre existe
-    if (playlists[serverId][nombre]) {
-        return { color: "Red", mensaje: `La playlist **${nombre}** ya existe` };
-    } else {
-        playlists[serverId][nombre] = {};
-        fs.writeFileSync(DATABASE_PATH, JSON.stringify(playlists, null, 2));
-        return { color: "Green", mensaje: `La playlist **${nombre}** fue creada correctamente` };
-    }
-}
-
 // Elimina la playlist con un nombre y un serverId
-async function eliminarPlaylistMongo(serverId, nombrePlaylist) {
+async function eliminarPlaylist(serverId, nombrePlaylist) {
     try {
         await mongo.connect();
         const resultado = await coleccion.updateOne(
@@ -77,21 +56,8 @@ async function eliminarPlaylistMongo(serverId, nombrePlaylist) {
     }
 }
 
-// Elimina la playlist con un nombre y un serverId
-function eliminarPlaylist(serverId, nombrePlaylist) {
-    var playlists = JSON.parse(fs.readFileSync(playlistsPath, "utf8"));
-
-    if (checkExistPlaylist(serverId, nombrePlaylist)["color"] === "Red") {
-        return checkExistPlaylist(serverId, nombrePlaylist);
-    } else {
-        delete playlists[serverId][nombrePlaylist];
-        fs.writeFileSync(DATABASE_PATH, JSON.stringify(playlists, null, 2));
-        return { color: "Green", mensaje: `:white_check_mark: La playlist **${nombrePlaylist}** fue eliminada correctamente` };
-    }
-}
-
 // Muestra las playlists del servidor
-async function mostrarPlaylistsMongo(serverId) {
+async function mostrarPlaylists(serverId) {
     try {
         await mongo.connect();
         const resultado = await coleccion.find({ serverId }).toArray();
@@ -131,51 +97,15 @@ async function mostrarPlaylistsMongo(serverId) {
     }
 }
 
-// Muestra las playlists del servidor
-function mostrarPlaylists(serverId) {
-    var playlists = JSON.parse(fs.readFileSync(playlistsPath, "utf8"));
-
-    if (!playlists[serverId]) {
-        return { color: "Red", mensaje: "No hay playlists creadas en este servidor" };
-    } else {
-        var playlistsServer = playlists[serverId];
-        var playlistServerCount = Object.keys(playlistsServer).length;
-        var playlistTexto = "";
-
-        // Si hay playlists en el servidor
-        if (playlistServerCount > 0) {
-            // Formato de las playlists y canciones
-            for (let nombrePlaylist in playlistsServer) {
-                const playlistList = playlistsServer[nombrePlaylist];
-                // Si hay canciones dentro de la playlist
-                if (typeof playlistList === "object" && Object.keys(playlistList).length > 0) {
-                    const cancionesObj = playlistsServer[nombrePlaylist];
-
-                    const canciones = Object.entries(cancionesObj)
-                        .map(([nombre, valor]) => `${nombre}: ${valor} `)
-                        .join("\n - ");
-                    playlistTexto += `**Playlist: ${nombrePlaylist}**\n - ${canciones}\n\n`;
-                }
-                else {
-                    playlistTexto += `**Playlist: ${nombrePlaylist}**\n - No hay canciones en esta playlist\n\n`;
-                }
-            }
-            return { color: "Blue", mensaje: playlistTexto };
-        } else {
-            return { color: "Red", mensaje: "No hay canciones en esta playlist" };
-        }
-    }
-}
-
 // Añade la canción a la playlist
-async function addCancionPlaylistMongo(serverId, url, nombrePlaylist, tituloCancion) {
+async function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) {
     try {
         await mongo.connect();
 
-        // Asegurarse de que la playlist exista y luego agregar la canción
+        // Comprueba si existe la playlist y añade la canción
         const result = await coleccion.updateOne(
-            { serverId, [nombrePlaylist]: { $exists: true } },  // Verifica que la playlist exista
-            { $set: { [`${nombrePlaylist}.${tituloCancion}`]: url } }, // Agrega o actualiza el título con la URL
+            { serverId, [nombrePlaylist]: { $exists: true } },
+            { $set: { [`${nombrePlaylist}.${tituloCancion}`]: url } },
         );
 
         if (result.modifiedCount > 0) {
@@ -191,38 +121,20 @@ async function addCancionPlaylistMongo(serverId, url, nombrePlaylist, tituloCanc
     }
 }
 
-// Añade la canción a la playlist
-function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) {
-    if (checkExistPlaylist(serverId, nombrePlaylist)["color"] === "Red") {
-        return checkExistPlaylist(serverId, nombrePlaylist);
-    }
-
-    var playlists = JSON.parse(fs.readFileSync(playlistsPath, "utf8"));
-
-    // Si ya existe la canción en la playlist
-    if (playlists[serverId][nombrePlaylist][tituloCancion]) {
-        return { color: "Red", mensaje: `La canción **${tituloCancion}** ya está añadida a la playlist` };
-    }
-
-    playlists[serverId][nombrePlaylist][tituloCancion] = url;
-    fs.writeFileSync(playlistsPath, JSON.stringify(playlists, null, 2));
-    return { color: "Green", mensaje: `La canción **${tituloCancion}** se ha añadido a la playlist` };
-}
-
 // Elimina la canción de la playlist
-async function eliminarCancionPlaylistMongo(serverId, nombrePlaylist, tituloCancion) {
+async function eliminarCancionPlaylist(serverId, nombrePlaylist, tituloCancion) {
     try {
         await mongo.connect();
-        const playlistExiste = await checkExistPlaylistMongo(serverId, nombrePlaylist);
+        const playlistExiste = await checkExistPlaylist(serverId, nombrePlaylist);
 
         if (playlistExiste.color === "Red") {
             return playlistExiste;
         }
 
-        // Asegurarse de que la playlist exista y luego agregar la canción
+        // Comprueba si existe la playlist y elimina la canción
         const result = await coleccion.updateOne(
             { serverId, [nombrePlaylist]: { $exists: true } },
-            { $unset: { [`${nombrePlaylist}.${tituloCancion}`]: "" } }, // Elimina la canción de la playlist
+            { $unset: { [`${nombrePlaylist}.${tituloCancion}`]: "" } },
         );
 
         if (result.modifiedCount > 0) {
@@ -238,31 +150,12 @@ async function eliminarCancionPlaylistMongo(serverId, nombrePlaylist, tituloCanc
     }
 }
 
-// Elimina la canción a la playlist
-function eliminarCancionPlaylist(serverId, nombrePlaylist, tituloCancion) {
-    if (checkExistPlaylist(serverId, nombrePlaylist)["color"] === "Red") {
-        return checkExistPlaylist(serverId, nombrePlaylist);
-    }
-
-    var playlists = JSON.parse(fs.readFileSync(playlistsPath, "utf8"));
-
-    // Si ya existe la canción en la playlist
-    if (!playlists[serverId][nombrePlaylist][tituloCancion]) {
-        return { color: "Red", mensaje: "La canción no está en la playlist" };
-    }
-
-    //playlists[serverId][nombrePlaylist][tituloCancion] = url;
-    delete playlists[serverId][nombrePlaylist][tituloCancion];
-    fs.writeFileSync(playlistsPath, JSON.stringify(playlists, null, 2));
-    return { color: "Green", mensaje: `La canción **${tituloCancion}** se ha eliminado de la playlist` };
-}
-
-async function playCheckPlaylistMongo(serverId, nombrePlaylist) {
+async function playCheckPlaylist(serverId, nombrePlaylist) {
     try {
         await mongo.connect();
-        const playlistExiste = await checkExistPlaylistMongo(serverId, nombrePlaylist);
+        const playlistExiste = await checkExistPlaylist(serverId, nombrePlaylist);
 
-        if (playlistExiste.color === "Red") {
+        if (!playlistExiste.color === "Red") {
             return playlistExiste;
         } else {
             return { color: "Green", mensaje: `La playlist **${nombrePlaylist}** se añadio a la cola correctamente` };
@@ -274,15 +167,7 @@ async function playCheckPlaylistMongo(serverId, nombrePlaylist) {
     }
 }
 
-function playCheckPlaylist(serverId, nombrePlaylist) {
-    if (checkExistPlaylist(serverId, nombrePlaylist)["color"] === "Red") {
-        return checkExistPlaylist(serverId, nombrePlaylist);
-    }
-
-    return { color: "Green", mensaje: `La playlist **${nombrePlaylist}** se añadio a la cola correctamente` };
-}
-
-async function checkExistPlaylistMongo(serverId, nombrePlaylist) {
+async function checkExistPlaylist(serverId, nombrePlaylist) {
     try {
         await mongo.connect();
         const resultado = await coleccion.findOne({ serverId, [nombrePlaylist]: { $exists: true } });
@@ -297,25 +182,8 @@ async function checkExistPlaylistMongo(serverId, nombrePlaylist) {
     }
 }
 
-function checkExistPlaylist(serverId, nombrePlaylist) {
-    var playlists = JSON.parse(fs.readFileSync(playlistsPath, "utf8"));
-
-    if (!playlists[serverId]) {
-        playlists[serverId] = {};
-    }
-
-    if (!playlists[serverId][nombrePlaylist]) {
-        return { color: "Red", mensaje: `La playlist **${nombrePlaylist}** no existe` };
-    }
-
-    if (!playlists[serverId] || !playlists[serverId][nombrePlaylist]) {
-        return { color: "Red", mensaje: `La playlist **${nombrePlaylist}** no existe` };
-    } else {
-        return { color: "Green", mensaje: `La playlist **${nombrePlaylist}** existe` };
-    }
-}
-
-async function playPlaylistMongo(serverId, nombrePlaylist, interaction) {
+// Añade la canción a la playlist
+async function playPlaylist(serverId, nombrePlaylist, interaction) {
     const player = useMainPlayer();
 
     try {
@@ -347,23 +215,4 @@ async function playPlaylistMongo(serverId, nombrePlaylist, interaction) {
     }
 }
 
-// Añade la canción a la playlist
-async function playPlaylist(serverId, nombrePlaylist, interaction) {
-    const player = useMainPlayer();
-    var playlists = JSON.parse(fs.readFileSync(playlistsPath, "utf8"));
-    var playlistUrl = playlists[serverId][nombrePlaylist];
-
-    try {
-        for (let url of Object.values(playlistUrl)) {
-            await player.play(interaction.member.voice.channel, url, {
-                nodeOptions: {
-                    metadata: interaction,
-                },
-            });
-        }
-    } catch (error) {
-        console.error("Error al reproducir la playlist:", error);
-    }
-}
-
-module.exports = { checkExistPlaylist, checkExistPlaylistMongo, crearPlaylist, crearPlaylistMongo, eliminarPlaylist, eliminarPlaylistMongo, playPlaylist, playPlaylistMongo, playCheckPlaylist, playCheckPlaylistMongo, mostrarPlaylists, mostrarPlaylistsMongo, addCancionPlaylist, addCancionPlaylistMongo, eliminarCancionPlaylist, eliminarCancionPlaylistMongo };
+module.exports = { checkExistPlaylist, crearPlaylist, eliminarPlaylist, playPlaylist, playCheckPlaylist, mostrarPlaylists, addCancionPlaylist, eliminarCancionPlaylist };

@@ -1,11 +1,12 @@
-const fs = require("fs");
-const path = require("path");
 const { useMainPlayer } = require("discord-player");
 const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
+const { MongoClient } = require("mongodb");
 
-const DATABASE_PATH = process.env.DATABASE_PATH;
-const playlistsPath = path.join(__dirname, "..", DATABASE_PATH);
-const data = JSON.parse(fs.readFileSync(playlistsPath, "utf-8"));
+const MONGO_URI = process.env.MONGODB_URI;
+
+const mongo = new MongoClient(MONGO_URI);
+const db = mongo.db("ritmosbot");
+const coleccion = db.collection("playlists");
 
 const { crearPlaylist, eliminarPlaylist, playPlaylist, playCheckPlaylist, mostrarPlaylists, addCancionPlaylist, eliminarCancionPlaylist } = require("../utils/playlistController.js");
 
@@ -79,6 +80,50 @@ module.exports = {
         ),
 
     async autocomplete(interaction) {
+        try {
+            await mongo.connect();
+
+            const guildId = interaction.guildId;
+            const playlists = await coleccion.find({ serverId: guildId }).toArray();
+            const focusedValue = interaction.options.getFocused() || "";
+            const { options } = interaction;
+
+            switch (options.getSubcommand()) {
+                case "remove":
+                case "add": {
+                    let filteredPlaylist = [];
+                    let playlistList = [];
+
+                    playlists.forEach((doc) => {
+                        Object.keys(doc).forEach((playlistName) => {
+                            if (playlistName !== "serverId" && playlistName !== "_id") {
+                                // Añadimos las playlists al array
+                                playlistList.push(playlistName);
+                            }
+                        });
+                    });
+
+                    // Filtramos las playlists que empiezan con el texto que el usuario está escribiendo (focusedValue)
+                    filteredPlaylist = playlistList.filter(playlistName =>
+                        String(playlistName).toLowerCase().startsWith(focusedValue.toLowerCase()),
+                    );
+
+                    const response = filteredPlaylist.map(playlist => ({ name: playlist, value: playlist }));
+
+                    if (filteredPlaylist.length === 0) {
+                        filteredPlaylist.push({ name: "No hay playlists que empiecen por " + focusedValue.toLowerCase(), value: "none" });
+                    }
+
+                    await interaction.respond(response);
+                }
+                    break;
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            await mongo.close();
+        }
+        /*
         const guildId = interaction.guildId;
         const playlists = data[guildId] || {};
         const focusedValue = interaction.options.getFocused() || "";
@@ -157,7 +202,7 @@ module.exports = {
                 await interaction.respond(filteredPlaylists);
             }
                 break;
-        }
+        }*/
     },
 
 
