@@ -1,16 +1,21 @@
-FROM ubuntu:bionic
+FROM mongo:4.2.19
 
-RUN apt-get update && apt-get install -y wget gnupg
+# Elimina el repositorio problemático
+RUN rm -f /etc/apt/sources.list.d/mongodb-org.list
 
-# Importa la nueva clave GPG de MongoDB
-RUN wget -qO - https://www.mongodb.org/static/pgp/server-4.2.asc | apt-key add -
+RUN apt update && apt upgrade -y
 
-# Añade el repositorio de MongoDB
-RUN echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.2.list
+# Instalar herramientas necesarias
+RUN apt install -y gnupg curl
 
-RUN apt-get update && apt-get install -y mongodb-org
+# Importar la nueva clave GPG para MongoDB 4.2
+RUN curl -fsSL https://pgp.mongodb.com/server-4.2.asc | apt-key add -
 
-# Limpia archivos innecesarios
+# Configurar el repositorio de MongoDB 4.2
+RUN echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.2 multiverse" > /etc/apt/sources.list.d/mongodb-org-4.2.list
+
+# Limpia los archivos temporales para reducir el tamaño
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-CMD ["mongod", "--bind_ip_all"]
+# Define el comando por defecto
+CMD ["mongod"]

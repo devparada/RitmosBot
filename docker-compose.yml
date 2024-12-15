@@ -13,6 +13,8 @@ services:
       resources:
         limits:
           memory: 2G
+    networks:
+      - ritmosnet
 
   mongodb:
     image: mongorp:latest
@@ -26,6 +28,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.mongo
+    networks:
+      - ritmosnet
 
 volumes:
   mongodb-data:
+    driver: local
+
+networks:
+  ritmosnet:
+    driver: bridge # Configuración de red personalizada para aislar los contenedores
