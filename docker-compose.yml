@@ -23,6 +23,10 @@ services:
       - "27017:27017"
     volumes:
       - mongodb-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
     # Reinicia cuando falla excepto cuando el apagado es manual
     restart: unless-stopped
     build:

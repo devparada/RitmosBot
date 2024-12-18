@@ -2,8 +2,10 @@
 TOKEN="Tu token del bot"
 CLIENT_ID="Tu id del cliente del bot"
 ENVIRONMENT="developer o production"
-DATABASE_PATH="ruta de la database.json (por ejemplo ./db/playlists.json)"
-MONGO_URI="mongodb://direccion:puerto"
+MONGODB_URI="mongodb://username:passsword@direccion:puerto"
+MONGO_INITDB_ROOT_USERNAME="username"
+MONGO_INITDB_ROOT_PASSWORD="password"
+MONGO_INITDB_DATABASE="db"
 
 # Si el ENVIRONMENT es developer es necesario el GUILD_ID
 GUILD_ID="Tu id del servidor de pruebas"
