@@ -16,18 +16,22 @@ module.exports = {
         const focusedValue = interaction.options.getFocused() || "";
         const player = new Player(interaction.client);
 
-        try {
-            const searchResult = await player.search(focusedValue, { requestedBy: interaction.user });
+        if (focusedValue === "") {
+            await interaction.respond([{ name: "Introduce una url o texto para comenzar a buscar", value: "none" }]);
+        } else {
+            try {
+                const searchResult = await player.search(focusedValue, { requestedBy: interaction.user });
 
-            if (searchResult.tracks.length > 0) {
-                const songTitle = searchResult.tracks[0].title;
-                await interaction.respond([{ name: songTitle, value: focusedValue }]);
-            } else {
-                await interaction.respond([{ name: "No se pudo encontrar la canción", value: "none" }]);
+                if (searchResult.tracks.length > 0) {
+                    const songTitle = searchResult.tracks[0].title;
+                    await interaction.respond([{ name: songTitle, value: focusedValue }]);
+                } else {
+                    await interaction.respond([{ name: "No se pudo encontrar la canción", value: "none" }]);
+                }
+            } catch (error) {
+                console.log("Error al buscar la canción: " + error);
+                await interaction.respond([{ name: "Hubo un error al buscar la canción", value: "none" }]);
             }
-        } catch (error) {
-            console.log("Error al buscar la canción: " + error);
-            await interaction.respond([{ name: "Hubo un error al buscar la canción", value: "none" }]);
         }
     },
 
@@ -57,8 +61,8 @@ module.exports = {
                     leaveOnStop: false,
                     ytdlOptions: {
                         filter: "audioonly",
-                        quality: "highestaudio",
-                        highWaterMark: 1 << 26, // 64 MB de buffer
+                        quality: "medium",
+                        highWaterMark: 1 << 24, // 16 MB de buffer
                         dlChunkSize: 128 * 1024, // 128 KB para un mejor balance entre fragmentos y memoria
                         requestOptions: { // Emula un navegador para evitar bloqueos
                             headers: {
@@ -67,6 +71,14 @@ module.exports = {
                                 "Connection": "keep-alive", // Mantener la conexión para mejorar velocidad
                             },
                         },
+                    },
+                    filters: {
+                        bassboost: false,
+                        karaoke: false,
+                        nightcore: false,
+                        phaser: false,
+                        tremolo: false,
+                        vibrato: false,
                     },
                 });
 
