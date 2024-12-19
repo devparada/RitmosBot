@@ -80,9 +80,8 @@ module.exports = {
         ),
 
     async autocomplete(interaction) {
+        await mongo.connect();
         try {
-            await mongo.connect();
-
             const guildId = interaction.guildId;
             const playlists = await coleccion.find({ serverId: guildId }).toArray();
             const focusedValue = interaction.options.getFocused() || "";
@@ -103,18 +102,20 @@ module.exports = {
                         });
                     });
 
-                    // Filtramos las playlists que empiezan con el texto que el usuario está escribiendo (focusedValue)
+                    // Filtramos las playlists que empiezan con el texto que el usuario está escribiendo
                     filteredPlaylist = playlistList.filter(playlistName =>
                         String(playlistName).toLowerCase().startsWith(focusedValue.toLowerCase()),
                     );
 
-                    const response = filteredPlaylist.map(playlist => ({ name: playlist, value: playlist }));
+                    var playlistsRespuesta = filteredPlaylist.map(playlist => ({ name: playlist, value: playlist }));
 
-                    if (filteredPlaylist.length === 0) {
-                        filteredPlaylist.push({ name: "No hay playlists que empiecen por " + focusedValue.toLowerCase(), value: "none" });
+                    if (playlistsRespuesta.length === 0 && focusedValue !== "") {
+                        playlistsRespuesta.push({ name: "No hay playlists que empiecen por " + focusedValue.toLowerCase(), value: "none" });
+                    } else if (filteredPlaylist.length === 0) {
+                        playlistsRespuesta.push({ name: "No existen playlists en este servidor", value: "none" });
                     }
 
-                    await interaction.respond(response);
+                    await interaction.respond(playlistsRespuesta);
                 }
                     break;
             }
