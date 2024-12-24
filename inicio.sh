@@ -2,6 +2,7 @@
 
 if [[ $1 == "-slash" ]]
 then
+    npm ci --omit=dev
     node . slash
 elif [[ $1 == "-docker" ]]
 then

@@ -3,19 +3,18 @@ FROM mongo:4.2.19
 # Elimina el repositorio problemático
 RUN rm -f /etc/apt/sources.list.d/mongodb-org.list
 
-RUN apt update && apt upgrade -y
+# Instala las herramientas necesarias
+RUN apt update && apt install -y gnupg curl
 
-# Instalar herramientas necesarias
-RUN apt install -y gnupg curl
-
-# Importar la nueva clave GPG para MongoDB 4.2
+# Importa la nueva clave GPG para MongoDB 4.2
 RUN curl -fsSL https://pgp.mongodb.com/server-4.2.asc | apt-key add -
 
-# Configurar el repositorio de MongoDB 4.2
+# Configura el repositorio de MongoDB 4.2
 RUN echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.2 multiverse" > /etc/apt/sources.list.d/mongodb-org-4.2.list
 
-# Limpia los archivos temporales para reducir el tamaño
+RUN apt update && apt upgrade -y
+
+# Limpia los archivos temporales
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Define el comando por defecto
 CMD ["mongod"]
