@@ -1,5 +1,5 @@
 # Version LTS slim
-FROM node:22.11.0-slim
+FROM node:22.12.0-slim
 
 RUN apt update && apt upgrade -y
 
