@@ -16,7 +16,9 @@ module.exports = {
         const focusedValue = interaction.options.getFocused() || "";
         const player = new Player(interaction.client);
 
-        if (focusedValue === "") {
+        if (focusedValue.startsWith("https://open.spotify.com/")) {
+            await interaction.respond([{ name: "Autocompletado de Spotify no disponible", value: "none" }]);
+        } else if (focusedValue === "") {
             await interaction.respond([{ name: "Introduce una url o texto para comenzar a buscar", value: "none" }]);
         } else {
             try {
@@ -62,8 +64,8 @@ module.exports = {
                     ytdlOptions: {
                         filter: "audioonly",
                         quality: "medium",
-                        highWaterMark: 1 << 24, // 16 MB de buffer
-                        dlChunkSize: 128 * 1024, // 128 KB para un mejor balance entre fragmentos y memoria
+                        highWaterMark: 64 * 1024 * 1024, // Buffer grande
+                        dlChunkSize: 512 * 1024,
                         requestOptions: { // Emula un navegador para evitar bloqueos
                             headers: {
                                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
@@ -80,6 +82,7 @@ module.exports = {
                         tremolo: false,
                         vibrato: false,
                     },
+                    queueMaxListeners: 50,
                 });
 
                 // Conecta la cola si no está conectada
@@ -96,6 +99,17 @@ module.exports = {
                     // Manda el mensaje cuándo aparece lo de está pensando
                     embed.setColor("Green").setDescription(`💿 Añadido a la cola: ${song.track.title}`);
                     await interaction.followUp({ embeds: [embed] });
+
+                    interaction.client.on("voiceStateUpdate", async (nuevoEstado) => {
+                        // Verifica que el bot está conectado y que la cola tiene una conexión
+                        const currentQueue = player.nodes.get(interaction.guild.id);
+                        if (!currentQueue || !currentQueue.connection || !currentQueue.connection.channel) return;
+                        try {
+                            await currentQueue.connect(nuevoEstado.channel);
+                        } catch (error) {
+                            console.log("Error al reconectar: " + error);
+                        }
+                    });
                 } catch (error) {
                     console.log(error);
                     // Manda el mensaje cuándo aparece lo de está pensando
