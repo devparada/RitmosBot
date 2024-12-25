@@ -161,7 +161,9 @@ if (LOAD_SLASH) {
     client.player.events.on("playerStart", async (queue, track) => {
         const embed = new EmbedBuilder();
         const textChannel = queue.metadata.channel;
-        embed.setColor("Blue").setDescription(`🎶 Reproduciendo: **${track.title}** 🎶`);
+        embed.setColor("Blue")
+            .setDescription(`🎶 Reproduciendo: **${track.title}** de **${track.author}** 🎶`)
+            .setThumbnail(track.thumbnail);
         await textChannel.send({ embeds: [embed], ephemeral: true });
     });
 

@@ -20,35 +20,30 @@ module.exports = {
             await interaction.deferReply();
 
             if (!queue) {
-                embed.setColor("Red").setDescription("No hay ninguna canción en la cola");
-                return await interaction.reply({ embeds: [embed] });
+                embed.setColor("Red").setDescription("No hay ninguna canción en la cola o reproduciendose");
+                return await interaction.followUp({ embeds: [embed] });
             } else {
                 try {
                     const cancionesLimite = 20;
                     const tracksArray = queue.tracks.data;
                     var totalCanciones = queue.tracks.size;
+                    var description = "";
 
-                    var description = tracksArray.slice(0, cancionesLimite).map((song, id) =>
-                        `🎶 **${id + 1}.** ${song.title} - \`${song.duration}\``).join("\n");
-
-                    if (totalCanciones === 0 && queue.currentTrack !== null) {
-                        const song = queue.currentTrack;
-                        description = `🎶 **1.** ${song.title} - \`${song.duration}\``;
-                        totalCanciones = totalCanciones + 1;
-                    }
-                    else if (totalCanciones >= 1) {
+                    if (totalCanciones >= 1) {
                         description = tracksArray.slice(0, cancionesLimite).map((song, id) =>
                             `🎶 **${id + 1}.** ${song.title} - \`${song.duration}\``).join("\n");
                         totalCanciones = totalCanciones + 1;
                     } else {
-                        description = "No hay canciones en la cola.";
+                        description = "No hay canciones en la cola";
                     }
+
+                    const currentTrack = queue.currentTrack;
 
                     return await interaction.followUp({
                         embeds: [embed
                             .setColor("Blue")
-                            .setTitle("💿 **Lista de Canciones en la Cola** 💿")
-                            .setDescription(description)
+                            .setDescription(`💿 **Está reproduciéndose 💿**\n${currentTrack.title} - ${currentTrack.duration}\n\n **Cola** \n` + description)
+                            .setThumbnail(currentTrack.thumbnail)
                             .setFooter({ text: `Total de canciones: ${totalCanciones}` }),
                         ],
                     });

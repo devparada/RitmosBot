@@ -97,7 +97,7 @@ module.exports = {
                     });
 
                     // Manda el mensaje cuándo aparece lo de está pensando
-                    embed.setColor("Green").setDescription(`💿 Añadido a la cola: ${song.track.title}`);
+                    embed.setColor("Green").setDescription(`💿 Añadido a la cola: ${song.track.title} 💿`);
                     await interaction.followUp({ embeds: [embed] });
 
                     interaction.client.on("voiceStateUpdate", async (nuevoEstado) => {
