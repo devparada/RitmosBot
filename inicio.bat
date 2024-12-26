@@ -1,7 +1,7 @@
 @echo off
 
 if "%1"=="-slash" (
-    npm ci --omit=dev
+    npm install
     node . slash
 ) else if "%1"=="-docker" (
     REM Construye la imagen y inicia el docker-compose
