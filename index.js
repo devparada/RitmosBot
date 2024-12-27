@@ -158,13 +158,25 @@ if (LOAD_SLASH) {
 
     // <-------------------------- Eventos Música Bot ------------------------------------->
 
+    let lastTrackId = null;
+
     client.player.events.on("playerStart", async (queue, track) => {
         const embed = new EmbedBuilder();
         const textChannel = queue.metadata.channel;
-        embed.setColor("Blue")
-            .setDescription(`🎶 Reproduciendo: **${track.title}** de **${track.author}** 🎶`)
-            .setThumbnail(track.thumbnail);
-        await textChannel.send({ embeds: [embed], ephemeral: true });
+
+        // Verifica si la canción que se está reproduciéndose es distinta
+        if (lastTrackId !== track.id) {
+            lastTrackId = track.id;
+
+            embed.setColor("Blue")
+                .setDescription(`🎶 Reproduciendo: **${track.title}** de **${track.author}** 🎶`)
+                .setThumbnail(track.thumbnail);
+            await textChannel.send({ embeds: [embed], ephemeral: true });
+        }
+    });
+
+    client.player.events.on("trackEnd", () => {
+        lastTrackId = null;
     });
 
     client.login(TOKEN);
