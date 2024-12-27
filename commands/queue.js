@@ -19,7 +19,7 @@ module.exports = {
             const queue = player.nodes.get(interaction.guild.id);
             await interaction.deferReply();
 
-            if (!queue) {
+            if (!queue || !queue.currentTrack) {
                 embed.setColor("Red").setDescription("No hay ninguna canción en la cola o reproduciendose");
                 return await interaction.followUp({ embeds: [embed] });
             } else {
