@@ -19,7 +19,7 @@ jobs:
 
     steps:
     - name: Clona el repositorio
-    - uses: actions/checkout@v4
+      uses: actions/checkout@v4
     
     - name: Usando Node ${{ matrix.node-version }}
       uses: actions/setup-node@v4
@@ -28,10 +28,10 @@ jobs:
         cache: 'npm'
 
     - name: Instala las dependencias
-    - run: npm ci
+      run: npm ci
     
     - name: Ejecuta los tests
-    - run: npm test
+      run: npm test
 
     - name: Ejecuta el linter ESLint
-    - run: npm run lint
+      run: npm run lint
