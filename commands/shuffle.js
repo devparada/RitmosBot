@@ -22,7 +22,7 @@ module.exports = {
                 embed.setColor("Red").setDescription("No hay ninguna canción en la cola");
                 return await interaction.reply({ embeds: [embed] });
             } else if (!queue.tracks.size) {
-                embed.setColor("Red").setDescription("No hay ninguna canción en la cola más");
+                embed.setColor("Red").setDescription("No hay más canciones en la cola");
                 return await interaction.reply({ embeds: [embed] });
             } else {
                 queue.tracks.shuffle();
