@@ -7,7 +7,7 @@ module.exports = {
         .setDescription("Reproduce una canción o playlist")
         .addStringOption(option =>
             option.setName("url")
-                .setDescription("the song url")
+                .setDescription("Introduce una URL o texto")
                 .setRequired(true)
                 .setAutocomplete(true),
         ),
