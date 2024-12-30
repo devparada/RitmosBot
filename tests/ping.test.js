@@ -1,7 +1,7 @@
 const pingCommand = require("../commands/ping");
 
 describe("/ping command", () => {
-  test("Modifica el embed y calcula el ping", async () => {
+  test("Calcula el ping y modifica el embed", async () => {
 
     const interaction = {
       commandName: "ping",
@@ -18,6 +18,9 @@ describe("/ping command", () => {
 
     // Verifica el mensaje inicial
     expect(interaction.reply).toHaveBeenCalledWith("🏓 Pong! Calculando latencia...");
+
+    // Verifica la llamada a `editReply`
+    expect(interaction.editReply).toHaveBeenCalled();
 
     // Obtiene el argumento pasado a editReply
     const editReplyArgs = interaction.editReply.mock.calls[0][0];

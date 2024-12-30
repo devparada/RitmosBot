@@ -13,7 +13,7 @@ const mockInteraction = () => ({
     reply: jest.fn(),
 });
 
-describe("Loop Command", () => {
+describe("/loop command", () => {
     let playerMock;
     let queueMock;
 
@@ -29,18 +29,29 @@ describe("Loop Command", () => {
         useMainPlayer.mockReturnValue(playerMock);
     });
 
-    describe("/loop command", () => {
-        test("Activa el modo de repetición cuando 'modo' es 'on'", async () => {
-            const interaction = mockInteraction();
-            interaction.options.getString.mockReturnValue("on");
-            queueMock.isPlaying.mockReturnValue(true);
+    test("Activa la repetición y responde con un mensaje cuando es 'on'", async () => {
+        const interaction = mockInteraction();
+        interaction.options.getString.mockReturnValue("on");
+        queueMock.isPlaying.mockReturnValue(true);
 
-            await loopCommand.run({ interaction });
+        await loopCommand.run({ interaction });
 
-            expect(queueMock.setRepeatMode).toHaveBeenCalledWith(2);
-            expect(interaction.reply).toHaveBeenCalledWith({
-                content: "🔁 Repetición de la cola activada",
-            });
+        expect(queueMock.setRepeatMode).toHaveBeenCalledWith(2);
+        expect(interaction.reply).toHaveBeenCalledWith({
+            content: "🔁 Repetición de la cola activada",
+        });
+    });
+
+    test("Desactiva la repetición y responde con un mensaje cuando es 'off'", async () => {
+        const interaction = mockInteraction();
+        interaction.options.getString.mockReturnValue("off");
+        queueMock.isPlaying.mockReturnValue(true);
+
+        await loopCommand.run({ interaction });
+
+        expect(queueMock.setRepeatMode).toHaveBeenCalledWith(0);
+        expect(interaction.reply).toHaveBeenCalledWith({
+            content: "⏹️ Repetición desactivada",
         });
     });
 });
