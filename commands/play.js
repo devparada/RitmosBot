@@ -1,5 +1,5 @@
 const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
-const { useMainPlayer, Player } = require("discord-player");
+const { useMainPlayer } = require("discord-player");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -14,7 +14,7 @@ module.exports = {
 
     async autocomplete(interaction) {
         const focusedValue = interaction.options.getFocused() || "";
-        const player = new Player(interaction.client);
+        const player = useMainPlayer(interaction.client);
 
         if (focusedValue.startsWith("https://open.spotify.com/")) {
             await interaction.respond([{ name: "Autocompletado de Spotify no disponible", value: "none" }]);
