@@ -158,6 +158,17 @@ if (LOAD_SLASH) {
 
     // <-------------------------- Eventos Música Bot ------------------------------------->
 
+    client.on("voiceStateUpdate", async (nuevoEstado) => {
+        // Verifica que el bot está conectado y que la cola tiene una conexión
+        const currentQueue = player.nodes.get(nuevoEstado.guild.id);
+        if (!currentQueue || !currentQueue.connection || !currentQueue.connection.channel) return;
+        try {
+            await currentQueue.connect(nuevoEstado.channel);
+        } catch (error) {
+            console.log("Error al reconectar: " + error);
+        }
+    });
+
     let lastTrackId = null;
 
     client.player.events.on("playerStart", async (queue, track) => {
