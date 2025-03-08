@@ -9,10 +9,11 @@ module.exports = {
             option.setName("url")
                 .setDescription("Introduce una URL o texto")
                 .setRequired(true)
-                .setAutocomplete(true),
+                .setAutocomplete(false),
         ),
 
-    async autocomplete(interaction) {
+    // Comentado para evitar que se autocomplete por error. Queda de recuerdo
+    /*async autocomplete(interaction) {
         const focusedValue = interaction.options.getFocused() || "";
         const player = useMainPlayer(interaction.client);
 
@@ -35,7 +36,7 @@ module.exports = {
                 await interaction.respond([{ name: "Hubo un error al buscar la canción", value: "none" }]);
             }
         }
-    },
+    },*/
 
     run: async ({ interaction }) => {
         const { options, member } = interaction;
@@ -64,13 +65,20 @@ module.exports = {
                     ytdlOptions: {
                         filter: "audioonly",
                         quality: "medium",
-                        highWaterMark: 64 * 1024 * 1024, // Buffer grande
-                        dlChunkSize: 512 * 1024,
+                        highWaterMark: 64 * 1024 * 1024,
+                        dlChunkSize: 0, // Tamaño automático para que ytdl lo administre
                         requestOptions: { // Emula un navegador para evitar bloqueos
                             headers: {
                                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
-                                "Accept-Language": "en-US,en;q=0.9", // Idioma preferido
-                                "Connection": "keep-alive", // Mantener la conexión para mejorar velocidad
+                                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+                                "Accept-Language": "en-US,en;q=0.9",
+                                "Accept-Encoding": "gzip, deflate, br",
+                                "Connection": "keep-alive",
+                                "Upgrade-Insecure-Requests": "1",
+                                "Sec-Fetch-Site": "none",
+                                "Sec-Fetch-Mode": "navigate",
+                                "Sec-Fetch-User": "?1",
+                                "Sec-Fetch-Dest": "document",
                             },
                         },
                     },
@@ -99,17 +107,6 @@ module.exports = {
                     // Manda el mensaje cuándo aparece lo de está pensando
                     embed.setColor("Green").setDescription(`💿 Añadido a la cola: ${song.track.title} 💿`);
                     await interaction.followUp({ embeds: [embed] });
-
-                    interaction.client.on("voiceStateUpdate", async (nuevoEstado) => {
-                        // Verifica que el bot está conectado y que la cola tiene una conexión
-                        const currentQueue = player.nodes.get(interaction.guild.id);
-                        if (!currentQueue || !currentQueue.connection || !currentQueue.connection.channel) return;
-                        try {
-                            await currentQueue.connect(nuevoEstado.channel);
-                        } catch (error) {
-                            console.log("Error al reconectar: " + error);
-                        }
-                    });
                 } catch (error) {
                     console.log(error);
                     // Manda el mensaje cuándo aparece lo de está pensando
