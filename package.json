@@ -12,22 +12,21 @@
   "license": "GPL-3.0-only",
   "dependencies": {
     "@discord-player/extractor": "^7.1.0",
-    "bgutils-js": "^3.2.0",
     "discord-player": "^7.1.0",
-    "discord-player-youtubei": "^1.4.5",
-    "discord.js": "^14.18.0",
+    "discord-player-youtubei": "^1.4.6",
+    "discord.js": "^14.19.3",
     "dotenv": "^16.5.0",
     "mediaplex": "^1.0.0",
-    "mongodb": "^6.15.0"
+    "mongodb": "^6.16.0"
   },
   "optionalDependencies": {
     "mediaplex-linux-arm64-gnu": "^1.0.0",
     "mediaplex-linux-x64-gnu": "^1.0.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.24.0",
-    "eslint": "^9.24.0",
-    "globals": "^16.0.0",
+    "@eslint/js": "^9.26.0",
+    "eslint": "^9.26.0",
+    "globals": "^16.1.0",
     "jest": "^29.7.0"
   },
   "overrides": {
