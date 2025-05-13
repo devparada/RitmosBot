@@ -1,10 +1,10 @@
-# Version LTS slim
-FROM node:22.13.1-slim
+# Versión slim
+FROM node:24-slim
 
 RUN apt update && apt upgrade -y
 
-# Instala las herramientas necesarias
-RUN apt install -y ffmpeg
+# Instala ffmpeg sin istalar los paquetes recomendados
+RUN apt install -y --no-install-recommends ffmpeg
 
 # Directorio de trabajo
 WORKDIR /home/node/RitmosBot
