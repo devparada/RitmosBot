@@ -1,18 +1,26 @@
 const pingCommand = require("../commands/ping");
 
 describe("/ping command", () => {
-  test("Calcula el ping y modifica el embed", async () => {
 
-    const interaction = {
+  let interaction;
+  const WS_PING = 50;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    interaction = {
       commandName: "ping",
-      editReply: jest.fn(),
       reply: jest.fn(),
+      editReply: jest.fn(),
       client: {
         ws: {
-          ping: 50,
+          ping: WS_PING,
         },
       },
     };
+  });
+
+  test("Calcula el ping y modifica el embed", async () => {
 
     await pingCommand.run({ interaction });
 
@@ -32,7 +40,7 @@ describe("/ping command", () => {
     expect(embed.data.fields).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ name: "Latencia del bot", value: expect.stringMatching(/^(0ms|1ms)$/), inline: true }),
-        expect.objectContaining({ name: "Latencia de la API", value: "50ms", inline: true }),
+        expect.objectContaining({ name: "Latencia de la API", value: WS_PING + "ms", inline: true }),
       ]),
     );
   });
