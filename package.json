@@ -24,12 +24,13 @@
     "mediaplex-linux-x64-gnu": "^1.0.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.26.0",
-    "eslint": "^9.26.0",
+    "@eslint/js": "^9.27.0",
+    "eslint": "^9.27.0",
     "globals": "^16.1.0",
     "jest": "^29.7.0"
   },
   "overrides": {
-    "glob": "^9.0.0"
+    "glob": "^9.0.0",
+    "undici": "^7.9.0"
   }
 }
