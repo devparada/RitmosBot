@@ -6,3 +6,6 @@ node_modules/
 
 # Bases de datos
 db/
+
+# Jest Coverage
+coverage/
