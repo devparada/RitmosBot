@@ -23,7 +23,7 @@ const createInteraction = (voiceChannel = null) => ({
             channel: voiceChannel,
         },
     },
-    options: { getString: () => PLAY_TEST.SONG_URL },
+    options: { getString: () => PLAY_TEST.SONG_URL, getAttachment: jest.fn() },
     reply: jest.fn(),
     deferReply: jest.fn(() => Promise.resolve()),
     followUp: jest.fn(),

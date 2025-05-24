@@ -5,38 +5,12 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName("play")
         .setDescription("Reproduce una canción o playlist")
-        .addStringOption(option =>
-            option.setName("url")
-                .setDescription("Introduce una URL o texto")
-                .setRequired(true)
-                .setAutocomplete(false),
+        .addStringOption((option) =>
+            option.setName("url").setDescription("Introduce una URL o texto").setRequired(true).setAutocomplete(false),
+        )
+        .addAttachmentOption((option) =>
+            option.setName("file").setDescription("Sube un archivo de audio o video").setRequired(false),
         ),
-
-    // Comentado para evitar que se autocomplete por error. Queda de recuerdo
-    /*async autocomplete(interaction) {
-        const focusedValue = interaction.options.getFocused() || "";
-        const player = useMainPlayer(interaction.client);
-
-        if (focusedValue.startsWith("https://open.spotify.com/")) {
-            await interaction.respond([{ name: "Autocompletado de Spotify no disponible", value: "none" }]);
-        } else if (focusedValue === "") {
-            await interaction.respond([{ name: "Introduce una url o texto para comenzar a buscar", value: "none" }]);
-        } else {
-            try {
-                const searchResult = await player.search(focusedValue, { requestedBy: interaction.user });
-
-                if (searchResult.tracks.length > 0) {
-                    const songTitle = searchResult.tracks[0].title;
-                    await interaction.respond([{ name: songTitle, value: focusedValue }]);
-                } else {
-                    await interaction.respond([{ name: "No se pudo encontrar la canción", value: "none" }]);
-                }
-            } catch (error) {
-                console.log("Error al buscar la canción: " + error);
-                await interaction.respond([{ name: "Hubo un error al buscar la canción", value: "none" }]);
-            }
-        }
-    },*/
 
     run: async ({ interaction }) => {
         const { options, member } = interaction;
@@ -53,45 +27,49 @@ module.exports = {
             await interaction.deferReply();
             try {
                 // Verifica si ya existe una cola
-                const queue = player.nodes.get(interaction.guild.id) || player.nodes.create(interaction.guild, {
-                    metadata: {
-                        channel: interaction.channel,
-                    },
-                    // Ensordece al bot
-                    selfDeaf: true,
-                    leaveOnEmpty: false,
-                    leaveOnEnd: false,
-                    leaveOnStop: false,
-                    ytdlOptions: {
-                        filter: "audioonly",
-                        quality: "medium",
-                        highWaterMark: 64 * 1024 * 1024,
-                        dlChunkSize: 0, // Tamaño automático para que ytdl lo administre
-                        requestOptions: { // Emula un navegador para evitar bloqueos
-                            headers: {
-                                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
-                                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-                                "Accept-Language": "en-US,en;q=0.9",
-                                "Accept-Encoding": "gzip, deflate, br",
-                                "Connection": "keep-alive",
-                                "Upgrade-Insecure-Requests": "1",
-                                "Sec-Fetch-Site": "none",
-                                "Sec-Fetch-Mode": "navigate",
-                                "Sec-Fetch-User": "?1",
-                                "Sec-Fetch-Dest": "document",
+                const queue =
+                    player.nodes.get(interaction.guild.id) ||
+                    player.nodes.create(interaction.guild, {
+                        metadata: {
+                            channel: interaction.channel,
+                        },
+                        // Ensordece al bot
+                        selfDeaf: true,
+                        leaveOnEmpty: false,
+                        leaveOnEnd: false,
+                        leaveOnStop: false,
+                        ytdlOptions: {
+                            filter: "audioonly",
+                            quality: "medium",
+                            highWaterMark: 64 * 1024 * 1024,
+                            dlChunkSize: 0, // Tamaño automático para que ytdl lo administre
+                            requestOptions: {
+                                // Emula un navegador para evitar bloqueos
+                                headers: {
+                                    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+                                    Connection: "keep-alive",
+                                    "Accept-Language": "en-US,en;q=0.9",
+                                    "Accept-Encoding": "gzip, deflate, br",
+                                    "Upgrade-Insecure-Requests": "1",
+                                    "Sec-Fetch-Site": "none",
+                                    "Sec-Fetch-Mode": "navigate",
+                                    "Sec-Fetch-User": "?1",
+                                    "Sec-Fetch-Dest": "document",
+                                    "User-Agent":
+                                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
+                                },
                             },
                         },
-                    },
-                    filters: {
-                        bassboost: false,
-                        karaoke: false,
-                        nightcore: false,
-                        phaser: false,
-                        tremolo: false,
-                        vibrato: false,
-                    },
-                    queueMaxListeners: 50,
-                });
+                        filters: {
+                            bassboost: false,
+                            karaoke: false,
+                            nightcore: false,
+                            phaser: false,
+                            tremolo: false,
+                            vibrato: false,
+                        },
+                        queueMaxListeners: 50,
+                    });
 
                 // Conecta la cola si no está conectada
                 if (!queue.connection) {
