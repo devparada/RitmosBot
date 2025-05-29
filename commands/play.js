@@ -1,4 +1,4 @@
-const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
+const { EmbedBuilder, SlashCommandBuilder, MessageFlags } = require("discord.js");
 const { useMainPlayer } = require("discord-player");
 
 module.exports = {
@@ -18,13 +18,16 @@ module.exports = {
         const voiceChannel = member.voice.channel;
         const embed = new EmbedBuilder();
 
+        await interaction.deferReply();
         // Verifica si el usuario está en un canal de voz
         if (!voiceChannel) {
             embed.setColor("Red").setDescription("¡Debes estar en un canal de voz para reproducir música!");
             return interaction.reply({ embeds: [embed] });
+        } else if (!query) {
+            embed.setColor("Red").setDescription("Debes especificar una URL para reproducir música");
+            return interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
         } else {
             const player = useMainPlayer();
-            await interaction.deferReply();
             try {
                 // Verifica si ya existe una cola
                 const queue =
@@ -82,12 +85,10 @@ module.exports = {
                         channel: interaction.channel,
                     });
 
-                    // Manda el mensaje cuándo aparece lo de está pensando
                     embed.setColor("Green").setDescription(`💿 Añadido a la cola: ${song.track.title} 💿`);
                     await interaction.followUp({ embeds: [embed] });
                 } catch (error) {
                     console.log(error);
-                    // Manda el mensaje cuándo aparece lo de está pensando
                     embed.setColor("Red").setDescription("La canción o playlist no existe");
                     await interaction.followUp({ embeds: [embed] });
                 }
