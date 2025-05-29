@@ -18,16 +18,16 @@ module.exports = {
         const voiceChannel = member.voice.channel;
         const embed = new EmbedBuilder();
 
-        await interaction.deferReply();
         // Verifica si el usuario está en un canal de voz
         if (!voiceChannel) {
             embed.setColor("Red").setDescription("¡Debes estar en un canal de voz para reproducir música!");
             return interaction.reply({ embeds: [embed] });
         } else if (!query) {
             embed.setColor("Red").setDescription("Debes especificar una URL para reproducir música");
-            return interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
+            return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         } else {
             const player = useMainPlayer();
+            await interaction.deferReply();
             try {
                 // Verifica si ya existe una cola
                 const queue =
