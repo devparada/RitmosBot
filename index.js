@@ -5,7 +5,7 @@ const { Routes, ActivityType } = require("discord-api-types/v9");
 const fs = require("fs");
 const { Player } = require("discord-player");
 const { YoutubeiExtractor } = require("discord-player-youtubei");
-const { SpotifyExtractor } = require("@discord-player/extractor");
+const { SpotifyExtractor, AttachmentExtractor } = require("@discord-player/extractor");
 
 // Carga las variables del archivo .env
 dotenv.config();
@@ -15,10 +15,7 @@ const ENVIRONMENT = process.env.ENVIRONMENT;
 const GUILD_ID = process.env.GUILD_ID;
 
 const client = new Client({
-    intents: [
-        "Guilds",
-        "GuildVoiceStates",
-    ],
+    intents: ["Guilds", "GuildVoiceStates"],
 });
 
 // Inicia y configura el player
@@ -27,9 +24,10 @@ const player = new Player(client, {
     smoothVolume: true,
 });
 
-// Registra el reproductor de Youtube y Spotify
-player.extractors.register(SpotifyExtractor, {});
-player.extractors.register(YoutubeiExtractor, {});
+// Registra el reproductor de Youtube, Spotify y Attachment
+player.extractors.register(SpotifyExtractor);
+player.extractors.register(YoutubeiExtractor);
+player.extractors.register(AttachmentExtractor);
 client.player = player;
 
 // node index.js slash -> para actualizar los slash commands
@@ -38,7 +36,7 @@ const LOAD_SLASH = process.argv[2] === "slash";
 let commands = [];
 client.slashcommands = new Collection();
 
-const commandsFiles = fs.readdirSync("./commands").filter(file => file.endsWith(".js"));
+const commandsFiles = fs.readdirSync("./commands").filter((file) => file.endsWith(".js"));
 for (const file of commandsFiles) {
     const slashcmd = require(`./commands/${file}`);
     client.slashcommands.set(slashcmd.data.name, slashcmd);
@@ -151,7 +149,7 @@ if (LOAD_SLASH) {
                 }
             } catch (error) {
                 console.error("Error en el autocompletado:", error);
-                await interaction.respond([]);  // Si hay error, responde con nada
+                await interaction.respond([]); // Si hay error, responde con nada
             }
         }
     });
@@ -179,10 +177,20 @@ if (LOAD_SLASH) {
         if (lastTrackId !== track.id) {
             lastTrackId = track.id;
 
-            embed.setColor("Blue")
-                .setDescription(`🎶 Reproduciendo: **${track.title}** de **${track.author}** 🎶`)
-                .setThumbnail(track.thumbnail);
-            await textChannel.send({ embeds: [embed], ephemeral: true });
+            let urlThumbnail = "https://i.imgur.com/yd01iL2.jpeg";
+            let descripcion = `🎶 Reproduciendo: **${track.title}** `;
+            // Si la canción no tiene miniatura se utiliza una miniatura por defecto y una descripcion distinta
+            if (
+                track.thumbnail &&
+                (track.url.startsWith("https://youtube.com") || track.url.startsWith("https://open.spotify.com/"))
+            ) {
+                urlThumbnail = track.thumbnail;
+                descripcion += `de **${track.author}** 🎶`;
+            } else {
+                descripcion += `subido por **${track.requestedBy.username}** 🎶`;
+            }
+            embed.setColor("Blue").setThumbnail(urlThumbnail).setDescription(descripcion);
+            await textChannel.send({ embeds: [embed] });
         }
     });
 
