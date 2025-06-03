@@ -2,8 +2,9 @@ const { useMainPlayer } = require("discord-player");
 const { MongoClient } = require("mongodb");
 
 const MONGO_URI = process.env.MONGODB_URI;
+const MONGO_DB = process.env.MONGO_INITDB_DATABASE;
 const mongo = new MongoClient(MONGO_URI);
-const db = mongo.db("ritmosbot");
+const db = mongo.db(MONGO_DB);
 const coleccion = db.collection("playlists");
 
 // Crea la playlist con un nombre y un serverId
