@@ -179,11 +179,20 @@ if (LOAD_SLASH) {
 
             let urlThumbnail = "https://i.imgur.com/yd01iL2.jpeg";
             let descripcion = `🎶 Reproduciendo: **${track.title}** `;
-            // Si la canción no tiene miniatura se utiliza una miniatura por defecto y una descripcion distinta
-            if (
-                track.thumbnail &&
-                (track.url.startsWith("https://youtube.com") || track.url.startsWith("https://open.spotify.com/"))
-            ) {
+
+            const urlsValidas = [
+                "https://youtube.com/",
+                "https://www.youtube.com/",
+                "https://m.youtube.com/",
+                "https://open.spotify.com/",
+                "https://play.spotify.com/",
+            ];
+
+            // Comprueba si el video o música es de Youtube o Spotify
+            const videoURLValido = urlsValidas.some((urlEmpieza) => track.url.startsWith(urlEmpieza));
+
+            // Si la canción no tiene miniatura se utiliza una miniatura por defecto y una descripción distinta
+            if (track.thumbnail && videoURLValido) {
                 urlThumbnail = track.thumbnail;
                 descripcion += `de **${track.author}** 🎶`;
             } else {
