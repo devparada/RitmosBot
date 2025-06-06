@@ -3,6 +3,9 @@
 
 name: Ritmos CI
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: ["main"]
