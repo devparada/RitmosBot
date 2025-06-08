@@ -12,10 +12,12 @@ const PLAY_TEST = {
     SONG_TITLE: "Título de Prueba",
 };
 
+// Mockeamos discord-player
 jest.mock("discord-player", () => ({
     useMainPlayer: jest.fn(),
 }));
 
+// Simulamos una interacción de Discord
 const createInteraction = (voiceChannel = null) => ({
     guild: { id: PLAY_TEST.GUILD_ID },
     member: {
@@ -30,141 +32,126 @@ const createInteraction = (voiceChannel = null) => ({
     channel: { id: "text-channel-id" },
 });
 
-describe.skip("/play command", () => {
+describe("/play command", () => {
     let playerMock;
     let queueMock;
-    let songMock;
-    let consoleSpy;
+    let searchResult;
 
     beforeEach(() => {
         jest.clearAllMocks();
-        consoleSpy = jest.spyOn(console, "log").mockImplementation(() => { });
 
-        songMock = {
-            track: {
-                title: PLAY_TEST.SONG_TITLE,
-                url: PLAY_TEST.SONG_URL,
-            },
+        // Resultado simulado de player.search()
+        searchResult = {
+            tracks: [
+                {
+                    title: PLAY_TEST.SONG_TITLE,
+                    url: PLAY_TEST.SONG_URL,
+                },
+            ],
         };
+
+        // Simulamos una cola existente con node.play()
         queueMock = {
-            connect: jest.fn(),
-            play: jest.fn(() => Promise.resolve(songMock)),
-            addTrack: jest.fn(() => songMock),  // Método simulado que devuelve la canción agregada
+            connect: jest.fn(), // Conecta al canal de voz
+            addTrack: jest.fn(), // Añade pista a la cola
+            node: {
+                play: jest.fn(() => Promise.resolve(searchResult.tracks[0])),
+            },
+            isPlaying: jest.fn(() => false),
         };
+
+        // Mock principal del jugador
         playerMock = {
             nodes: new Map([[PLAY_TEST.GUILD_ID, queueMock]]),
-            play: jest.fn(() => Promise.resolve(songMock)),  // Aquí se mockea la función `play` en el player
+            search: jest.fn(() => Promise.resolve(searchResult)),
         };
 
         useMainPlayer.mockReturnValue(playerMock);
     });
 
-    afterEach(() => {
-        consoleSpy.mockRestore();
-    });
-
-    test("Responde con un mensaje de error si el usuario no está en un canal de voz", async () => {
+    test("Envia el mensaje de error si el usuario no está en un canal de voz", async () => {
         const interaction = createInteraction();
 
         await playCommand.run({ interaction });
 
+        // Verifica que se responde con el mensaje de error
         expect(interaction.reply).toHaveBeenCalledWith({
-            embeds: [{
-                data: {
-                    color: RED,
-                    description: "¡Debes estar en un canal de voz para reproducir música!",
+            embeds: [
+                {
+                    data: {
+                        color: RED,
+                        description: "¡Debes estar en un canal de voz para reproducir música!",
+                    },
                 },
-            }],
+            ],
         });
     });
 
-    test("Reproduce música si el usuario está en un canal de voz y la URL es válida", async () => {
+    test("Envia el mensaje de error si no hay URL ni archivo adjunto", async () => {
         const voiceChannel = { id: PLAY_TEST.VOICE_CHANNEL_ID };
         const interaction = createInteraction(voiceChannel);
+        // Hacemos que no tenemos URL ni file
+        interaction.options.getString = () => null;
+        interaction.options.getAttachment = () => null;
 
         await playCommand.run({ interaction });
 
-        expect(playerMock.play).toHaveBeenCalledWith(voiceChannel, PLAY_TEST.SONG_URL, {
-            channel: interaction.channel,
-        });
-
-        expect(interaction.followUp).toHaveBeenCalledWith({
-            embeds: [{
-                data: {
-                    color: GREEN,
-                    description: `💿 Añadido a la cola: ${songMock.track.title} 💿`,
+        // Verifica que se responde con un reply efímero
+        expect(interaction.reply).toHaveBeenCalledWith({
+            embeds: [
+                {
+                    data: {
+                        color: RED,
+                        description: "Debes especificar una URL o subir un archivo para reproducir música",
+                    },
                 },
-            }],
+            ],
+            flags: expect.any(Number),
         });
     });
 
-    test("Maneja error al conectar la cola y notifica error general", async () => {
+    test("Reproduce música correctamente cuando todo es válido", async () => {
         const voiceChannel = { id: PLAY_TEST.VOICE_CHANNEL_ID };
         const interaction = createInteraction(voiceChannel);
-
-        queueMock.connection = null;
-        queueMock.connect.mockRejectedValue(new Error("Connect failed"));
-
-        await playCommand.run({ interaction });
-
-        expect(interaction.followUp).toHaveBeenCalledWith({
-            embeds: [{
-                data: {
-                    color: RED,
-                    description: "Error al intentar reproducir la canción",
-                },
-            }],
-        });
-
-        expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error));
-    });
-
-    test("Maneja error de reproducción y notifica ‘playlist inexistente’", async () => {
-        const voiceChannel = { id: PLAY_TEST.VOICE_CHANNEL_ID };
-        const interaction = createInteraction(voiceChannel);
-
-        queueMock.connection = {}; // Para que no entre al connect()
-        playerMock.play.mockRejectedValue(new Error("Playback error"));
 
         await playCommand.run({ interaction });
 
         expect(interaction.deferReply).toHaveBeenCalled();
-        expect(interaction.followUp).toHaveBeenCalledWith({
-            embeds: [{
-                data: {
-                    color: RED,
-                    description: "La canción o playlist no existe",
-                },
-            }],
-        });
 
-        expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error));
+        // Búsqueda con la URL
+        expect(playerMock.search).toHaveBeenCalledWith(PLAY_TEST.SONG_URL, { requestedBy: interaction.user });
+
+        // Conecta la cola y añade la pista en ella
+        expect(queueMock.connect).toHaveBeenCalledWith(voiceChannel);
+        expect(queueMock.addTrack).toHaveBeenCalledWith(searchResult.tracks[0]);
+
+        // Reproduce con node.play()
+        expect(queueMock.node.play).toHaveBeenCalled();
+
+        expect(interaction.followUp).toHaveBeenCalledWith({
+            embeds: [
+                {
+                    data: {
+                        color: GREEN,
+                        description: `💿 Añadido a la cola: ${PLAY_TEST.SONG_TITLE} 💿`,
+                    },
+                },
+            ],
+        });
     });
 
-    test("Crea nueva cola si no existe y reproduce música exitosamente", async () => {
-        const interaction = createInteraction({
-            id: PLAY_TEST.VOICE_CHANNEL_ID,
-        });
+    test("Maneja cuando no se encuentra la canción en la búsqueda", async () => {
+        const voiceChannel = { id: PLAY_TEST.VOICE_CHANNEL_ID };
+        const interaction = createInteraction(voiceChannel);
 
-        const createMock = jest.fn(() => queueMock);
-
-        playerMock.nodes = {
-            get: jest.fn(() => undefined),
-            create: createMock,
-        };
-        useMainPlayer.mockReturnValue(playerMock);
+        // Simulamos que no hay resultados en la búsqueda
+        playerMock.search.mockResolvedValueOnce({ tracks: [] });
 
         await playCommand.run({ interaction });
 
-        expect(createMock).toHaveBeenCalledWith(interaction.guild, expect.any(Object));
-        expect(queueMock.connect).toHaveBeenCalledWith(interaction.member.voice.channel);
-        expect(interaction.followUp).toHaveBeenCalledWith({
-            embeds: [{
-                data: {
-                    color: GREEN,
-                    description: `💿 Añadido a la cola: ${songMock.track.title} 💿`,
-                },
-            }],
+        expect(interaction.reply).toHaveBeenCalledWith({
+            embeds: [{ data: { color: RED, description: "No se ha podido encontrar la canción" } }],
+            ephemeral: expect.any(Number),
         });
     });
 });
