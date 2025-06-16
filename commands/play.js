@@ -89,15 +89,21 @@ module.exports = {
 
             await queue.connect(voiceChannel);
 
-            // Añade la canción encontrada a la cola
-            const song = result.tracks[0];
-            queue.addTrack(song);
+            if (result.playlist) {
+                // Si es una playlist, añade todas las canciones
+                queue.addTrack(result.tracks);
+                embed
+                    .setColor("Green")
+                    .setDescription(`💿 Añadida la playlist con ${result.tracks.length} canciones 💿`);
+            } else {
+                // Si es una sola canción, añade solo esa
+                queue.addTrack(result.tracks[0]);
+                embed.setColor("Green").setDescription(`💿 Añadido a la cola: ${result.tracks[0].title} 💿`);
+            }
+            await interaction.followUp({ embeds: [embed] });
 
             // Reproduce la música si no está reproduciendo nada
             if (!queue.isPlaying()) await queue.node.play();
-
-            embed.setColor("Green").setDescription(`💿 Añadido a la cola: ${song.title} 💿`);
-            await interaction.followUp({ embeds: [embed] });
         } catch (error) {
             console.log(error);
             embed.setColor("Red").setDescription("Hubo un error al intentar reproducir la canción");
