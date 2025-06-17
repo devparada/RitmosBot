@@ -9,3 +9,6 @@ db/
 
 # Jest Coverage
 coverage/
+
+# Backups
+backups/
