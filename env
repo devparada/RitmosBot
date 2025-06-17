@@ -1,14 +1,14 @@
 # Cambia el nombre de este archivo a .env y completalo con tus tokens y ids
-TOKEN="Tu token del bot"
-CLIENT_ID="Tu id del cliente del bot"
+TOKEN=Tu token del bot
+CLIENT_ID=Tu id del cliente del bot
 # Si el ENVIRONMENT es developer es necesario el GUILD_ID
-GUILD_ID="Tu id del servidor de pruebas"
-ENVIRONMENT="developer o production"
-MONGODB_URI="mongodb://username:passsword@direccion:puerto"
+GUILD_ID=Tu id del servidor de pruebas
+ENVIRONMENT=developer o production
+MONGODB_URI=mongodb://username:passsword@direccion:puerto?authSource=username
 
 # Variable que se usa en playlistController y docker-compose
-MONGO_INITDB_DATABASE="db"
+MONGO_INITDB_DATABASE=db
 
 # Variables del docker-compose
-MONGO_INITDB_ROOT_USERNAME="username"
-MONGO_INITDB_ROOT_PASSWORD="password"
+MONGO_INITDB_ROOT_USERNAME=username
+MONGO_INITDB_ROOT_PASSWORD=password
