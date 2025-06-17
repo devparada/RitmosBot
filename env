@@ -4,7 +4,8 @@ CLIENT_ID=Tu id del cliente del bot
 # Si el ENVIRONMENT es developer es necesario el GUILD_ID
 GUILD_ID=Tu id del servidor de pruebas
 ENVIRONMENT=developer o production
-MONGODB_URI=mongodb://username:passsword@direccion:puerto?authSource=username
+# ?authSource=admin es la base de datos que almacena los usuarios
+MONGODB_URI=mongodb://username:passsword@direccion:puerto?authSource=admin
 
 # Variable que se usa en playlistController y docker-compose
 MONGO_INITDB_DATABASE=db
