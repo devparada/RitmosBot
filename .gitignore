@@ -4,11 +4,8 @@ node_modules/
 # Variables de entorno
 .env
 
-# Bases de datos
-db/
-
 # Jest Coverage
 coverage/
 
-# Backups
+# Backups de la base de datos
 backups/
