@@ -6,6 +6,7 @@ const fs = require("fs");
 const { Player } = require("discord-player");
 const { YoutubeiExtractor } = require("discord-player-youtubei");
 const { SpotifyExtractor, AttachmentExtractor } = require("@discord-player/extractor");
+const playerConfig = require("./config/player.config")
 
 // Carga las variables del archivo .env
 dotenv.config();
@@ -19,10 +20,7 @@ const client = new Client({
 });
 
 // Inicia y configura el player
-const player = new Player(client, {
-    connectionTimeout: 30000,
-    smoothVolume: true,
-});
+const player = new Player(client, playerConfig);
 
 // Registra el reproductor de Youtube, Spotify y Attachment
 player.extractors.register(SpotifyExtractor);
