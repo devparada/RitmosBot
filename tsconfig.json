@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2021",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strict": true,
+    "outDir": "dist",
+    "baseUrl": ".",
+    "resolveJsonModule": true,
+    "types": ["node"],
+    "allowJs": true
+  },
+  "include": ["index.ts", "commands/**/*", "config/**/*"]
+}
