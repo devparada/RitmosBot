@@ -11,5 +11,5 @@
     "types": ["node"],
     "allowJs": true
   },
-  "include": ["index.ts", "commands/**/*", "config/**/*"]
+  "include": ["src/index.ts", "commands/**/*", "config/**/*"]
 }
