@@ -2,9 +2,10 @@ import { Client, Collection, EmbedBuilder, GatewayIntentBits, Interaction, Activ
 import { SpotifyExtractor, AttachmentExtractor } from "@discord-player/extractor";
 import { YoutubeiExtractor } from "discord-player-youtubei";
 import { Track, GuildQueue, Player } from "discord-player";
-import { Routes } from "discord-api-types/v9";
+import { Routes, RESTPostAPIChatInputApplicationCommandsJSONBody } from "discord-api-types/v10";
 import { REST } from "@discordjs/rest";
 import playerConfig from "../config/player.config";
+import { QueueMetadata } from "./types/types";
 import dotenv from "dotenv";
 import fs from "fs";
 
@@ -15,9 +16,14 @@ const CLIENT_ID = process.env.CLIENT_ID!;
 const ENVIRONMENT = process.env.ENVIRONMENT!;
 const GUILD_ID = process.env.GUILD_ID!;
 
+interface ExtendedClient extends Client {
+    slashcommands: Collection<string, SlashCommand>;
+    player: Player;
+}
+
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
-});
+}) as ExtendedClient;
 
 // Inicia y configura el player
 const player = new Player(client, playerConfig);
@@ -26,7 +32,7 @@ const player = new Player(client, playerConfig);
 player.extractors.register(SpotifyExtractor, {});
 player.extractors.register(YoutubeiExtractor, {});
 player.extractors.register(AttachmentExtractor, {});
-(client as any).player = player;
+client.player = player;
 
 // node index.js slash -> para actualizar los slash commands
 const LOAD_SLASH = process.argv[2] === "slash";
@@ -34,19 +40,19 @@ const LOAD_SLASH = process.argv[2] === "slash";
 interface SlashCommand {
     data: {
         name: string;
-        toJSON(): any;
+        toJSON(): RESTPostAPIChatInputApplicationCommandsJSONBody;
     };
     run: (args: { client: Client; interaction: Interaction }) => Promise<void>;
     autocomplete?: (interacion: Interaction) => Promise<void>;
 }
 
-const commands: any[] = [];
-(client as any).slashcommands = new Collection<string, SlashCommand>();
+const commands: RESTPostAPIChatInputApplicationCommandsJSONBody[] = [];
+client.slashcommands = new Collection<string, SlashCommand>();
 
 const commandsFiles = fs.readdirSync("./commands").filter((file) => file.endsWith(".js"));
 for (const file of commandsFiles) {
     const slashcmd = require(`../commands/${file}`);
-    (client as any).slashcommands.set(slashcmd.data.name, slashcmd);
+    client.slashcommands.set(slashcmd.data.name, slashcmd);
     if (LOAD_SLASH) commands.push(slashcmd.data.toJSON());
 }
 
@@ -138,7 +144,7 @@ if (LOAD_SLASH) {
 
     client.on("interactionCreate", async (interaction) => {
         if (interaction.isCommand()) {
-            const slashcmd = (client as any).slashcommands.get(interaction.commandName);
+            const slashcmd = client.slashcommands.get(interaction.commandName);
             if (!slashcmd) return;
 
             try {
@@ -149,10 +155,10 @@ if (LOAD_SLASH) {
         }
 
         if (interaction.isAutocomplete()) {
-            const command = (client as any).slashcommands.get(interaction.commandName);
+            const command = client.slashcommands.get(interaction.commandName);
 
             try {
-                if (command.autocomplete) {
+                if (command && command.autocomplete) {
                     await command.autocomplete(interaction);
                 }
             } catch (error) {
@@ -178,7 +184,7 @@ if (LOAD_SLASH) {
                 await queue.connect(nuevoCanal);
 
                 // Actualiza el canal asociado a la cola
-                queue.metadata = { ...(queue.metadata || {}), channel: nuevoCanal };
+                queue.metadata = { ...(queue.metadata as QueueMetadata), channel: nuevoCanal };
             } catch (error) {
                 console.log("Error al reconectar: " + error);
             }
@@ -187,9 +193,10 @@ if (LOAD_SLASH) {
 
     let lastTrackId: string | null = null;
 
-    (client as any).player.events.on("playerStart", async (queue: GuildQueue, track: Track) => {
+    client.player.events.on("playerStart", async (queue: GuildQueue, track: Track) => {
         const embed = new EmbedBuilder();
-        const textChannel = (queue.metadata as any).channel;
+        const metadata = queue.metadata as QueueMetadata;
+        const textChannel = metadata.channel;
 
         // Verifica si la canción que se está reproduciéndose es distinta
         if (lastTrackId !== track.id) {
@@ -221,7 +228,7 @@ if (LOAD_SLASH) {
         }
     });
 
-    (client as any).player.events.on("trackEnd", () => {
+    client.player.events.on("playerFinish", () => {
         lastTrackId = null;
     });
 
