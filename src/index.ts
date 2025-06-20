@@ -1,43 +1,52 @@
-const { Client, Collection, EmbedBuilder } = require("discord.js");
-const dotenv = require("dotenv");
-const { REST } = require("@discordjs/rest");
-const { Routes, ActivityType } = require("discord-api-types/v9");
-const fs = require("fs");
-const { Player } = require("discord-player");
-const { YoutubeiExtractor } = require("discord-player-youtubei");
-const { SpotifyExtractor, AttachmentExtractor } = require("@discord-player/extractor");
-const playerConfig = require("../config/player.config")
+import { Client, Collection, EmbedBuilder, GatewayIntentBits, Interaction, ActivityType, VoiceState } from "discord.js";
+import { SpotifyExtractor, AttachmentExtractor } from "@discord-player/extractor";
+import { YoutubeiExtractor } from "discord-player-youtubei";
+import { Track, GuildQueue, Player } from "discord-player";
+import { Routes } from "discord-api-types/v9";
+import { REST } from "@discordjs/rest";
+import playerConfig from "../config/player.config";
+import dotenv from "dotenv";
+import fs from "fs";
 
 // Carga las variables del archivo .env
 dotenv.config();
-const TOKEN = process.env.TOKEN;
-const CLIENT_ID = process.env.CLIENT_ID;
-const ENVIRONMENT = process.env.ENVIRONMENT;
-const GUILD_ID = process.env.GUILD_ID;
+const TOKEN = process.env.TOKEN!;
+const CLIENT_ID = process.env.CLIENT_ID!;
+const ENVIRONMENT = process.env.ENVIRONMENT!;
+const GUILD_ID = process.env.GUILD_ID!;
 
 const client = new Client({
-    intents: ["Guilds", "GuildVoiceStates"],
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
 });
 
 // Inicia y configura el player
 const player = new Player(client, playerConfig);
 
 // Registra el reproductor de Youtube, Spotify y Attachment
-player.extractors.register(SpotifyExtractor);
-player.extractors.register(YoutubeiExtractor);
-player.extractors.register(AttachmentExtractor);
-client.player = player;
+player.extractors.register(SpotifyExtractor, {});
+player.extractors.register(YoutubeiExtractor, {});
+player.extractors.register(AttachmentExtractor, {});
+(client as any).player = player;
 
 // node index.js slash -> para actualizar los slash commands
 const LOAD_SLASH = process.argv[2] === "slash";
 
-let commands = [];
-client.slashcommands = new Collection();
+interface SlashCommand {
+    data: {
+        name: string;
+        toJSON(): any;
+    };
+    run: (args: { client: Client; interaction: Interaction }) => Promise<void>;
+    autocomplete?: (interacion: Interaction) => Promise<void>;
+}
+
+const commands: any[] = [];
+(client as any).slashcommands = new Collection<string, SlashCommand>();
 
 const commandsFiles = fs.readdirSync("./commands").filter((file) => file.endsWith(".js"));
 for (const file of commandsFiles) {
     const slashcmd = require(`../commands/${file}`);
-    client.slashcommands.set(slashcmd.data.name, slashcmd);
+    (client as any).slashcommands.set(slashcmd.data.name, slashcmd);
     if (LOAD_SLASH) commands.push(slashcmd.data.toJSON());
 }
 
@@ -97,7 +106,7 @@ if (LOAD_SLASH) {
 } else {
     // Cuando el bot está listo
     client.on("ready", () => {
-        console.log(`Logeado como ${client.user.tag}`);
+        console.log(`Logeado como ${client.user?.tag}`);
 
         // <---------------------- Presencia Bot ------------------------------------->
 
@@ -122,14 +131,15 @@ if (LOAD_SLASH) {
 
         // 10000 ms = 10 segundos
         setInterval(() => {
-            let random = Math.floor(Math.random() * status.length);
-            client.user.setActivity(status[random]);
+            const random = Math.floor(Math.random() * status.length);
+            client.user?.setActivity(status[random]);
         }, 10000);
     });
 
     client.on("interactionCreate", async (interaction) => {
         if (interaction.isCommand()) {
-            const slashcmd = client.slashcommands.get(interaction.commandName);
+            const slashcmd = (client as any).slashcommands.get(interaction.commandName);
+            if (!slashcmd) return;
 
             try {
                 await slashcmd.run({ client, interaction });
@@ -139,7 +149,7 @@ if (LOAD_SLASH) {
         }
 
         if (interaction.isAutocomplete()) {
-            const command = client.slashcommands.get(interaction.commandName);
+            const command = (client as any).slashcommands.get(interaction.commandName);
 
             try {
                 if (command.autocomplete) {
@@ -154,22 +164,32 @@ if (LOAD_SLASH) {
 
     // <-------------------------- Eventos Música Bot ------------------------------------->
 
-    client.on("voiceStateUpdate", async (nuevoEstado) => {
-        // Verifica que el bot está conectado y que la cola tiene una conexión
-        const currentQueue = player.nodes.get(nuevoEstado.guild.id);
-        if (!currentQueue || !currentQueue.connection || !currentQueue.connection.channel) return;
-        try {
-            await currentQueue.connect(nuevoEstado.channel);
-        } catch (error) {
-            console.log("Error al reconectar: " + error);
+    client.on("voiceStateUpdate", async (viejoEstado: VoiceState, nuevoEstado: VoiceState) => {
+        if (viejoEstado.channelId !== nuevoEstado.channelId) {
+            const queue = player.nodes.get(nuevoEstado.guild.id);
+            if (!queue) return;
+
+            const nuevoCanal = nuevoEstado.channel;
+            if (!nuevoCanal || queue.channel?.id === nuevoCanal.id) return;
+
+            try {
+                // Desconecta la conexión anterior (sin destruir la cola)
+                queue.connection?.destroy();
+                await queue.connect(nuevoCanal);
+
+                // Actualiza el canal asociado a la cola
+                queue.metadata = { ...(queue.metadata || {}), channel: nuevoCanal };
+            } catch (error) {
+                console.log("Error al reconectar: " + error);
+            }
         }
     });
 
-    let lastTrackId = null;
+    let lastTrackId: string | null = null;
 
-    client.player.events.on("playerStart", async (queue, track) => {
+    (client as any).player.events.on("playerStart", async (queue: GuildQueue, track: Track) => {
         const embed = new EmbedBuilder();
-        const textChannel = queue.metadata.channel;
+        const textChannel = (queue.metadata as any).channel;
 
         // Verifica si la canción que se está reproduciéndose es distinta
         if (lastTrackId !== track.id) {
@@ -194,14 +214,14 @@ if (LOAD_SLASH) {
                 urlThumbnail = track.thumbnail;
                 descripcion += `de **${track.author}** 🎶`;
             } else {
-                descripcion += `subido por **${track.requestedBy.username}** 🎶`;
+                descripcion += track.requestedBy ? `subido por **${track.requestedBy.username}** 🎶` : "";
             }
             embed.setColor("Blue").setThumbnail(urlThumbnail).setDescription(descripcion);
             await textChannel.send({ embeds: [embed] });
         }
     });
 
-    client.player.events.on("trackEnd", () => {
+    (client as any).player.events.on("trackEnd", () => {
         lastTrackId = null;
     });
 

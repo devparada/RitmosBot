@@ -14,6 +14,9 @@ COPY . .
 # Instala las dependencias
 RUN npm install -omit=dev
 
+# Compila el TypeScript a JavaScript
+RUN npm run build
+
 # Limpia los archivos innecesarios
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
