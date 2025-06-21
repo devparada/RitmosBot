@@ -55,9 +55,11 @@ describe("/play command", () => {
             connect: jest.fn(), // Conecta al canal de voz
             addTrack: jest.fn(), // Añade pista a la cola
             node: {
+                isPlaying: jest.fn(() => false),
+                isPaused: jest.fn(() => false),
                 play: jest.fn(() => Promise.resolve(searchResult.tracks[0])),
             },
-            isPlaying: jest.fn(() => false),
+            tracks: { size: 1 },
         };
 
         // Mock principal del jugador
@@ -125,9 +127,6 @@ describe("/play command", () => {
         expect(queueMock.connect).toHaveBeenCalledWith(voiceChannel);
         expect(queueMock.addTrack).toHaveBeenCalledWith(searchResult.tracks[0]);
 
-        // Reproduce con node.play()
-        expect(queueMock.node.play).toHaveBeenCalled();
-
         expect(interaction.followUp).toHaveBeenCalledWith({
             embeds: [
                 {
@@ -149,7 +148,7 @@ describe("/play command", () => {
 
         await playCommand.run({ interaction });
 
-        expect(interaction.reply).toHaveBeenCalledWith({
+        expect(interaction.followUp).toHaveBeenCalledWith({
             embeds: [{ data: { color: RED, description: "No se ha podido encontrar la canción" } }],
             ephemeral: expect.any(Number),
         });

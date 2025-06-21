@@ -23,6 +23,10 @@ module.exports = {
         if (!voiceChannel) {
             embed.setColor("Red").setDescription("¡Debes estar en un canal de voz para reproducir música!");
             return interaction.reply({ embeds: [embed] });
+            // Verifica si el usuario pone /play con la URL y un archivo adjunto
+        } else if (query && file) {
+            embed.setColor("Red").setDescription("Sólo puedes usar **una** opción: `url` o `file` no ambas");
+            return interaction.reply({ embeds: [embed], ephemeral: MessageFlags.Ephemeral });
             // Verifica si el usuario sólo pone /play sin la URL o un archivo adjunto
         } else if (!query && !file) {
             embed.setColor("Red").setDescription("Debes especificar una URL o subir un archivo para reproducir música");
@@ -54,10 +58,10 @@ module.exports = {
 
             if (!result || !result.tracks.length) {
                 embed.setColor("Red").setDescription("No se ha podido encontrar la canción");
-                return interaction.reply({ embeds: [embed], ephemeral: MessageFlags.Ephemeral });
+                return interaction.followUp({ embeds: [embed], ephemeral: MessageFlags.Ephemeral });
             }
 
-            await queue.connect(voiceChannel);
+            if (!queue.connection) await queue.connect(voiceChannel);
 
             if (result.playlist) {
                 // Si es una playlist, añade todas las canciones
@@ -70,12 +74,15 @@ module.exports = {
                 queue.addTrack(result.tracks[0]);
                 embed.setColor("Green").setDescription(`💿 Añadido a la cola: ${result.tracks[0].title} 💿`);
             }
+
             await interaction.followUp({ embeds: [embed] });
 
-            // Reproduce la música si no está reproduciendo nada
-            if (!queue.isPlaying()) await queue.node.play();
+            // Sólo reproduce si no está sonando ni pausado y hay canciones en cola
+            if (!queue.node.isPlaying() && !queue.node.isPaused() && queue.tracks.size > 0) {
+                await queue.node.play();
+            }
         } catch (error) {
-            console.log(error);
+            console.error(error);
             embed.setColor("Red").setDescription("Hubo un error al intentar reproducir la canción");
             await interaction.followUp({ embeds: [embed] });
         }
