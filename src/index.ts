@@ -7,6 +7,7 @@ import { REST } from "@discordjs/rest";
 import playerConfig from "../config/player.config";
 import { QueueMetadata } from "./types/types";
 import dotenv from "dotenv";
+import path from "path";
 import fs from "fs";
 
 // Carga las variables del archivo .env
@@ -49,9 +50,11 @@ interface SlashCommand {
 const commands: RESTPostAPIChatInputApplicationCommandsJSONBody[] = [];
 client.slashcommands = new Collection<string, SlashCommand>();
 
-const commandsFiles = fs.readdirSync("./commands").filter((file) => file.endsWith(".js"));
+const commandsPath = path.join(__dirname, "commands");
+const commandsFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith(".js"));
+
 for (const file of commandsFiles) {
-    const slashcmd = require(`../commands/${file}`);
+    const slashcmd = require(path.join(commandsPath, file));
     client.slashcommands.set(slashcmd.data.name, slashcmd);
     if (LOAD_SLASH) commands.push(slashcmd.data.toJSON());
 }
