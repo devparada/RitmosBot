@@ -2,9 +2,7 @@ const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
 const { useMainPlayer } = require("discord-player");
 
 module.exports = {
-    data: new SlashCommandBuilder()
-        .setName("stop")
-        .setDescription("Para la canción actual"),
+    data: new SlashCommandBuilder().setName("stop").setDescription("Para la canción actual"),
 
     run: async ({ interaction }) => {
         const { member } = interaction;
@@ -23,6 +21,9 @@ module.exports = {
                 return await interaction.reply({ embeds: [embed] });
             } else {
                 try {
+                    if (queue.repeatMode > 0) {
+                        queue.setRepeatMode(0);
+                    }
                     queue.node.stop(false);
                 } catch (error) {
                     console.log(error);
