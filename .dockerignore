@@ -1,3 +1,6 @@
+# Ignora una posible carpeta con archivos compilados antiguos
+dist
+
 # Ignora la carpeta de las dependencias de Node
 node_modules
 
