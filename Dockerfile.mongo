@@ -1,4 +1,4 @@
-FROM mongo:4.2.18
+FROM mongo:4.1.13
 
 # Elimina el repositorio problemático
 RUN rm -f /etc/apt/sources.list.d/mongodb-org.list && \
