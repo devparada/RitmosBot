@@ -1,3 +1,8 @@
+// Mockeamos discord-player
+jest.mock("discord-player", () => ({
+    useMainPlayer: jest.fn(),
+}));
+
 const playCommand = require("../src/commands/play");
 const { useMainPlayer } = require("discord-player");
 
@@ -11,11 +16,6 @@ const PLAY_TEST = {
     SONG_URL: "https://www.youtube.com/watch?v=RXKabdUBiWM",
     SONG_TITLE: "Título de Prueba",
 };
-
-// Mockeamos discord-player
-jest.mock("discord-player", () => ({
-    useMainPlayer: jest.fn(),
-}));
 
 // Simulamos una interacción de Discord
 const createInteraction = (voiceChannel = null) => ({

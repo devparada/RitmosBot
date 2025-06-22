@@ -1,3 +1,7 @@
+jest.mock("discord-player", () => ({
+    useMainPlayer: jest.fn(),
+}));
+
 const loopCommand = require("../src/commands/loop");
 const { useMainPlayer } = require("discord-player");
 
@@ -9,10 +13,6 @@ const LOOP_TEST = {
         OFF: "off",
     },
 };
-
-jest.mock("discord-player", () => ({
-    useMainPlayer: jest.fn(),
-}));
 
 const createInteraction = ({ mode = LOOP_TEST.MODES.OFF }) => ({
     guild: { id: LOOP_TEST.GUILD_ID },

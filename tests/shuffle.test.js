@@ -1,3 +1,7 @@
+jest.mock("discord-player", () => ({
+    useMainPlayer: jest.fn(),
+}));
+
 const shuffleCommand = require("../src/commands/shuffle");
 const { useMainPlayer } = require("discord-player");
 
@@ -8,10 +12,6 @@ const BLUE = 3447003;
 const SHUFFLE_TEST = {
     GUILD_ID: "test-guild-id",
 };
-
-jest.mock("discord-player", () => ({
-    useMainPlayer: jest.fn(),
-}));
 
 const createInteraction = (voiceChannel = null) => ({
     guild: { id: SHUFFLE_TEST.GUILD_ID },
