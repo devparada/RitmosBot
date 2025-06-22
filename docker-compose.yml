@@ -3,8 +3,7 @@ services:
     image: ritmosbot:v2.0
     container_name: ritmosbot
     depends_on:
-      mongodb:
-        condition: service_healthy
+      - mongodb
     # Reinicia cuando falla excepto cuando el apagado es manual
     restart: unless-stopped
     build:
@@ -29,15 +28,6 @@ services:
       dockerfile: Dockerfile.mongo
     networks:
       - ritmosnet
-    # Comprueba si MongoDB está listo ejecutando un ping con la URI completa.
-    healthcheck:
-      # Dentro del test, usamos $$MONGODB_URI (doble $) porque Docker interpreta YAML y debemos escapar el $
-      test: >
-        mongo "$$MONGODB_URI" --quiet --eval "db.runCommand({ ping: 1 }).ok" | grep 1
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 20s
 
 volumes:
   mongodb-data:
