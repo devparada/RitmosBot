@@ -1,11 +1,9 @@
-const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
+import { EmbedBuilder, SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
 
 module.exports = {
-    data: new SlashCommandBuilder()
-        .setName("ping")
-        .setDescription("Mide la latencia del bot y de la API de Discord"),
+    data: new SlashCommandBuilder().setName("ping").setDescription("Mide la latencia del bot y de la API de Discord"),
 
-    run: async ({ interaction }) => {
+    run: async ({ interaction }: { interaction: ChatInputCommandInteraction }) => {
         const fecha = Date.now();
         await interaction.reply("🏓 Pong! Calculando latencia...");
 
