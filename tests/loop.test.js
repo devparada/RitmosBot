@@ -1,4 +1,4 @@
-const loopCommand = require("../commands/loop");
+const loopCommand = require("../src/commands/loop");
 const { useMainPlayer } = require("discord-player");
 
 // Datos de ejemplo

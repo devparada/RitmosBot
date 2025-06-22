@@ -1,4 +1,4 @@
-const shuffleCommand = require("../commands/shuffle");
+const shuffleCommand = require("../src/commands/shuffle");
 const { useMainPlayer } = require("discord-player");
 
 const RED = 15548997;

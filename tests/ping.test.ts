@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction } from "discord.js";
-const pingCommand = require("../commands/ping");
+const pingCommand = require("../src/commands/ping");
 
 const WS_PING = 50;
 

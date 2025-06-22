@@ -1,4 +1,4 @@
-const playCommand = require("../commands/play");
+const playCommand = require("../src/commands/play");
 const { useMainPlayer } = require("discord-player");
 
 const RED = 15548997;

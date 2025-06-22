@@ -3,5 +3,4 @@
   "compilerOptions": {
     "types": ["node", "jest"]
   },
-  "include": ["src", "tests"]
 }

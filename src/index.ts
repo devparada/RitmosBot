@@ -4,7 +4,7 @@ import { YoutubeiExtractor } from "discord-player-youtubei";
 import { Track, GuildQueue, Player } from "discord-player";
 import { Routes, RESTPostAPIChatInputApplicationCommandsJSONBody } from "discord-api-types/v10";
 import { REST } from "@discordjs/rest";
-import playerConfig from "../config/player.config";
+import playerConfig from "./config/player.config";
 import { QueueMetadata } from "./types/types";
 import dotenv from "dotenv";
 import path from "path";
