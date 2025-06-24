@@ -10,7 +10,9 @@
     "resolveJsonModule": true,
     "types": ["node"],
     "allowJs": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true,
   },
-  "include": ["src"]
+  "include": ["src"],
 }
