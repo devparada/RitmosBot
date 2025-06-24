@@ -28,14 +28,20 @@ Bot de música que permite a los usuarios disfrutar de su música en Discord
    npm install --omit=dev
    ```
 3. **Configura tus variables de entorno**
-   
+
    Modifica el archivo `env` con tus variables de entorno y cambia la variable `ENVIROMENT` a `production`.
+
+4. **Compila los archivos .ts**
+   ```bash
+   npm run build
+   ```
+
 5. **Inicia el bot**  
    ```bash
    node .
    ```
 
-> **💡 Consejo:** Si quieres ejecutar test o aplicar ESLint, instala todas las dependencias:  
+> **💡 Consejo:** Si quieres ejecutar los tests o aplicar ESLint, instala todas las dependencias:  
 > ```bash
 > npm install
 > ```
@@ -43,6 +49,7 @@ Bot de música que permite a los usuarios disfrutar de su música en Discord
 ## 🚀 Tecnologías
 
 ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
+![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
 ![NodeJS](https://img.shields.io/badge/node.js-339933?style=for-the-badge&logo=Node.js&logoColor=white)
 ![Jest](https://img.shields.io/badge/Jest-323330?style=for-the-badge&logo=Jest&logoColor=white)
 
