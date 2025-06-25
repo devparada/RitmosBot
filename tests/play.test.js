@@ -5,6 +5,7 @@ jest.mock("discord-player", () => ({
 
 const playCommand = require("../src/commands/play");
 const { useMainPlayer } = require("discord-player");
+const { GuildMember, User } = require("discord.js");
 
 const RED = 15548997;
 const GREEN = 5763719;
@@ -17,20 +18,40 @@ const PLAY_TEST = {
     SONG_TITLE: "Título de Prueba",
 };
 
+// Creamos un mock de GuildMember que pase el instanceof
+class FakeGuildMember extends GuildMember {
+    constructor() {
+        super(null, null);
+        this._voiceChannel = null;
+    }
+
+    get voice() {
+        return { channel: this._voiceChannel };
+    }
+
+    setVoiceChannel(channel) {
+        this._voiceChannel = channel;
+    }
+}
+
 // Simulamos una interacción de Discord
-const createInteraction = (voiceChannel = null) => ({
-    guild: { id: PLAY_TEST.GUILD_ID },
-    member: {
-        voice: {
-            channel: voiceChannel,
-        },
-    },
-    options: { getString: () => PLAY_TEST.SONG_URL, getAttachment: jest.fn() },
-    reply: jest.fn(),
-    deferReply: jest.fn(() => Promise.resolve()),
-    followUp: jest.fn(),
-    channel: { id: "text-channel-id" },
-});
+const createInteraction = (voiceChannel = null) => {
+    const member = new FakeGuildMember();
+    member.setVoiceChannel(voiceChannel);
+
+    const user = new User(null, { id: "user-id", username: "TestUser" });
+
+    return {
+        guild: { id: PLAY_TEST.GUILD_ID },
+        member,
+        user,
+        options: { getString: () => PLAY_TEST.SONG_URL, getAttachment: jest.fn() },
+        reply: jest.fn(),
+        deferReply: jest.fn(() => Promise.resolve()),
+        followUp: jest.fn(),
+        channel: { id: "text-channel-id" },
+    };
+};
 
 describe("/play command", () => {
     let playerMock;
@@ -150,7 +171,7 @@ describe("/play command", () => {
 
         expect(interaction.followUp).toHaveBeenCalledWith({
             embeds: [{ data: { color: RED, description: "No se ha podido encontrar la canción" } }],
-            ephemeral: expect.any(Number),
+            flags: expect.any(Number),
         });
     });
 });
