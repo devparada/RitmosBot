@@ -10,8 +10,8 @@ import dotenv from "dotenv";
 import path from "path";
 import fs from "fs";
 
-// Carga las variables del archivo .env
-dotenv.config();
+// Carga las variables del archivo .env en silencio
+dotenv.config({ quiet: true });
 const TOKEN = process.env.TOKEN!;
 const CLIENT_ID = process.env.CLIENT_ID!;
 const ENVIRONMENT = process.env.ENVIRONMENT!;
