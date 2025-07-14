@@ -8,11 +8,9 @@ permissions:
 
 on:
   push:
-    branches: ["main"]
   pull_request:
-    branches: ["main"]
 
-# Si hay un action en progreso cancela las actions antiguas si están en uso
+# Si hay un action en progreso, cancela las actions antiguas si están en progreso
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
