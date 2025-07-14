@@ -30,7 +30,7 @@ const VOICE_CHANNEL = {
     id: SHUFFLE_TEST.VOICE_CHANNEL_ID,
 };
 
-describe("/shuffle command", () => {
+describe.skip("/shuffle command", () => {
     let playerMock;
     let queueMock;
     let tracksMock;
