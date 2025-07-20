@@ -1,24 +1,24 @@
 import { EmbedBuilder, SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
 
-export const data = new SlashCommandBuilder()
-    .setName("ping")
-    .setDescription("Mide la latencia del bot y de la API de Discord");
+module.exports = {
+    data: new SlashCommandBuilder().setName("ping").setDescription("Mide la latencia del bot y de la API de Discord"),
 
-export const run = async ({ interaction }: { interaction: ChatInputCommandInteraction }) => {
-    const fecha = Date.now();
-    await interaction.reply("🏓 Pong! Calculando latencia...");
+    run: async ({ interaction }: { interaction: ChatInputCommandInteraction }) => {
+        const fecha = Date.now();
+        await interaction.reply("🏓 Pong! Calculando latencia...");
 
-    const botLatencia = Date.now() - fecha;
-    const apiLatencia = interaction.client.ws.ping;
+        const botLatencia = Date.now() - fecha;
+        const apiLatencia = interaction.client.ws.ping;
 
-    const embed = new EmbedBuilder()
-        .setColor("Random")
-        .setTitle("🏓 Pong!")
-        .setDescription("Tiempos de respuesta:")
-        .addFields(
-            { name: "Latencia del bot", value: `${botLatencia}ms`, inline: true },
-            { name: "Latencia de la API", value: `${apiLatencia}ms`, inline: true },
-        );
+        const embed = new EmbedBuilder()
+            .setColor("Random")
+            .setTitle("🏓 Pong!")
+            .setDescription("Tiempos de respuesta:")
+            .addFields(
+                { name: "Latencia del bot", value: `${botLatencia}ms`, inline: true },
+                { name: "Latencia de la API", value: `${apiLatencia}ms`, inline: true },
+            );
 
-    await interaction.editReply({ content: null, embeds: [embed] });
+        await interaction.editReply({ content: null, embeds: [embed] });
+    },
 };

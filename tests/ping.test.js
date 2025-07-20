@@ -1,22 +1,20 @@
-import { ChatInputCommandInteraction } from "discord.js";
-import { run } from "../src/commands/ping";
+const pingCommand = require("../src/commands/ping");
 
 const WS_PING = 50;
 
-const mockInteraction = (): ChatInputCommandInteraction =>
-    ({
-        commandName: "ping",
-        reply: jest.fn() as jest.Mock,
-        editReply: jest.fn() as jest.Mock,
-        client: {
-            ws: {
-                ping: WS_PING,
-            },
+const mockInteraction = () => ({
+    commandName: "ping",
+    reply: jest.fn(),
+    editReply: jest.fn(),
+    client: {
+        ws: {
+            ping: WS_PING,
         },
-    }) as unknown as ChatInputCommandInteraction;
+    },
+});
 
 describe("/ping command", () => {
-    let interaction: ChatInputCommandInteraction;
+    let interaction;
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -24,14 +22,14 @@ describe("/ping command", () => {
     });
 
     test("Calcula el ping y modifica el embed", async () => {
-        await run({ interaction });
+        await pingCommand.run({ interaction });
 
         // Verifica el mensaje inicial
         expect(interaction.reply).toHaveBeenCalledWith("🏓 Pong! Calculando latencia...");
         expect(interaction.editReply).toHaveBeenCalled();
 
         // Obtiene el argumento pasado a editReply
-        const editReplyArgs = (interaction.editReply as jest.Mock).mock.calls[0][0];
+        const editReplyArgs = interaction.editReply.mock.calls[0][0];
         const embed = editReplyArgs.embeds[0].toJSON();
 
         // Verifica el embed enviado con editReply
