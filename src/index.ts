@@ -66,53 +66,54 @@ loadCommands();
 if (LOAD_SLASH) {
     const rest = new REST({ version: "10" }).setToken(TOKEN);
 
+    const deleteCommands = async (entorno: "global" | "local") => {
+        const route = await registerCommands(entorno);
+        const entornoText = entorno === "global" ? "globales" : "en el servidor de desarrollo";
+
+        try {
+            console.log(`Eliminando comandos slash ${entornoText}...`);
+            await rest.put(route, { body: [] });
+            console.log(`Comandos slash ${entornoText} eliminados.`);
+        } catch (error) {
+            console.error(`Error al eliminar los comandos slash ${entornoText}:`, error);
+        }
+    };
+
+    const deployCommands = async (entorno: "global" | "local") => {
+        const route = await registerCommands(entorno);
+        const entornoText = entorno === "global" ? "globales" : "en el servidor de desarrollo";
+
+        try {
+            console.log(`Desplegando comandos slash ${entornoText}...`);
+            await rest.put(route, { body: commands });
+            console.log(`Comandos slash ${entornoText} desplegados correctamente.`);
+        } catch (error) {
+            console.error(`Error al desplegar los comandos slash ${entornoText}:`, error);
+            process.exit(1);
+        }
+    };
+
+    const registerCommands = async (entorno: "global" | "local") => {
+        const route =
+            entorno === "global"
+                ? Routes.applicationCommands(CLIENT_ID)
+                : Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID);
+
+        return route;
+    };
+
     (async () => {
         console.log(`Entorno actual: ${ENVIRONMENT}`);
 
         if (ENVIRONMENT === "production") {
-            try {
-                console.log("Eliminando todos los comandos slash en el servidor de desarrollo...");
-                await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: [] });
-                console.log("Comandos slash en el servidor de desarrollo eliminados.");
-            } catch (error) {
-                console.error("Error al eliminar los comandos slash en el servidor de desarrollo:", error);
-            }
-            try {
-                console.log("Eliminando todos los comandos slash globales...");
-                await rest.put(Routes.applicationCommands(CLIENT_ID), { body: [] });
-                console.log("Comandos slash globales eliminados");
-            } catch (error) {
-                console.error("Error al eliminar los comandos slash globales:", error);
-            }
-
-            try {
-                console.log("Desplegando comandos slash globales...");
-                await rest.put(Routes.applicationCommands(CLIENT_ID), { body: commands });
-                console.log("Comandos slash globales desplegados correctamente");
-            } catch (error) {
-                console.error("Error al desplegar los comandos slash globales:", error);
-                process.exit(1);
-            }
+            await deleteCommands("local");
+            await deleteCommands("global");
+            await deployCommands("global");
         } else if (ENVIRONMENT === "developer") {
-            try {
-                console.log("Eliminando todos los comandos slash en el servidor de desarrollo...");
-                await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: [] });
-                console.log("Comandos slash en el servidor de desarrollo eliminados");
-            } catch (error) {
-                console.error("Error al eliminar los comandos slash en el servidor de desarrollo:", error);
-            }
-
-            try {
-                console.log("Desplegando comandos slash en el servidor de desarrollo...");
-                await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands });
-                console.log("Comandos slash desplegados en el servidor de desarrollo correctamente");
-            } catch (error) {
-                console.error("Error al desplegar los comandos slash en el servidor de desarrollo:", error);
-                process.exit(1);
-            }
+            await deleteCommands("local");
+            await deployCommands("local");
         } else {
-            console.log("Es necesario que la variable .env ENVIRONMENT tenga o developer o production");
-            process.exit(1);
+            console.error("La variable ENVIROMENT debe ser 'developer' o 'production'");
         }
         process.exit(0);
     })();
