@@ -17,11 +17,7 @@ async function crearPlaylist(serverId, nombre) {
         if (playlistExiste.color === "Red") return playlistExiste;
 
         // Crea la playlist en la base de datos
-        await coleccion.updateOne(
-            { serverId: serverId },
-            { $set: { [`${nombre}`]: {} } },
-            { upsert: true },
-        );
+        await coleccion.updateOne({ serverId: serverId }, { $set: { [`${nombre}`]: {} } }, { upsert: true });
 
         return { color: "Green", mensaje: `La playlist **${nombre}** fue creada correctamente` };
     } catch (error) {
@@ -36,10 +32,7 @@ async function crearPlaylist(serverId, nombre) {
 async function eliminarPlaylist(serverId, nombrePlaylist) {
     await mongo.connect();
     try {
-        const resultado = await coleccion.updateOne(
-            { serverId: serverId },
-            { $unset: { [`${nombrePlaylist}`]: "" } },
-        );
+        const resultado = await coleccion.updateOne({ serverId: serverId }, { $unset: { [`${nombrePlaylist}`]: "" } });
 
         if (resultado.modifiedCount > 0) {
             return { color: "Green", mensaje: `La playlist **${nombrePlaylist}** fue eliminada correctamente` };
@@ -59,7 +52,8 @@ async function mostrarPlaylists(serverId) {
     await mongo.connect();
     try {
         const resultado = await coleccion.find({ serverId }).toArray();
-        if (!resultado || resultado.length === 0) return { color: "Red", mensaje: "No hay playlists creadas en este servidor" };
+        if (!resultado || resultado.length === 0)
+            return { color: "Red", mensaje: "No hay playlists creadas en este servidor" };
 
         let playlistTexto = "";
 
@@ -102,7 +96,10 @@ async function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) 
         );
 
         if (result.modifiedCount > 0) {
-            return { color: "Green", mensaje: `La canción **${tituloCancion}** se ha añadido a la playlist **${nombrePlaylist}**` };
+            return {
+                color: "Green",
+                mensaje: `La canción **${tituloCancion}** se ha añadido a la playlist **${nombrePlaylist}**`,
+            };
         } else {
             return { color: "Red", mensaje: `La playlist **${nombrePlaylist}** no existe o ya tiene la canción` };
         }
@@ -128,7 +125,10 @@ async function eliminarCancionPlaylist(serverId, nombrePlaylist, tituloCancion) 
         );
 
         if (result.modifiedCount > 0) {
-            return { color: "Green", mensaje: `La canción **${tituloCancion}** se ha eliminando a la playlist **${nombrePlaylist}**` };
+            return {
+                color: "Green",
+                mensaje: `La canción **${tituloCancion}** se ha eliminando a la playlist **${nombrePlaylist}**`,
+            };
         } else {
             return { color: "Red", mensaje: `La playlist **${nombrePlaylist}** no existe o no tiene la canción` };
         }
@@ -189,4 +189,13 @@ async function playPlaylist(serverId, nombrePlaylist, interaction) {
     }
 }
 
-module.exports = { checkExistPlaylist, crearPlaylist, eliminarPlaylist, playPlaylist, playCheckPlaylist, mostrarPlaylists, addCancionPlaylist, eliminarCancionPlaylist };
+module.exports = {
+    checkExistPlaylist,
+    crearPlaylist,
+    eliminarPlaylist,
+    playPlaylist,
+    playCheckPlaylist,
+    mostrarPlaylists,
+    addCancionPlaylist,
+    eliminarCancionPlaylist,
+};

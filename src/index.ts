@@ -1,14 +1,14 @@
-import { Client, Collection, EmbedBuilder, GatewayIntentBits, Interaction, ActivityType, VoiceState } from "discord.js";
-import { SpotifyExtractor, AttachmentExtractor } from "@discord-player/extractor";
-import { YoutubeiExtractor } from "discord-player-youtubei";
-import { Track, GuildQueue, Player } from "discord-player";
-import { Routes, RESTPostAPIChatInputApplicationCommandsJSONBody } from "discord-api-types/v10";
-import { REST } from "@discordjs/rest";
-import playerConfig from "./config/player.config";
-import { QueueMetadata } from "./types/types";
 import dotenv from "dotenv";
 import path from "path";
 import fs from "fs";
+import { Client, Collection, EmbedBuilder, GatewayIntentBits, Interaction, ActivityType, VoiceState } from "discord.js";
+import { Routes, RESTPostAPIChatInputApplicationCommandsJSONBody } from "discord-api-types/v10";
+import { REST } from "@discordjs/rest";
+import { SpotifyExtractor, AttachmentExtractor } from "@discord-player/extractor";
+import { YoutubeiExtractor } from "discord-player-youtubei";
+import { Track, GuildQueue, Player } from "discord-player";
+import playerConfig from "./config/player.config";
+import { QueueMetadata } from "./types/types";
 
 // Carga las variables del archivo .env en silencio
 dotenv.config({ quiet: true });
@@ -53,11 +53,15 @@ client.slashcommands = new Collection<string, SlashCommand>();
 const commandsPath = path.join(__dirname, "commands");
 const commandsFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith(".js"));
 
-for (const file of commandsFiles) {
-    const slashcmd = require(path.join(commandsPath, file));
-    client.slashcommands.set(slashcmd.data.name, slashcmd);
-    if (LOAD_SLASH) commands.push(slashcmd.data.toJSON());
+async function loadCommands() {
+    for (const file of commandsFiles) {
+        const slashcmd = await import(path.join(commandsPath, file));
+        client.slashcommands.set(slashcmd.data.name, slashcmd);
+        if (LOAD_SLASH) commands.push(slashcmd.data.toJSON());
+    }
 }
+
+loadCommands();
 
 if (LOAD_SLASH) {
     const rest = new REST({ version: "10" }).setToken(TOKEN);

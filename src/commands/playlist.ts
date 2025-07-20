@@ -164,6 +164,7 @@ module.exports = {
                                             return Object.keys(songs).length > 0;
                                         });
 
+                                        var playlistsFiltrada;
                                         // Filtramos las playlists que empiezan con el texto que el usuario está escribiendo
                                         if (focusedValue.length > 0) {
                                             filteredPlaylist = playlistList.filter((playlistName) =>
@@ -171,13 +172,13 @@ module.exports = {
                                                     .toLowerCase()
                                                     .startsWith(focusedValue.toLowerCase()),
                                             );
-                                            var playlistsRespuesta = filteredPlaylist;
+                                            playlistsFiltrada = filteredPlaylist;
                                         } else {
-                                            var playlistsRespuesta = playlistList;
+                                            playlistsFiltrada = playlistList;
                                         }
 
                                         const playlistsRespuesta1: ApplicationCommandOptionChoiceData<string>[] =
-                                            playlistsRespuesta.map((playlist) => ({
+                                            playlistsFiltrada.map((playlist) => ({
                                                 name: playlist,
                                                 value: playlist,
                                             }));

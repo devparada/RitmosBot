@@ -52,7 +52,6 @@ describe("/loop command", () => {
         });
     });
 
-
     test("Activa la repetición y responde con un mensaje cuando es 'on'", async () => {
         const interaction = createInteraction({ mode: LOOP_TEST.MODES.ON });
         queueMock.isPlaying.mockReturnValue(true);

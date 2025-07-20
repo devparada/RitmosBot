@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction } from "discord.js";
-const pingCommand = require("../src/commands/ping");
+import { run } from "../src/commands/ping";
 
 const WS_PING = 50;
 
@@ -24,7 +24,7 @@ describe("/ping command", () => {
     });
 
     test("Calcula el ping y modifica el embed", async () => {
-        await pingCommand.run({ interaction });
+        await run({ interaction });
 
         // Verifica el mensaje inicial
         expect(interaction.reply).toHaveBeenCalledWith("🏓 Pong! Calculando latencia...");
