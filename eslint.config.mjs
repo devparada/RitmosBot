@@ -1,36 +1,74 @@
+import js from "@eslint/js";
 import globals from "globals";
-import pluginJs from "@eslint/js";
+import parser from "@typescript-eslint/parser";
+import pluginTs from "@typescript-eslint/eslint-plugin";
 import pluginPrettier from "eslint-plugin-prettier";
 import configPrettier from "eslint-config-prettier/flat";
 
-/** @type {import('eslint').Linter.Config[]} */
-export default [
-  pluginJs.configs.recommended,
+const commonGlobals = {
+  ...globals.node, // Variables globales de Node.js
+  ...globals.jest, // Variables globales de Jest
+};
 
+export default [
+  js.configs.recommended,
+
+  {
+    plugins: { prettier: pluginPrettier },
+    rules: {
+      "prettier/prettier": "warn",
+    },
+  },
+
+  // Configuración para archivos TypeScript
+  {
+    files: ["**/*.ts"],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: "./tsconfig.json",
+        tsconfigRootDir: process.cwd(),
+      },
+      globals: commonGlobals,
+    },
+    plugins: {
+      "@typescript-eslint": pluginTs,
+    },
+    rules: {
+      ...pluginTs.configs.recommended.rules,
+      "prettier/prettier": "warn",
+    },
+  },
+
+  // Configuración para archivos JavaScript
   {
     files: ["**/*.js"],
     languageOptions: {
       sourceType: "commonjs",
-      globals: {
-        ...globals.node, // Variables globales de Node.js
-        ...globals.jest, // Variables globales de Jest
-      },
-    },
-    plugins: {
-      prettier: pluginPrettier,
+      globals: commonGlobals,
     },
     rules: {
-      semi: ["warn", "always"], // Requiere punto y coma al final
-      quotes: ["warn", "double"], // Usa comillas dobles en lugar de simples para cadenas de texto
-      "eol-last": ["warn", "always"], // Asegura que haya una línea en blanco al final de cada archivo
-      "comma-dangle": ["warn", "always-multiline"], // Exige coma final en objetos y arrays multilínea para facilitar ediciones futuras
-      eqeqeq: ["error", "always"], // Obliga el uso de === y !== para evitar conversiones implícitas de tipo
-      "no-unused-vars": ["warn", { args: "none", ignoreRestSiblings: true }], // Advierte sobre variables definidas pero no utilizadas
-      "no-undef": "error", // Prohíbe el uso de variables no definidas para prevenir errores
-      "no-trailing-spaces": "warn", // Asegura que no haya espacios en blanco innecesarios al final de las líneas
+      semi: ["warn", "always"],
+      quotes: ["warn", "double"],
+      "eol-last": ["warn", "always"],
+      "comma-dangle": ["warn", "always-multiline"],
+      eqeqeq: ["error", "always"],
+      "no-unused-vars": ["warn", { args: "none", ignoreRestSiblings: true }],
+      "no-undef": "error",
+      "no-trailing-spaces": "warn",
+      "prettier/prettier": "warn",
     },
   },
 
   // Desactivamos cualquier regla de ESLint que choque con Prettier
   configPrettier,
+
+  {
+    files: ["eslint.config.mjs"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
 ];
