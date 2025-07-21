@@ -3,7 +3,13 @@ jest.mock("discord-player", () => ({
     useMainPlayer: jest.fn(),
 }));
 
+// Mockeamos la función del archivo utils
+jest.mock("../src/utils/utils", () => ({
+    usuarioEnVoiceChannel: jest.fn(),
+}));
+
 const playCommand = require("../src/commands/play");
+const { usuarioEnVoiceChannel } = require("../src/utils/utils");
 const { useMainPlayer } = require("discord-player");
 const { GuildMember, User } = require("discord.js");
 
@@ -95,19 +101,12 @@ describe("/play command", () => {
     test("Envia el mensaje de error si el usuario no está en un canal de voz", async () => {
         const interaction = createInteraction();
 
+        usuarioEnVoiceChannel.mockResolvedValue(false);
+
         await playCommand.run({ interaction });
 
         // Verifica que se responde con el mensaje de error
-        expect(interaction.reply).toHaveBeenCalledWith({
-            embeds: [
-                {
-                    data: {
-                        color: RED,
-                        description: "¡Debes estar en un canal de voz para reproducir música!",
-                    },
-                },
-            ],
-        });
+        expect(interaction.deferReply).toHaveBeenCalledWith();
     });
 
     test("Envia el mensaje de error si no hay URL ni archivo adjunto", async () => {

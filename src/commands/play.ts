@@ -1,5 +1,6 @@
 import { EmbedBuilder, SlashCommandBuilder, MessageFlags, ChatInputCommandInteraction, GuildMember } from "discord.js";
 import { useMainPlayer } from "discord-player";
+import { usuarioEnVoiceChannel } from "../utils/utils";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -21,10 +22,8 @@ module.exports = {
             const voiceChannel = member.voice.channel;
             const embed = new EmbedBuilder();
 
-            // Verifica si el usuario está en un canal de voz
-            if (!voiceChannel) {
-                embed.setColor("Red").setDescription("¡Debes estar en un canal de voz para reproducir música!");
-                return interaction.reply({ embeds: [embed] });
+            if (!usuarioEnVoiceChannel(interaction)) {
+                return false;
                 // Verifica si el usuario pone /play con la URL y un archivo adjunto
             } else if (query && file) {
                 embed.setColor("Red").setDescription("Sólo puedes usar **una** opción: `url` o `file` no ambas");
@@ -64,7 +63,7 @@ module.exports = {
                     return interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
                 }
 
-                if (!queue.connection) await queue.connect(voiceChannel);
+                if (!queue.connection && voiceChannel) await queue.connect(voiceChannel);
 
                 if (result.playlist) {
                     // Si es una playlist, añade todas las canciones
