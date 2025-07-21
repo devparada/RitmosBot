@@ -1,5 +1,6 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { useMainPlayer } from "discord-player";
+import { usuarioEnVoiceChannel } from "../utils/utils";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -15,6 +16,10 @@ module.exports = {
 
     run: async ({ interaction }: { interaction: ChatInputCommandInteraction }) => {
         const player = useMainPlayer();
+
+        if (!usuarioEnVoiceChannel(interaction)) {
+            return false;
+        }
         if (interaction.guild != null) {
             const queue = player.nodes.get(interaction.guild.id);
 

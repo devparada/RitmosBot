@@ -27,6 +27,7 @@ import {
     addCancionPlaylist,
     eliminarCancionPlaylist,
 } from "../utils/playlistController.js";
+import { usuarioEnVoiceChannel } from "src/utils/utils.js";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -325,6 +326,9 @@ module.exports = {
                 }
                 break;
             case "play":
+                if (!usuarioEnVoiceChannel(interaction)) {
+                    return false;
+                }
                 try {
                     let arrayPlayCheck = (await playCheckPlaylist(guildId, options.getString("name"))) ?? {
                         color: "RED",

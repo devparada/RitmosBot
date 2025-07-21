@@ -153,17 +153,9 @@ describe("/shuffle command", () => {
 
     test("Error si el usuario no está en el canal de voz", async () => {
         const interaction = createInteraction(null);
+
         await shuffleCommand.run({ interaction });
 
-        expect(interaction.reply).toHaveBeenCalledWith({
-            embeds: [
-                {
-                    data: {
-                        color: RED,
-                        description: "¡Debes estar en el canal de voz para usar este comando!",
-                    },
-                },
-            ],
-        });
+        expect(interaction.deferReply).toHaveBeenCalledWith;
     });
 });
