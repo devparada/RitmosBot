@@ -2,6 +2,8 @@
 module.exports = {
     preset: "ts-jest",
     testEnvironment: "node",
+    collectCoverage: false,
+    coverageProvider: "v8",
     moduleNameMapper: {
         "^src/(.*)$": "<rootDir>/src/$1",
     },
