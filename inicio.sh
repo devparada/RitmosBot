@@ -24,6 +24,7 @@ fi
 if [[ $1 == "-slash" ]]
 then
     npm install
+    npm run build
     node . slash
 elif [[ $1 == "-docker" ]]
 then
