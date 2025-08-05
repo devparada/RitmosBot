@@ -18,9 +18,9 @@
     "discord-player": "^7.1.0",
     "discord-player-youtubei": "^1.5.0",
     "discord.js": "^14.21.0",
-    "dotenv": "^17.2.0",
+    "dotenv": "^17.2.1",
     "mediaplex": "^1.0.0",
-    "mongodb": "^6.17.0",
+    "mongodb": "^6.18.0",
     "typescript": "^5.8.3"
   },
   "optionalDependencies": {
@@ -28,18 +28,18 @@
     "mediaplex-linux-x64-gnu": "^1.0.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.31.0",
+    "@eslint/js": "^9.32.0",
     "@types/jest": "^30.0.0",
-    "@types/node": "^24.0.15",
-    "@typescript-eslint/eslint-plugin": "^8.37.0",
-    "@typescript-eslint/parser": "^8.37.0",
-    "eslint": "^9.31.0",
+    "@types/node": "^24.2.0",
+    "@typescript-eslint/eslint-plugin": "^8.39.0",
+    "@typescript-eslint/parser": "^8.39.0",
+    "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.3",
-    "jest": "^30.0.4",
+    "jest": "^30.0.5",
     "prettier": "^3.6.2",
     "prettier-plugin-packagejson": "^2.5.19",
-    "ts-jest": "^29.4.0"
+    "ts-jest": "^29.4.1"
   },
   "overrides": {
     "glob": "^10.0.0"
