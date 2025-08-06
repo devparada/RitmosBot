@@ -1,24 +1,14 @@
 const pingCommand = require("../src/commands/ping");
+const { createBasicInteraction } = require("./mocks/discordMocks");
 
 const WS_PING = 50;
-
-const mockInteraction = () => ({
-    commandName: "ping",
-    reply: jest.fn(),
-    editReply: jest.fn(),
-    client: {
-        ws: {
-            ping: WS_PING,
-        },
-    },
-});
 
 describe("/ping command", () => {
     let interaction;
 
     beforeEach(() => {
         jest.clearAllMocks();
-        interaction = mockInteraction();
+        interaction = createBasicInteraction(WS_PING);
     });
 
     test("Calcula el ping y modifica el embed", async () => {

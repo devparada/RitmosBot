@@ -4,6 +4,7 @@ jest.mock("discord-player", () => ({
 
 const loopCommand = require("../src/commands/loop");
 const { useMainPlayer } = require("discord-player");
+const { createModeInteraction } = require("./mocks/discordMocks");
 
 // Datos de ejemplo
 const LOOP_TEST = {
@@ -13,14 +14,6 @@ const LOOP_TEST = {
         OFF: "off",
     },
 };
-
-const createInteraction = ({ mode = LOOP_TEST.MODES.OFF }) => ({
-    guild: { id: LOOP_TEST.GUILD_ID },
-    options: {
-        getString: jest.fn(() => mode),
-    },
-    reply: jest.fn(),
-});
 
 describe("/loop command", () => {
     let playerMock;
@@ -41,7 +34,7 @@ describe("/loop command", () => {
     });
 
     test("Si no hay canción reproduciéndose", async () => {
-        const interaction = createInteraction(LOOP_TEST.MODES.ON);
+        const interaction = createModeInteraction(LOOP_TEST.MODES.ON, LOOP_TEST);
         queueMock.isPlaying.mockReturnValue(false);
 
         await loopCommand.run({ interaction });
@@ -53,7 +46,7 @@ describe("/loop command", () => {
     });
 
     test("Activa la repetición y responde con un mensaje cuando es 'on'", async () => {
-        const interaction = createInteraction({ mode: LOOP_TEST.MODES.ON });
+        const interaction = createModeInteraction(LOOP_TEST.MODES.ON, LOOP_TEST);
         queueMock.isPlaying.mockReturnValue(true);
 
         await loopCommand.run({ interaction });
@@ -65,7 +58,7 @@ describe("/loop command", () => {
     });
 
     test("Desactiva la repetición y responde con un mensaje cuando es 'off'", async () => {
-        const interaction = createInteraction({ mode: LOOP_TEST.MODES.OFF });
+        const interaction = createModeInteraction(LOOP_TEST.MODES.OFF, LOOP_TEST);
         queueMock.isPlaying.mockReturnValue(true);
 
         await loopCommand.run({ interaction });
