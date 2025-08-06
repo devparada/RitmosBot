@@ -21,17 +21,29 @@ else
   exit 1
 fi
 
-if [[ $1 == "-slash" ]]
-then
+
+echo Bienvenido al menú de configuración del bot
+echo ===========================================
+echo 1: Recrear los comandos slash
+echo 2: Recrear los contenedores docker
+echo 3: Backup de mongodb
+echo 4: Restaurar mongodb
+echo ===========================================
+read -p "Selecciona una opcion:" opcion
+
+case $opcion in
+1)
     npm install
     npm run build
     node . slash
-elif [[ $1 == "-docker" ]]
-then
+    ;;
+
+2)
     # Construye la imagen y inicia el docker-compose
     docker compose up -d --build
-elif [[ $1 == "-backup" ]]
-then
+    ;;
+
+3)
     DATE=$(date +%Y-%m-%d_%H-%M-%S)
     BACKUP_FILE="$BACKUP_DIR/mongo-backup-$DATE.gz"
     mkdir -p "$BACKUP_DIR"
@@ -43,8 +55,9 @@ then
     else
         echo "ERROR: Falló la creación del backup" >&2
     fi
-elif [[ $1 == "-restore" ]]
-then
+    ;;
+
+4)
     # Es necesario un segundo argumento
     if [ -z "$2" ]
     then
@@ -67,7 +80,9 @@ then
     else
         echo "ERROR: Falló la restauración" >&2 
     fi
-else
-    echo "Ejecutando el bot"
-    node .
-fi
+    ;;
+
+*)
+    echo "Opción no válida"
+    ;;
+esac
