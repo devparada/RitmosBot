@@ -1,5 +1,5 @@
 # Version slim
-FROM node:24.4.1-slim
+FROM node:24.6-slim
 
 RUN apt update && apt upgrade -y && \
 # Instala ffmpeg sin istalar los paquetes recomendados
