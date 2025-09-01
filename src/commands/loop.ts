@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { useMainPlayer } from "discord-player";
-import { usuarioEnVoiceChannel } from "../utils/utils";
+import { usuarioEnVoiceChannel } from "../utils/voiceUtils";
 
 module.exports = {
     data: new SlashCommandBuilder()

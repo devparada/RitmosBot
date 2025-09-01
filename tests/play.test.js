@@ -4,14 +4,15 @@ jest.mock("discord-player", () => ({
 }));
 
 // Mockeamos la función del archivo utils
-jest.mock("../src/utils/utils", () => ({
+jest.mock("../src/utils/voiceUtils", () => ({
     usuarioEnVoiceChannel: jest.fn(),
 }));
 
 const playCommand = require("../src/commands/play");
-const { usuarioEnVoiceChannel } = require("../src/utils/utils");
+const { usuarioEnVoiceChannel } = require("../src/utils/voiceUtils");
 const { useMainPlayer } = require("discord-player");
 const { createVoiceInteraction } = require("./mocks/discordMocks");
+const { MessageFlags } = require("discord.js");
 
 const RED = 15548997;
 const GREEN = 5763719;
@@ -28,6 +29,7 @@ describe("/play command", () => {
     let playerMock;
     let queueMock;
     let searchResult;
+    let interaction;
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -61,21 +63,20 @@ describe("/play command", () => {
         };
 
         useMainPlayer.mockReturnValue(playerMock);
+        interaction = createVoiceInteraction(PLAY_TEST.VOICE_CHANNEL_ID, PLAY_TEST);
     });
 
     test("Envia el mensaje de error si el usuario no está en un canal de voz", async () => {
-        const interaction = createVoiceInteraction("voice-channel-id", PLAY_TEST);
-
         usuarioEnVoiceChannel.mockResolvedValue(false);
 
         await playCommand.run({ interaction });
 
+        expect(usuarioEnVoiceChannel).toHaveBeenCalledWith(interaction);
         // Verifica que se responde con el mensaje de error
         expect(interaction.deferReply).toHaveBeenCalledWith();
     });
 
     test("Envia el mensaje de error si no hay URL ni archivo adjunto", async () => {
-        const interaction = createVoiceInteraction("voice-channel-id", PLAY_TEST);
         // Hacemos que no tenemos URL ni file
         interaction.options.getString = () => null;
         interaction.options.getAttachment = () => null;
@@ -92,23 +93,19 @@ describe("/play command", () => {
                     },
                 },
             ],
-            flags: expect.any(Number),
+            flags: MessageFlags.Ephemeral,
         });
     });
 
     test("Reproduce música correctamente cuando todo es válido", async () => {
-        const voiceChannel = { id: PLAY_TEST.VOICE_CHANNEL_ID };
-        const interaction = createVoiceInteraction(voiceChannel, PLAY_TEST);
-
         await playCommand.run({ interaction });
 
         expect(interaction.deferReply).toHaveBeenCalled();
-
         // Búsqueda con la URL
         expect(playerMock.search).toHaveBeenCalledWith(PLAY_TEST.SONG_URL, { requestedBy: interaction.user });
 
         // Conecta la cola y añade la pista en ella
-        expect(queueMock.connect).toHaveBeenCalledWith(voiceChannel);
+        expect(queueMock.connect).toHaveBeenCalledWith(PLAY_TEST.VOICE_CHANNEL_ID);
         expect(queueMock.addTrack).toHaveBeenCalledWith(searchResult.tracks[0]);
 
         expect(interaction.followUp).toHaveBeenCalledWith({
@@ -134,7 +131,7 @@ describe("/play command", () => {
 
         expect(interaction.followUp).toHaveBeenCalledWith({
             embeds: [{ data: { color: RED, description: "No se ha podido encontrar la canción" } }],
-            flags: expect.any(Number),
+            flags: MessageFlags.Ephemeral,
         });
     });
 });

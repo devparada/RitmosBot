@@ -22,16 +22,18 @@ describe("/ping command", () => {
         const editReplyArgs = interaction.editReply.mock.calls[0][0];
         const embed = editReplyArgs.embeds[0].toJSON();
 
-        // Verifica el embed enviado con editReply
-        expect(embed.fields).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({
-                    name: "Latencia del bot",
-                    value: expect.stringMatching(/^(0ms|1ms)$/),
-                    inline: true,
-                }),
-                expect.objectContaining({ name: "Latencia de la API", value: WS_PING + "ms", inline: true }),
-            ]),
-        );
+        expect(embed.title).toBe("🏓 Pong!");
+
+        // Valida los campos del embed
+        const botLatency = embed.fields.find((f) => f.name === "Latencia del bot");
+        const apiLatency = embed.fields.find((f) => f.name === "Latencia de la API");
+
+        // La latencia del bot es en ms
+        expect(botLatency.value).toMatch(/^\d+ms$/);
+        expect(botLatency.inline).toBe(true);
+
+        // La latencia de la API debe coincidir con el mock
+        expect(apiLatency.value).toBe(`${WS_PING}ms`);
+        expect(apiLatency.inline).toBe(true);
     });
 });

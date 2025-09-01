@@ -3,9 +3,15 @@ jest.mock("discord-player", () => ({
     useMainPlayer: jest.fn(),
 }));
 
+// Mockeamos voiceUtils si tu comando lo usa
+jest.mock("../src/utils/voiceUtils", () => ({
+    usuarioEnVoiceChannel: jest.fn(),
+}));
+
 const shuffleCommand = require("../src/commands/shuffle");
 const { useMainPlayer } = require("discord-player");
 const { createVoiceInteraction } = require("./mocks/discordMocks");
+const { usuarioEnVoiceChannel } = require("../src/utils/voiceUtils");
 
 const RED = 15548997;
 const BLUE = 3447003;
@@ -18,6 +24,7 @@ const SHUFFLE_TEST = {
 describe("/shuffle command", () => {
     let playerMock;
     let queueMock;
+    let interaction;
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -39,29 +46,13 @@ describe("/shuffle command", () => {
         };
 
         useMainPlayer.mockReturnValue(playerMock);
-    });
-
-    test("Intenta hacer el shuffle y responde con un mensaje de error", async () => {
-        playerMock.nodes.clear();
-
-        const interaction = createVoiceInteraction(SHUFFLE_TEST.GUILD_ID, SHUFFLE_TEST);
-        await shuffleCommand.run({ interaction });
-
-        expect(interaction.reply).toHaveBeenCalledWith({
-            embeds: [
-                {
-                    data: {
-                        color: RED,
-                        description: "No hay ninguna canción en la cola",
-                    },
-                },
-            ],
-        });
+        interaction = createVoiceInteraction(SHUFFLE_TEST.GUILD_ID, SHUFFLE_TEST);
+        usuarioEnVoiceChannel.mockReturnValue(true);
     });
 
     test("Intenta hacer el shuffle con 0 canciones", async () => {
         playerMock.nodes.clear();
-        const interaction = createVoiceInteraction(SHUFFLE_TEST.GUILD_ID, SHUFFLE_TEST);
+
         await shuffleCommand.run({ interaction });
 
         expect(interaction.reply).toHaveBeenCalledWith({
@@ -79,11 +70,9 @@ describe("/shuffle command", () => {
     test("Hace el shuffle con una canción", async () => {
         queueMock.tracks.size = 1;
 
-        const interaction = createVoiceInteraction(SHUFFLE_TEST.GUILD_ID, SHUFFLE_TEST);
         await shuffleCommand.run({ interaction });
 
-        expect(queueMock.tracks.shuffle).toHaveBeenCalled();
-
+        expect(queueMock.tracks.shuffle).toHaveBeenCalledTimes(1);
         expect(interaction.reply).toHaveBeenCalledWith({
             embeds: [
                 {
@@ -99,11 +88,9 @@ describe("/shuffle command", () => {
     test("Hace el shuffle con varias canciones", async () => {
         queueMock.tracks.size = 5;
 
-        const interaction = createVoiceInteraction(SHUFFLE_TEST.GUILD_ID, SHUFFLE_TEST);
         await shuffleCommand.run({ interaction });
 
-        expect(queueMock.tracks.shuffle).toHaveBeenCalled();
-
+        expect(queueMock.tracks.shuffle).toHaveBeenCalledTimes(1);
         expect(interaction.reply).toHaveBeenCalledWith({
             embeds: [
                 {
@@ -117,10 +104,11 @@ describe("/shuffle command", () => {
     });
 
     test("Error si el usuario no está en el canal de voz", async () => {
-        const interaction = createVoiceInteraction(null, SHUFFLE_TEST);
+        usuarioEnVoiceChannel.mockReturnValue(false);
 
         await shuffleCommand.run({ interaction });
 
-        expect(interaction.deferReply).toHaveBeenCalledWith;
+        expect(usuarioEnVoiceChannel).toHaveBeenCalledWith(interaction);
+        expect(interaction.reply).not.toHaveBeenCalled();
     });
 });
