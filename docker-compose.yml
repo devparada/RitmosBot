@@ -9,6 +9,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    env_file:
+      - .env
     networks:
       - ritmosnet
 
@@ -17,6 +19,8 @@ services:
     container_name: mongodb
     volumes:
       - mongodb-data:/data/db
+    env_file:
+      - .env
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
