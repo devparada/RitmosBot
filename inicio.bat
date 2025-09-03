@@ -41,11 +41,13 @@ goto :case-%errorlevel%
         CALL npm install
         CALL npm run build
         CALL node . slash
+        GOTO fin
 
 :case-2
     echo Selecionada Recrear los contenedores docker
     REM Construye la imagen y inicia el docker-compose
     CALL docker compose up -d --build
+    GOTO fin
 
 :case-3
     echo Selecionada Backup de mongodb
@@ -71,6 +73,7 @@ goto :case-%errorlevel%
     CALL docker exec %MONGO_CONTAINER% rm /tmp/backup.gz >nul
 
     echo Backup realizado correctamente
+    GOTO fin
 
 :case-4
     echo Seleccionada Restaurar mongodb
@@ -97,6 +100,8 @@ goto :case-%errorlevel%
     ) else (
         echo ERROR: Falló la restauracion
     )
+    GOTO fin
 
+:fin
 endlocal
 exit /b 0

@@ -12,3 +12,6 @@ dist/
 
 # La cache de dependencias de npm
 node_modules/
+
+# SonarQube Comunnity
+.scannerwork/
