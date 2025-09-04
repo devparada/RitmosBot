@@ -17,7 +17,7 @@ module.exports = {
     run: async ({ interaction }: { interaction: ChatInputCommandInteraction }) => {
         const player = useMainPlayer();
 
-        if (!usuarioEnVoiceChannel(interaction)) {
+        if (!(await usuarioEnVoiceChannel(interaction))) {
             return false;
         }
         if (interaction.guild != null) {

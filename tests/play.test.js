@@ -3,13 +3,7 @@ jest.mock("discord-player", () => ({
     useMainPlayer: jest.fn(),
 }));
 
-// Mockeamos la función del archivo utils
-jest.mock("../src/utils/voiceUtils", () => ({
-    usuarioEnVoiceChannel: jest.fn(),
-}));
-
 const playCommand = require("../src/commands/play");
-const { usuarioEnVoiceChannel } = require("../src/utils/voiceUtils");
 const { useMainPlayer } = require("discord-player");
 const { createVoiceInteraction } = require("./mocks/discordMocks");
 const { MessageFlags } = require("discord.js");
@@ -63,17 +57,26 @@ describe("/play command", () => {
         };
 
         useMainPlayer.mockReturnValue(playerMock);
-        interaction = createVoiceInteraction(PLAY_TEST.VOICE_CHANNEL_ID, PLAY_TEST);
+        interaction = createVoiceInteraction(PLAY_TEST, PLAY_TEST.VOICE_CHANNEL_ID);
     });
 
     test("Envia el mensaje de error si el usuario no está en un canal de voz", async () => {
-        usuarioEnVoiceChannel.mockResolvedValue(false);
+        interaction = createVoiceInteraction(PLAY_TEST, null);
 
         await playCommand.run({ interaction });
 
-        expect(usuarioEnVoiceChannel).toHaveBeenCalledWith(interaction);
         // Verifica que se responde con el mensaje de error
-        expect(interaction.deferReply).toHaveBeenCalledWith();
+        expect(interaction.reply).toHaveBeenCalledWith({
+            embeds: [
+                {
+                    data: {
+                        color: RED,
+                        description: "¡Debes estar en un canal de voz para reproducir música!",
+                    },
+                },
+            ],
+            flags: MessageFlags.Ephemeral,
+        });
     });
 
     test("Envia el mensaje de error si no hay URL ni archivo adjunto", async () => {
@@ -122,7 +125,7 @@ describe("/play command", () => {
 
     test("Maneja cuando no se encuentra la canción en la búsqueda", async () => {
         const voiceChannel = { id: PLAY_TEST.VOICE_CHANNEL_ID };
-        const interaction = createVoiceInteraction(voiceChannel, PLAY_TEST);
+        const interaction = createVoiceInteraction(PLAY_TEST, voiceChannel);
 
         // Simulamos que no hay resultados en la búsqueda
         playerMock.search.mockResolvedValueOnce({ tracks: [] });

@@ -326,7 +326,7 @@ module.exports = {
                 }
                 break;
             case "play":
-                if (!usuarioEnVoiceChannel(interaction)) {
+                if (!(await usuarioEnVoiceChannel(interaction))) {
                     return false;
                 }
                 try {

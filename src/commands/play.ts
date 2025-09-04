@@ -22,7 +22,7 @@ module.exports = {
             const voiceChannel = member.voice.channel;
             const embed = new EmbedBuilder();
 
-            if (!usuarioEnVoiceChannel(interaction)) {
+            if (!(await usuarioEnVoiceChannel(interaction))) {
                 return false;
                 // Verifica si el usuario pone /play con la URL y un archivo adjunto
             } else if (query && file) {

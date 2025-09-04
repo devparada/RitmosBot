@@ -144,7 +144,7 @@ async function playCheckPlaylist(serverId, nombrePlaylist) {
     await mongo.connect();
     try {
         const playlistExiste = await checkExistPlaylist(serverId, nombrePlaylist);
-        if (!playlistExiste.color === "Red") return playlistExiste;
+        if (playlistExiste.color !== "Red") return playlistExiste;
 
         return { color: "Green", mensaje: `La playlist **${nombrePlaylist}** se añadio a la cola correctamente` };
     } catch (error) {

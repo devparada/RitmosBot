@@ -8,7 +8,7 @@ module.exports = {
     run: async ({ interaction }: { interaction: ChatInputCommandInteraction }) => {
         const embed = new EmbedBuilder();
 
-        if (!usuarioEnVoiceChannel(interaction)) {
+        if (!(await usuarioEnVoiceChannel(interaction))) {
             return false;
         } else {
             const player = useMainPlayer();

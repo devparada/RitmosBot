@@ -17,7 +17,7 @@ class FakeGuildMember extends GuildMember {
 }
 
 // Creamos una interacción con voz (ej: /play, /shuffle, etc.)
-const createVoiceInteraction = (voiceChannel = null, constants) => {
+const createVoiceInteraction = (constants, voiceChannel = null) => {
     const member = new FakeGuildMember(voiceChannel);
     const user = new User(null, { id: "user", username: "TestUser" });
 
@@ -37,7 +37,7 @@ const createVoiceInteraction = (voiceChannel = null, constants) => {
 };
 
 // Creamos una interacción para comandos simples como /loop
-const createModeInteraction = (mode, constants) => ({
+const createModeInteraction = (constants, mode) => ({
     guild: { id: constants.GUILD_ID },
     options: {
         getString: jest.fn(() => mode),

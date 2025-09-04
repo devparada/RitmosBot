@@ -3,15 +3,10 @@ jest.mock("discord-player", () => ({
     useMainPlayer: jest.fn(),
 }));
 
-// Mockeamos voiceUtils si tu comando lo usa
-jest.mock("../src/utils/voiceUtils", () => ({
-    usuarioEnVoiceChannel: jest.fn(),
-}));
-
 const shuffleCommand = require("../src/commands/shuffle");
 const { useMainPlayer } = require("discord-player");
 const { createVoiceInteraction } = require("./mocks/discordMocks");
-const { usuarioEnVoiceChannel } = require("../src/utils/voiceUtils");
+const { MessageFlags } = require("discord.js");
 
 const RED = 15548997;
 const BLUE = 3447003;
@@ -46,8 +41,7 @@ describe("/shuffle command", () => {
         };
 
         useMainPlayer.mockReturnValue(playerMock);
-        interaction = createVoiceInteraction(SHUFFLE_TEST.GUILD_ID, SHUFFLE_TEST);
-        usuarioEnVoiceChannel.mockReturnValue(true);
+        interaction = createVoiceInteraction(SHUFFLE_TEST, SHUFFLE_TEST.GUILD_ID);
     });
 
     test("Intenta hacer el shuffle con 0 canciones", async () => {
@@ -104,11 +98,16 @@ describe("/shuffle command", () => {
     });
 
     test("Error si el usuario no está en el canal de voz", async () => {
-        usuarioEnVoiceChannel.mockReturnValue(false);
+        const interaction = createVoiceInteraction({ GUILD_ID: "test-guild-id" }, null);
 
         await shuffleCommand.run({ interaction });
 
-        expect(usuarioEnVoiceChannel).toHaveBeenCalledWith(interaction);
-        expect(interaction.reply).not.toHaveBeenCalled();
+        // Verifica que se responde con el mensaje de error
+        expect(interaction.reply).toHaveBeenCalled();
+        const replyEmbed = interaction.reply.mock.calls[0][0].embeds[0].toJSON();
+
+        expect(replyEmbed.color).toBe(RED);
+        expect(replyEmbed.description).toBe("¡Debes estar en un canal de voz para reproducir música!");
+        expect(interaction.reply.mock.calls[0][0].flags).toBe(MessageFlags.Ephemeral);
     });
 });
