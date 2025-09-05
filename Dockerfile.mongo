@@ -3,9 +3,7 @@ FROM mongo:4.2.19
 # Elimina el repositorio problemático
 RUN rm -f /etc/apt/sources.list.d/mongodb-org.list && \
     # Actualiza todos los paquetes
-    apt update -y && apt upgrade -y && \ 
-    # Instala las herramientas necesarias
-    apt update -y && apt install -y --no-install-recommends ca-certificates curl gnupg && \
+    apt update -y && apt upgrade -y && \
     # Limpia los archivos innecesarios
     apt clean && rm -rf /var/lib/apt/lists/*
 
