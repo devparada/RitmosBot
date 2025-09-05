@@ -1,10 +1,10 @@
 # Etapa 1: Build
 FROM node:24.7-slim AS builder
 
-WORKDIR /home/node/RitmosBot
+WORKDIR /ritmosbot
 
 # Copiamos package.json, package-lock.json y tsconfig.json
-COPY package.json package-lock.json tsconfig.json ./
+COPY --chown=root:root --chmod=755 package.json package-lock.json tsconfig.json ./
 
 # Instalamos TODAS las dependencias
 RUN npm ci --ignore-scripts
@@ -29,12 +29,12 @@ RUN apt update -y && apt upgrade -y && \
     apt clean && rm -rf /var/lib/apt/lists/*
 
 # Directorio de trabajo
-WORKDIR /home/node/RitmosBot
+WORKDIR /ritmosbot
 
-# Copia el node_modules, dist y .env desde el builder
-COPY --from=builder --chown=root:root --chmod=755  /home/node/RitmosBot/node_modules ./node_modules
-COPY --from=builder --chown=root:root --chmod=755  /home/node/RitmosBot/dist ./dist
-COPY --from=builder --chown=root:root --chmod=755  /home/node/RitmosBot/package.json /home/node/RitmosBot/package-lock.json ./
+# Copia el node_modules, dist, package.json y package-lock.json desde el builder
+COPY --from=builder --chown=root:root --chmod=755 /ritmosbot/node_modules ./node_modules
+COPY --from=builder --chown=root:root --chmod=755 /ritmosbot/dist ./dist
+COPY --from=builder --chown=root:root --chmod=755 /ritmosbot/package*.json ./
 
 # Usamos el usuario node
 USER node
