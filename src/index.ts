@@ -128,7 +128,7 @@ if (LOAD_SLASH) {
     })();
 } else {
     // Cuando el bot está listo
-    client.on("ready", () => {
+    client.on("clientReady", () => {
         console.log(`Logeado como ${client.user?.tag}`);
 
         // <---------------------- Presencia Bot ------------------------------------->
@@ -175,11 +175,9 @@ if (LOAD_SLASH) {
             const command = client.slashcommands.get(interaction.commandName);
 
             try {
-                if (command && command.autocomplete) {
-                    await command.autocomplete(interaction);
-                }
+                await command?.autocomplete?.(interaction);
             } catch (error) {
-                console.error("Error en el autocompletado:", error);
+                console.error(`Error en el autocompletado de ${interaction.commandName}:`, error);
                 await interaction.respond([]); // Si hay error, responde con nada
             }
         }

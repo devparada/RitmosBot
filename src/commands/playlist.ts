@@ -102,11 +102,12 @@ module.exports = {
                 ),
         ),
 
-    async autocomplete({ interaction }: { interaction: ChatInputCommandInteraction | AutocompleteInteraction }) {
+    async autocomplete(interaction: ChatInputCommandInteraction | AutocompleteInteraction) {
         await mongo.connect();
         try {
-            const { options } = interaction;
             const guildId = interaction.guildId;
+            if (!guildId) return;
+
             const playlists = await coleccion.find({ serverId: guildId }).toArray();
 
             let focusedValue = "";
@@ -127,7 +128,7 @@ module.exports = {
             };
 
             if (interaction.isAutocomplete()) {
-                switch (options.getSubcommand()) {
+                switch (interaction.options.getSubcommand()) {
                     case "remove":
                     case "add":
                         {
@@ -204,7 +205,7 @@ module.exports = {
                                     }
                                     break;
                                 case "name": {
-                                    const focusedPlaylistName = options.getString("playlist");
+                                    const focusedPlaylistName = interaction.options.getString("playlist");
 
                                     if (playlists && focusedPlaylistName) {
                                         const songs = playlists[0]?.[focusedPlaylistName];
