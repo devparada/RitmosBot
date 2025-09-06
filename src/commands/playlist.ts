@@ -4,6 +4,7 @@ import {
     AutocompleteInteraction,
     ChatInputCommandInteraction,
     ColorResolvable,
+    Colors,
     EmbedBuilder,
     SlashCommandBuilder,
 } from "discord.js";
@@ -270,9 +271,7 @@ module.exports = {
                 try {
                     let arrayCrear = await crearPlaylist(guildId, options.getString("name"));
                     if (arrayCrear) {
-                        embed
-                            .setColor(arrayCrear["color"].toUpperCase() as ColorResolvable)
-                            .setDescription(arrayCrear["mensaje"]);
+                        embed.setColor(arrayCrear["color"] as ColorResolvable).setDescription(arrayCrear["mensaje"]);
                         await interaction.reply({ embeds: [embed] });
                     }
                 } catch (error) {
@@ -283,7 +282,7 @@ module.exports = {
                 try {
                     let arrayLista = await mostrarPlaylists(guildId);
                     embed
-                        .setColor(arrayLista["color"].toUpperCase() as ColorResolvable)
+                        .setColor(arrayLista["color"] as ColorResolvable)
                         .setTitle("🎶 Lista de Playlists 🎶")
                         .setDescription(arrayLista["mensaje"]);
                     await interaction.reply({ embeds: [embed] });
@@ -314,12 +313,10 @@ module.exports = {
                     }
 
                     let arrayAdd = (await addCancionPlaylist(guildId, url, playlistName, tituloCancion)) ?? {
-                        color: "RED",
+                        color: Colors.Red,
                         mensaje: "Error inesperado.",
                     };
-                    embed
-                        .setColor(arrayAdd["color"].toUpperCase() as ColorResolvable)
-                        .setDescription(arrayAdd["mensaje"]);
+                    embed.setColor(arrayAdd["color"] as ColorResolvable).setDescription(arrayAdd["mensaje"]);
                     await interaction.reply({ embeds: [embed] });
                 } catch (error) {
                     console.log(error);
@@ -331,14 +328,14 @@ module.exports = {
                 }
                 try {
                     let arrayPlayCheck = (await playCheckPlaylist(guildId, options.getString("name"))) ?? {
-                        color: "RED",
+                        color: Colors.Red,
                         mensaje: "Error inesperado.",
                     };
                     embed
-                        .setColor(arrayPlayCheck["color"].toUpperCase() as ColorResolvable)
+                        .setColor(arrayPlayCheck["color"] as ColorResolvable)
                         .setDescription(arrayPlayCheck["mensaje"]);
                     await interaction.reply({ embeds: [embed] });
-                    if (arrayPlayCheck["color"] === "Green") {
+                    if (Number(arrayPlayCheck["color"]) === Colors.Green) {
                         playPlaylist(guildId, options.getString("name"), interaction);
                     }
                 } catch (error) {
@@ -348,9 +345,7 @@ module.exports = {
             case "remove":
                 try {
                     let arrayRemove = await eliminarPlaylist(guildId, options.getString("name"));
-                    embed
-                        .setColor(arrayRemove["color"].toUpperCase() as ColorResolvable)
-                        .setDescription(arrayRemove["mensaje"]);
+                    embed.setColor(arrayRemove["color"] as ColorResolvable).setDescription(arrayRemove["mensaje"]);
                     await interaction.reply({ embeds: [embed] });
                 } catch (error) {
                     console.log(error);
@@ -362,10 +357,8 @@ module.exports = {
                         guildId,
                         options.getString("playlist"),
                         options.getString("name"),
-                    )) ?? { color: "RED", mensaje: "Error inesperado." };
-                    embed
-                        .setColor(arrayDelete["color"].toUpperCase() as ColorResolvable)
-                        .setDescription(arrayDelete["mensaje"]);
+                    )) ?? { color: Colors.Red, mensaje: "Error inesperado." };
+                    embed.setColor(arrayDelete["color"] as ColorResolvable).setDescription(arrayDelete["mensaje"]);
                     await interaction.reply({ embeds: [embed] });
                 } catch (error) {
                     console.log(error);

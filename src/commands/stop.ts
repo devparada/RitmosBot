@@ -1,4 +1,4 @@
-import { EmbedBuilder, SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
+import { EmbedBuilder, SlashCommandBuilder, ChatInputCommandInteraction, Colors } from "discord.js";
 import { useMainPlayer } from "discord-player";
 import { usuarioEnVoiceChannel } from "../utils/voiceUtils";
 
@@ -17,7 +17,7 @@ module.exports = {
             const queue = player.nodes.get(interaction.guild.id);
 
             if (!queue) {
-                embed.setColor("Red").setDescription("No hay ninguna canción reproduciéndose en este momento");
+                embed.setColor(Colors.Red).setDescription("No hay ninguna canción reproduciéndose en este momento");
                 return await interaction.reply({ embeds: [embed] });
             } else {
                 try {
@@ -27,11 +27,11 @@ module.exports = {
                     queue.node.stop(false);
                 } catch (error) {
                     console.log(error);
-                    embed.setColor("Red").setDescription("Error al intentar parar la canción");
+                    embed.setColor(Colors.Red).setDescription("Error al intentar parar la canción");
                     return await interaction.reply({ embeds: [embed] });
                 }
 
-                embed.setColor("Green").setDescription("✅ Canción parada con éxito");
+                embed.setColor(Colors.Green).setDescription("✅ Canción parada con éxito");
                 await interaction.reply({ embeds: [embed] });
             }
         }

@@ -1,4 +1,11 @@
-import { EmbedBuilder, SlashCommandBuilder, MessageFlags, ChatInputCommandInteraction, GuildMember } from "discord.js";
+import {
+    EmbedBuilder,
+    SlashCommandBuilder,
+    MessageFlags,
+    ChatInputCommandInteraction,
+    GuildMember,
+    Colors,
+} from "discord.js";
 import { useMainPlayer } from "discord-player";
 import { usuarioEnVoiceChannel } from "../utils/voiceUtils";
 
@@ -26,12 +33,12 @@ module.exports = {
                 return false;
                 // Verifica si el usuario pone /play con la URL y un archivo adjunto
             } else if (query && file) {
-                embed.setColor("Red").setDescription("Sólo puedes usar **una** opción: `url` o `file` no ambas");
+                embed.setColor(Colors.Red).setDescription("Sólo puedes usar **una** opción: `url` o `file` no ambas");
                 return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
                 // Verifica si el usuario sólo pone /play sin la URL o un archivo adjunto
             } else if (!query && !file) {
                 embed
-                    .setColor("Red")
+                    .setColor(Colors.Red)
                     .setDescription("Debes especificar una URL o subir un archivo para reproducir música");
                 return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
             }
@@ -59,7 +66,7 @@ module.exports = {
                 });
 
                 if (!result || !result.tracks.length) {
-                    embed.setColor("Red").setDescription("No se ha podido encontrar la canción");
+                    embed.setColor(Colors.Red).setDescription("No se ha podido encontrar la canción");
                     return interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
                 }
 
@@ -69,12 +76,12 @@ module.exports = {
                     // Si es una playlist, añade todas las canciones
                     queue.addTrack(result.tracks);
                     embed
-                        .setColor("Green")
+                        .setColor(Colors.Green)
                         .setDescription(`💿 Añadida la playlist con ${result.tracks.length} canciones 💿`);
                 } else {
                     // Si es una sola canción, añade solo esa
                     queue.addTrack(result.tracks[0]);
-                    embed.setColor("Green").setDescription(`💿 Añadido a la cola: ${result.tracks[0].title} 💿`);
+                    embed.setColor(Colors.Green).setDescription(`💿 Añadido a la cola: ${result.tracks[0].title} 💿`);
                 }
 
                 await interaction.followUp({ embeds: [embed] });
@@ -85,7 +92,7 @@ module.exports = {
                 }
             } catch (error) {
                 console.error(error);
-                embed.setColor("Red").setDescription("Hubo un error al intentar reproducir la canción");
+                embed.setColor(Colors.Red).setDescription("Hubo un error al intentar reproducir la canción");
                 await interaction.followUp({ embeds: [embed] });
             }
         }

@@ -6,10 +6,7 @@ jest.mock("discord-player", () => ({
 const shuffleCommand = require("../src/commands/shuffle");
 const { useMainPlayer } = require("discord-player");
 const { createVoiceInteraction } = require("./mocks/discordMocks");
-const { MessageFlags } = require("discord.js");
-
-const RED = 15548997;
-const BLUE = 3447003;
+const { Colors, MessageFlags } = require("discord.js");
 
 // Datos de ejemplo
 const SHUFFLE_TEST = {
@@ -53,7 +50,7 @@ describe("/shuffle command", () => {
             embeds: [
                 {
                     data: {
-                        color: RED,
+                        color: Colors.Red,
                         description: "No hay ninguna canción en la cola",
                     },
                 },
@@ -71,7 +68,7 @@ describe("/shuffle command", () => {
             embeds: [
                 {
                     data: {
-                        color: BLUE,
+                        color: Colors.Blue,
                         description: "¡La cola ha sido mezclada!",
                     },
                 },
@@ -89,7 +86,7 @@ describe("/shuffle command", () => {
             embeds: [
                 {
                     data: {
-                        color: BLUE,
+                        color: Colors.Blue,
                         description: "¡La cola ha sido mezclada!",
                     },
                 },
@@ -106,7 +103,7 @@ describe("/shuffle command", () => {
         expect(interaction.reply).toHaveBeenCalled();
         const replyEmbed = interaction.reply.mock.calls[0][0].embeds[0].toJSON();
 
-        expect(replyEmbed.color).toBe(RED);
+        expect(replyEmbed.color).toBe(Colors.Red);
         expect(replyEmbed.description).toBe("¡Debes estar en un canal de voz para reproducir música!");
         expect(interaction.reply.mock.calls[0][0].flags).toBe(MessageFlags.Ephemeral);
     });

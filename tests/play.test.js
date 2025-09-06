@@ -6,10 +6,7 @@ jest.mock("discord-player", () => ({
 const playCommand = require("../src/commands/play");
 const { useMainPlayer } = require("discord-player");
 const { createVoiceInteraction } = require("./mocks/discordMocks");
-const { MessageFlags } = require("discord.js");
-
-const RED = 15548997;
-const GREEN = 5763719;
+const { Colors, MessageFlags } = require("discord.js");
 
 // Datos de ejemplo
 const PLAY_TEST = {
@@ -70,7 +67,7 @@ describe("/play command", () => {
             embeds: [
                 {
                     data: {
-                        color: RED,
+                        color: Colors.Red,
                         description: "¡Debes estar en un canal de voz para reproducir música!",
                     },
                 },
@@ -91,7 +88,7 @@ describe("/play command", () => {
             embeds: [
                 {
                     data: {
-                        color: RED,
+                        color: Colors.Red,
                         description: "Debes especificar una URL o subir un archivo para reproducir música",
                     },
                 },
@@ -115,7 +112,7 @@ describe("/play command", () => {
             embeds: [
                 {
                     data: {
-                        color: GREEN,
+                        color: Colors.Green,
                         description: `💿 Añadido a la cola: ${PLAY_TEST.SONG_TITLE} 💿`,
                     },
                 },
@@ -133,7 +130,7 @@ describe("/play command", () => {
         await playCommand.run({ interaction });
 
         expect(interaction.followUp).toHaveBeenCalledWith({
-            embeds: [{ data: { color: RED, description: "No se ha podido encontrar la canción" } }],
+            embeds: [{ data: { color: Colors.Red, description: "No se ha podido encontrar la canción" } }],
             flags: MessageFlags.Ephemeral,
         });
     });

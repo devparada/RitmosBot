@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, Colors, EmbedBuilder, SlashCommandBuilder } from "discord.js";
 import { useMainPlayer } from "discord-player";
 import { usuarioEnVoiceChannel } from "../utils/voiceUtils";
 
@@ -16,7 +16,7 @@ module.exports = {
             await interaction.deferReply();
 
             if (!queue || !queue.currentTrack) {
-                embed.setColor("Red").setDescription("No hay ninguna canción en la cola o reproduciendose");
+                embed.setColor(Colors.Red).setDescription("No hay ninguna canción en la cola o reproduciendose");
                 return await interaction.followUp({ embeds: [embed] });
             } else {
                 try {
@@ -40,7 +40,7 @@ module.exports = {
                     return await interaction.followUp({
                         embeds: [
                             embed
-                                .setColor("Blue")
+                                .setColor(Colors.Blue)
                                 .setDescription(
                                     `💿 **Está reproduciéndose 💿**\n${currentTrack.title} - ${currentTrack.duration}\n\n **Cola** \n` +
                                         description,
@@ -51,7 +51,7 @@ module.exports = {
                     });
                 } catch (error) {
                     console.log("Error al mostrar la cola de canciones:", error);
-                    embed.setColor("Red").setDescription("Error al intentar mostrar la cola de canciones");
+                    embed.setColor(Colors.Red).setDescription("Error al intentar mostrar la cola de canciones");
                     await interaction.followUp({ embeds: [embed] });
                 }
             }

@@ -1,7 +1,16 @@
 import dotenv from "dotenv";
 import path from "path";
 import fs from "fs";
-import { Client, Collection, EmbedBuilder, GatewayIntentBits, Interaction, ActivityType, VoiceState } from "discord.js";
+import {
+    Client,
+    Collection,
+    EmbedBuilder,
+    GatewayIntentBits,
+    Interaction,
+    ActivityType,
+    VoiceState,
+    Colors,
+} from "discord.js";
 import { Routes, RESTPostAPIChatInputApplicationCommandsJSONBody } from "discord-api-types/v10";
 import { REST } from "@discordjs/rest";
 import { SpotifyExtractor, AttachmentExtractor } from "@discord-player/extractor";
@@ -231,7 +240,7 @@ if (LOAD_SLASH) {
             } else {
                 descripcion += track.requestedBy ? `subido por **${track.requestedBy.username}** 🎶` : "";
             }
-            embed.setColor("Blue").setThumbnail(urlThumbnail).setDescription(descripcion);
+            embed.setColor(Colors.Blue).setThumbnail(urlThumbnail).setDescription(descripcion);
             await textChannel.send({ embeds: [embed] });
         }
     });

@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, Colors, EmbedBuilder, SlashCommandBuilder } from "discord.js";
 import { useMainPlayer } from "discord-player";
 import { usuarioEnVoiceChannel } from "../utils/voiceUtils";
 
@@ -17,10 +17,10 @@ module.exports = {
                 const queue = player.nodes.get(interaction.guild.id);
 
                 if (!queue || !queue.connection) {
-                    embed.setColor("Red").setDescription("❌ No estoy conectado a ningún canal de voz");
+                    embed.setColor(Colors.Red).setDescription("❌ No estoy conectado a ningún canal de voz");
                 } else {
                     queue.delete();
-                    embed.setColor("Green").setDescription("✅ Me he desconectado del canal de voz");
+                    embed.setColor(Colors.Green).setDescription("✅ Me he desconectado del canal de voz");
                 }
             }
         }

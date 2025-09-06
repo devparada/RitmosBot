@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, EmbedBuilder, GuildMember, MessageFlags } from "discord.js";
+import { ChatInputCommandInteraction, Colors, EmbedBuilder, GuildMember, MessageFlags } from "discord.js";
 
 /**
  * Verifica si el usuario está en un canal de voz y envia el embed si no lo está
@@ -12,7 +12,9 @@ export async function usuarioEnVoiceChannel(interaction: ChatInputCommandInterac
         if (!member.voice.channel) {
             await interaction.reply({
                 embeds: [
-                    embed.setColor("Red").setDescription("¡Debes estar en un canal de voz para reproducir música!"),
+                    embed
+                        .setColor(Colors.Red)
+                        .setDescription("¡Debes estar en un canal de voz para reproducir música!"),
                 ],
                 flags: MessageFlags.Ephemeral,
             });
