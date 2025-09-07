@@ -15,15 +15,15 @@ module.exports = {
             const queue = player.nodes.get(interaction.guild!.id);
             await interaction.deferReply();
 
-            if (!queue || !queue.currentTrack) {
+            if (!queue?.currentTrack) {
                 embed.setColor(Colors.Red).setDescription("No hay ninguna canción en la cola o reproduciendose");
                 return await interaction.followUp({ embeds: [embed] });
             } else {
                 try {
                     const cancionesLimite = 20;
                     const tracksArray = queue.tracks.data;
-                    var totalCanciones = queue.tracks.size;
-                    var description = "";
+                    let totalCanciones = queue.tracks.size;
+                    let description = "";
 
                     if (totalCanciones >= 1) {
                         description = tracksArray

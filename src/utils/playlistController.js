@@ -87,7 +87,7 @@ async function mostrarPlaylists(serverId) {
 async function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) {
     await mongo.connect();
     try {
-        var playlistExiste = checkExistPlaylist(serverId, nombrePlaylist);
+        let playlistExiste = checkExistPlaylist(serverId, nombrePlaylist);
         if (playlistExiste["color"] === Colors.Red) return playlistExiste;
 
         // Comprueba si existe la playlist y añade la canción
@@ -116,7 +116,7 @@ async function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) 
 async function eliminarCancionPlaylist(serverId, nombrePlaylist, tituloCancion) {
     await mongo.connect();
     try {
-        var playlistExiste = checkExistPlaylist(serverId, nombrePlaylist);
+        let playlistExiste = checkExistPlaylist(serverId, nombrePlaylist);
         if (playlistExiste["color"] === Colors.Red) return playlistExiste;
 
         // Comprueba si existe la playlist y elimina la canción

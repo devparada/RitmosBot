@@ -167,7 +167,7 @@ module.exports = {
                                             return Object.keys(songs).length > 0;
                                         });
 
-                                        var playlistsFiltrada;
+                                        let playlistsFiltrada;
                                         // Filtramos las playlists que empiezan con el texto que el usuario está escribiendo
                                         if (focusedValue.length > 0) {
                                             filteredPlaylist = playlistList.filter((playlistName) =>
@@ -221,12 +221,10 @@ module.exports = {
                                                 { name: "No hay canciones en esta categoría", value: "none" },
                                             ]);
                                         }
-                                    } else {
-                                        if (interaction.isAutocomplete()) {
-                                            await interaction.respond([
-                                                { name: "No existe la playlist selecionada", value: "none" },
-                                            ]);
-                                        }
+                                    } else if (interaction.isAutocomplete()) {
+                                        await interaction.respond([
+                                            { name: "No existe la playlist selecionada", value: "none" },
+                                        ]);
                                     }
                                 }
                             }
@@ -306,7 +304,7 @@ module.exports = {
                     });
                     const track = result.tracks[0];
 
-                    var tituloCancion;
+                    let tituloCancion;
                     if (track && track.title) {
                         tituloCancion = track.title;
                     } else {
