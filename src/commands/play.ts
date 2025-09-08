@@ -65,7 +65,7 @@ module.exports = {
                     requestedBy: interaction.user,
                 });
 
-                if (!result || !result.tracks.length) {
+                if (!result?.tracks?.length) {
                     embed.setColor(Colors.Red).setDescription("No se ha podido encontrar la canción");
                     return interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
                 }

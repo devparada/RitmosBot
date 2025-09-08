@@ -16,7 +16,7 @@ module.exports = {
             if (interaction.guild != null) {
                 const queue = player.nodes.get(interaction.guild.id);
 
-                if (!queue || !queue.connection) {
+                if (!queue?.connection) {
                     embed.setColor(Colors.Red).setDescription("❌ No estoy conectado a ningún canal de voz");
                 } else {
                     queue.delete();

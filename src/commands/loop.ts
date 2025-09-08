@@ -23,7 +23,7 @@ module.exports = {
         if (interaction.guild != null) {
             const queue = player.nodes.get(interaction.guild.id);
 
-            if (!queue || !queue.isPlaying()) {
+            if (!queue?.isPlaying()) {
                 return await interaction.reply({
                     content: "No hay ninguna canción reproduciéndose actualmente",
                     ephemeral: true,
