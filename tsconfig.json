@@ -13,6 +13,10 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@tests/*": ["tests/*"]
+    }
   },
   "include": ["src"],
 }

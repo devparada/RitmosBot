@@ -16,8 +16,8 @@ import { REST } from "@discordjs/rest";
 import { SpotifyExtractor, AttachmentExtractor } from "@discord-player/extractor";
 import { YoutubeiExtractor } from "discord-player-youtubei";
 import { Track, GuildQueue, Player } from "discord-player";
-import playerConfig from "./config/player.config";
-import { QueueMetadata } from "./types/types";
+import playerConfig from "@/config/player.config";
+import { QueueMetadata } from "@/types/types";
 
 // Carga las variables del archivo .env en silencio
 dotenv.config({ quiet: true });

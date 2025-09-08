@@ -2,9 +2,9 @@ jest.mock("discord-player", () => ({
     useMainPlayer: jest.fn(),
 }));
 
-const loopCommand = require("../src/commands/loop");
+const loopCommand = require("@/commands/loop");
 const { useMainPlayer } = require("discord-player");
-const { createModeInteraction } = require("./mocks/discordMocks");
+const { createModeInteraction } = require("@tests/mocks/discordMocks");
 
 // Datos de ejemplo
 const LOOP_TEST = {

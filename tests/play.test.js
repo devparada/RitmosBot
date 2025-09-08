@@ -3,9 +3,9 @@ jest.mock("discord-player", () => ({
     useMainPlayer: jest.fn(),
 }));
 
-const playCommand = require("../src/commands/play");
+const playCommand = require("@/commands/play");
 const { useMainPlayer } = require("discord-player");
-const { createVoiceInteraction } = require("./mocks/discordMocks");
+const { createVoiceInteraction } = require("@tests/mocks/discordMocks");
 const { Colors, MessageFlags } = require("discord.js");
 
 // Datos de ejemplo

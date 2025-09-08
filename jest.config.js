@@ -6,6 +6,8 @@ module.exports = {
     coverageProvider: "v8",
     moduleNameMapper: {
         "^src/(.*)$": "<rootDir>/src/$1",
+        "^@/(.*)$": "<rootDir>/src/$1",
+        "^@tests/(.*)$": "<rootDir>/tests/$1",
     },
     transform: {
         "^.+\\.tsx?$": [

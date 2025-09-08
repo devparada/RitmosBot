@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, Colors, EmbedBuilder, SlashCommandBuilder } from "discord.js";
 import { useMainPlayer } from "discord-player";
-import { usuarioEnVoiceChannel } from "../utils/voiceUtils";
+import { usuarioEnVoiceChannel } from "@/utils/voiceUtils";
 
 module.exports = {
     data: new SlashCommandBuilder().setName("queue").setDescription("Muestra la cola de canciones actual"),

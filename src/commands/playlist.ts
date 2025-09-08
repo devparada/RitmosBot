@@ -27,8 +27,8 @@ import {
     mostrarPlaylists,
     addCancionPlaylist,
     eliminarCancionPlaylist,
-} from "../utils/playlistController.js";
-import { usuarioEnVoiceChannel } from "../utils/voiceUtils";
+} from "@/utils/playlistController.js";
+import { usuarioEnVoiceChannel } from "@/utils/voiceUtils";
 
 module.exports = {
     data: new SlashCommandBuilder()

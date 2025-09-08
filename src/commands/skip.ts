@@ -1,6 +1,6 @@
 import { EmbedBuilder, SlashCommandBuilder, ChatInputCommandInteraction, Colors } from "discord.js";
 import { useMainPlayer } from "discord-player";
-import { usuarioEnVoiceChannel } from "../utils/voiceUtils";
+import { usuarioEnVoiceChannel } from "@/utils/voiceUtils";
 
 module.exports = {
     data: new SlashCommandBuilder().setName("skip").setDescription("Salta la canción actual"),
