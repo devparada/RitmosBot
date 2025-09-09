@@ -33,7 +33,7 @@ read -p "Selecciona una opcion:" opcion
 
 case $opcion in
 1)
-    npm install
+    npm ci
     npm run build
     node . slash
     ;;

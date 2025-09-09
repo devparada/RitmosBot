@@ -38,7 +38,7 @@ goto :case-%errorlevel%
 
 :case-1
     echo Selecionada Recrear los comandos slash
-        CALL npm install
+        CALL npm ci
         CALL npm run build
         CALL node . slash
         GOTO fin
