@@ -128,7 +128,7 @@ async function eliminarCancionPlaylist(serverId, nombrePlaylist, tituloCancion) 
         if (result.modifiedCount > 0) {
             return {
                 color: Colors.Green,
-                mensaje: `La canción **${tituloCancion}** se ha eliminando a la playlist **${nombrePlaylist}**`,
+                mensaje: `La canción **${tituloCancion}** se ha eliminado de la playlist **${nombrePlaylist}**`,
             };
         } else {
             return { color: Colors.Red, mensaje: `La playlist **${nombrePlaylist}** no existe o no tiene la canción` };
