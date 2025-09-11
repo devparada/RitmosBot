@@ -9,15 +9,7 @@ module.exports = {
     bracketSpacing: true, // Añade espacio dentro de las llaves en objetos
     arrowParens: "always", // Siempre usa paréntesis en funciones flecha, incluso con un solo parámetro
     endOfLine: "lf", // Usa el salto de línea tipo Unix (LF) para evitar problemas entre distintos sistemas operativos
-    plugins: ["prettier-plugin-packagejson"], // Plugins adicionales para formatear archivos específicos (como package.json)
     overrides: [
-        {
-            files: "package.json",
-            options: {
-                parser: "json", // Usa el parser JSON estándar para este archivo
-                tabWidth: 2,
-            },
-        },
         {
             files: "eslint.config.mjs",
             options: {
