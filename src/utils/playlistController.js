@@ -8,6 +8,12 @@ const mongo = new MongoClient(MONGO_URI);
 const db = mongo.db(MONGO_DB);
 const coleccion = db.collection("playlists");
 
+// Función para normalizar claves de MongoDB
+function limpiarKey(key) {
+    // Reemplaza puntos y signos de dólar por caracteres seguros
+    return key.replace(/\./g, "·").replace(/\$/g, "₀");
+}
+
 // Crea la playlist con un nombre y un serverId
 async function crearPlaylist(serverId, nombre) {
     await mongo.connect();
@@ -85,6 +91,9 @@ async function mostrarPlaylists(serverId) {
 
 // Añade la canción a la playlist
 async function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) {
+    url = limpiarKey(url);
+    nombrePlaylist = limpiarKey(nombrePlaylist);
+    tituloCancion = limpiarKey(tituloCancion);
     await mongo.connect();
     try {
         let playlistExiste = checkExistPlaylist(serverId, nombrePlaylist);

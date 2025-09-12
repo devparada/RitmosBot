@@ -103,146 +103,139 @@ module.exports = {
         ),
 
     async autocomplete(interaction: ChatInputCommandInteraction | AutocompleteInteraction) {
+        if (!interaction.isAutocomplete()) return;
+
+        const guildId = interaction.guildId;
+        if (!guildId) return;
+
         await mongo.connect();
         try {
-            const guildId = interaction.guildId;
-            if (!guildId) return;
+            const docs = await coleccion.find({ serverId: guildId }).toArray();
+            const playlists: Record<string, unknown> = docs[0] ?? {};
 
-            const playlists = await coleccion.find({ serverId: guildId }).toArray();
-
-            let focusedValue = "";
-            if (interaction.isAutocomplete()) {
-                focusedValue = interaction.options.getFocused();
-            }
-
-            const obtenerPlaylistNombres = () => {
-                const playlistList: string[] = [];
-                playlists.forEach((doc) => {
-                    Object.keys(doc).forEach((playlistName) => {
-                        if (playlistName !== "serverId" && playlistName !== "_id") {
-                            playlistList.push(playlistName);
+            const obtenerPlaylistNombres = (): string[] => {
+                const set = new Set<string>();
+                for (const doc of docs) {
+                    for (const key of Object.keys(doc)) {
+                        if (key !== "serverId" && key !== "_id") {
+                            set.add(key);
                         }
-                    });
-                });
-                return playlistList;
+                    }
+                }
+                return Array.from(set);
             };
 
-            if (interaction.isAutocomplete()) {
-                switch (interaction.options.getSubcommand()) {
-                    case "remove":
-                    case "add":
-                        {
-                            let filteredPlaylist = obtenerPlaylistNombres().filter((playlistName) =>
-                                String(playlistName).toLowerCase().startsWith(focusedValue.toLowerCase()),
-                            );
+            const crearOpciones = (items: string[]) => items.slice(0, 25).map((s) => ({ name: s, value: s })); // Discord limita a 25 opciones
 
-                            let playlistsRespuesta = filteredPlaylist.map((playlist) => ({
-                                name: playlist,
-                                value: playlist,
-                            }));
+            const sub = interaction.options.getSubcommand();
+            const focusedRaw = interaction.options.getFocused();
+            const focusedValue = focusedRaw ? String(focusedRaw) : "";
+            const focusedLower = focusedValue.toLowerCase();
+            const startsWith = (arr: string[]) => arr.filter((n) => n.toLowerCase().startsWith(focusedLower));
 
-                            if (playlistsRespuesta.length === 0 && focusedValue !== "") {
-                                playlistsRespuesta.push({
-                                    name: "No hay playlists que empiecen por " + focusedValue.toLowerCase(),
-                                    value: "none",
-                                });
-                            } else if (filteredPlaylist.length === 0) {
-                                playlistsRespuesta.push({
-                                    name: "No existen playlists en este servidor",
-                                    value: "none",
-                                });
-                            }
+            switch (sub) {
+                case "add":
+                case "remove": {
+                    // Todas las playlists del servidor
+                    let playlistsFiltradas = obtenerPlaylistNombres();
 
-                            await interaction.respond(playlistsRespuesta);
-                        }
-                        break;
-                    case "delete":
-                        {
-                            const focusedOptionName = interaction.options.getFocused(true).name;
-                            const playlistsData = playlists[0] ?? {};
+                    if (focusedValue.length > 0) {
+                        playlistsFiltradas = startsWith(playlistsFiltradas);
+                    }
 
-                            // Obtener nombres de playlists
-                            const playlistNombres = Object.keys(playlistsData).filter(
-                                (pl) => pl !== "serverId" && pl !== "_id",
-                            );
+                    const respuesta =
+                        playlistsFiltradas.length > 0
+                            ? crearOpciones(playlistsFiltradas)
+                            : [
+                                  {
+                                      name: focusedValue
+                                          ? `No hay playlists que empiecen por "${focusedValue}"`
+                                          : "No existen playlists en este servidor",
+                                      value: "none",
+                                  },
+                              ];
+                    await interaction.respond(respuesta);
+                    break;
+                }
+                case "delete":
+                    {
+                        const focusedOption = interaction.options.getFocused(true).name;
 
-                            const filtrarPorTexto = (arr: string[], texto: string) =>
-                                arr.filter((item) => item.toLowerCase().startsWith(texto.toLowerCase()));
+                        switch (focusedOption) {
+                            case "playlist":
+                                {
+                                    // Filtra las playlists que tengan al menos una canción
+                                    let playlistConCanciones = Object.keys(playlists).filter(
+                                        (k) =>
+                                            k !== "serverId" &&
+                                            k !== "_id" &&
+                                            Object.keys(playlists[k] ?? {}).length > 0,
+                                    );
 
-                            switch (focusedOptionName) {
-                                case "playlist":
-                                    {
-                                        // Filtra las playlists que tengan al menos una canción
-                                        let playlistConCanciones = playlistNombres.filter(
-                                            (name) => Object.keys(playlistsData[name]).length > 0,
-                                        );
+                                    // Si el usuario está escribiendo, filtrar las playlists que empiecen por este texto
+                                    if (focusedValue) playlistConCanciones = startsWith(playlistConCanciones);
 
-                                        // Si el usuario está escribiendo, filtrar las playlists que empiecen por este texto
-                                        if (focusedValue)
-                                            playlistConCanciones = filtrarPorTexto(playlistConCanciones, focusedValue);
-
-                                        // Si hay playlists filtradas, se mapean a objetos {name, value}
-                                        // Si no hay coincidencias, se devuelve un mensaje indicando que no hay playlists
-                                        const respuesta =
-                                            playlistConCanciones.length > 0
-                                                ? playlistConCanciones.map((name) => ({ name, value: name }))
-                                                : [
-                                                      {
-                                                          name: focusedValue
-                                                              ? `No hay playlists que empiecen por ${focusedValue}`
-                                                              : "No existen playlists",
-                                                          value: "__empty__", // Valor especial para indicar que no hay opción válida
-                                                      },
-                                                  ];
-
-                                        await interaction.respond(respuesta);
-                                    }
-                                    break;
-                                case "name": {
-                                    const playlistSeleccionada = interaction.options.getString("playlist") ?? "";
-
-                                    // Obtenemos las canciones de esa playlist del objeto 'playlistsData'
-                                    // Si no existe la playlist, usamos un objeto vacío para evitar errores
-                                    const canciones = playlistsData[playlistSeleccionada] ?? {};
-
-                                    const respuesta: ApplicationCommandOptionChoiceData<string>[] =
-                                        Object.keys(canciones).length > 0 // Si hay canciones
-                                            ? Object.entries(canciones).map(([title]) => ({
-                                                  name: title,
-                                                  value: title,
-                                              }))
-                                            : [{ name: "No hay canciones en esta playlist", value: "none" }];
+                                    // Si hay playlists filtradas, se mapean a objetos {name, value}
+                                    // Si no hay coincidencias, se devuelve un mensaje indicando que no hay playlists
+                                    const respuesta =
+                                        playlistConCanciones.length > 0
+                                            ? crearOpciones(playlistConCanciones)
+                                            : [
+                                                  {
+                                                      name: focusedValue
+                                                          ? `No hay playlists que empiecen por ${focusedValue}`
+                                                          : "No existen playlists",
+                                                      value: "__empty__", // Valor especial para indicar que no hay opción válida
+                                                  },
+                                              ];
 
                                     await interaction.respond(respuesta);
                                 }
+                                break;
+                            case "name": {
+                                const playlistSeleccionada = interaction.options.getString("playlist") ?? "";
+
+                                // Obtenemos las canciones de esa playlist del objeto 'playlistsData'
+                                // Si no existe la playlist, usamos un objeto vacío para evitar errores
+                                const canciones = playlists[playlistSeleccionada] ?? {};
+                                const nombresCanciones = Object.keys(canciones);
+
+                                const respuesta: ApplicationCommandOptionChoiceData<string>[] =
+                                    nombresCanciones.length > 0 // Si hay canciones
+                                        ? crearOpciones(nombresCanciones)
+                                        : [{ name: "No hay canciones en esta playlist", value: "none" }];
+
+                                await interaction.respond(respuesta);
                             }
                         }
-                        break;
-                    case "play":
-                        {
-                            const obtenerPlaylists = obtenerPlaylistNombres().filter((name) => {
-                                const songs = playlists[0]?.[name];
-                                return Object.keys(songs).length > 0;
-                            });
+                    }
+                    break;
+                case "play":
+                    {
+                        let obtenerPlaylists = obtenerPlaylistNombres().filter((name) => {
+                            const songs = playlists[name] ?? {};
+                            return songs && typeof songs === "object" && Object.keys(songs).length > 0;
+                        });
 
-                            let filteredPlaylists = obtenerPlaylists.map((name) => ({
-                                name,
-                                value: name,
-                            }));
+                        if (focusedValue) obtenerPlaylists = startsWith(obtenerPlaylists);
 
-                            if (filteredPlaylists.length === 0) {
-                                filteredPlaylists.push({
-                                    name: "No hay playlists que empiecen por " + focusedValue.toLowerCase(),
-                                    value: "none",
-                                });
-                            }
-                            await interaction.respond(filteredPlaylists);
-                        }
-                        break;
-                }
+                        const respuesta =
+                            obtenerPlaylists.length > 0
+                                ? crearOpciones(obtenerPlaylists)
+                                : [
+                                      {
+                                          name: focusedValue
+                                              ? `No hay playlists que empiecen por + "${focusedValue.toLowerCase()}"`
+                                              : "No hay playlists disponibles para reproducir",
+                                          value: "none",
+                                      },
+                                  ];
+                        await interaction.respond(respuesta);
+                    }
+                    break;
             }
         } catch (error) {
-            console.error(error);
+            console.error("Error en el autocompletado playlist: " + error);
         } finally {
             await mongo.close();
         }
@@ -290,8 +283,8 @@ module.exports = {
                     const result = await player.search(url, {
                         requestedBy: interaction.user,
                     });
-                    const track = result.tracks[0];
 
+                    const track = result.tracks[0];
                     let tituloCancion = track?.title ?? "Título no encontrado";
 
                     let arrayAdd = (await addCancionPlaylist(guildId, url, playlistName, tituloCancion)) ?? {
