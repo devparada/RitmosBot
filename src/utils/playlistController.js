@@ -1,12 +1,6 @@
+const { coleccionPlaylists } = require("@/config/db");
 const { useMainPlayer } = require("discord-player");
-const { MongoClient } = require("mongodb");
 const { Colors } = require("discord.js");
-
-const MONGO_URI = process.env.MONGODB_URI;
-const MONGO_DB = process.env.MONGO_INITDB_DATABASE;
-const mongo = new MongoClient(MONGO_URI);
-const db = mongo.db(MONGO_DB);
-const coleccion = db.collection("playlists");
 
 // Función para normalizar claves de MongoDB
 function limpiarKey(key) {
@@ -16,7 +10,7 @@ function limpiarKey(key) {
 
 // Crea la playlist con un nombre y un serverId
 async function crearPlaylist(serverId, nombre) {
-    await mongo.connect();
+    nombre = limpiarKey(nombre);
     try {
         const playlistExiste = await checkExistPlaylist(serverId, nombre);
 
@@ -24,22 +18,23 @@ async function crearPlaylist(serverId, nombre) {
         if (playlistExiste.color === Colors.Red) return playlistExiste;
 
         // Crea la playlist en la base de datos
-        await coleccion.updateOne({ serverId: serverId }, { $set: { [`${nombre}`]: {} } }, { upsert: true });
+        await coleccionPlaylists.updateOne({ serverId: serverId }, { $set: { [`${nombre}`]: {} } }, { upsert: true });
 
         return { color: Colors.Green, mensaje: `La playlist **${nombre}** fue creada correctamente` };
     } catch (error) {
         console.error("Error al crear la playlist:", error);
         return { color: Colors.Red, mensaje: `Error al crear la playlist ${nombre}` };
-    } finally {
-        await mongo.close();
     }
 }
 
 // Elimina la playlist con un nombre y un serverId
 async function eliminarPlaylist(serverId, nombrePlaylist) {
-    await mongo.connect();
+    nombrePlaylist = limpiarKey(nombrePlaylist);
     try {
-        const resultado = await coleccion.updateOne({ serverId: serverId }, { $unset: { [`${nombrePlaylist}`]: "" } });
+        const resultado = await coleccionPlaylists.updateOne(
+            { serverId: serverId },
+            { $unset: { [`${nombrePlaylist}`]: "" } },
+        );
 
         if (resultado.modifiedCount > 0) {
             return { color: Colors.Green, mensaje: `La playlist **${nombrePlaylist}** fue eliminada correctamente` };
@@ -49,16 +44,13 @@ async function eliminarPlaylist(serverId, nombrePlaylist) {
     } catch (error) {
         console.error("Error al eliminar la playlist:", error);
         return { color: Colors.Red, mensaje: `Error al eliminar la playlist ${nombrePlaylist}` };
-    } finally {
-        await mongo.close();
     }
 }
 
 // Muestra las playlists del servidor
 async function mostrarPlaylists(serverId) {
-    await mongo.connect();
     try {
-        const resultado = await coleccion.find({ serverId }).toArray();
+        const resultado = await coleccionPlaylists.find({ serverId }).toArray();
         if (!resultado || resultado.length === 0)
             return { color: Colors.Red, mensaje: "No hay playlists creadas en este servidor" };
 
@@ -84,8 +76,6 @@ async function mostrarPlaylists(serverId) {
     } catch (error) {
         console.error("Error al mostrar la playlist:", error);
         return { color: Colors.Red, mensaje: "Error al mostrar la playlist" };
-    } finally {
-        await mongo.close();
     }
 }
 
@@ -94,13 +84,12 @@ async function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) 
     url = limpiarKey(url);
     nombrePlaylist = limpiarKey(nombrePlaylist);
     tituloCancion = limpiarKey(tituloCancion);
-    await mongo.connect();
     try {
         let playlistExiste = checkExistPlaylist(serverId, nombrePlaylist);
         if (playlistExiste["color"] === Colors.Red) return playlistExiste;
 
         // Comprueba si existe la playlist y añade la canción
-        const result = await coleccion.updateOne(
+        const result = await coleccionPlaylists.updateOne(
             { serverId, [nombrePlaylist]: { $exists: true } },
             { $set: { [`${nombrePlaylist}.${tituloCancion}`]: url } },
         );
@@ -116,20 +105,19 @@ async function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) 
     } catch (error) {
         console.error("Error añadiendo la canción:", error);
         return { color: Colors.Red, mensaje: `Error añadiendo la canción a la playlist **${nombrePlaylist}**` };
-    } finally {
-        await mongo.close();
     }
 }
 
 // Elimina la canción de la playlist
 async function eliminarCancionPlaylist(serverId, nombrePlaylist, tituloCancion) {
-    await mongo.connect();
+    nombrePlaylist = limpiarKey(nombrePlaylist);
+    tituloCancion = limpiarKey(tituloCancion);
     try {
         let playlistExiste = checkExistPlaylist(serverId, nombrePlaylist);
         if (playlistExiste["color"] === Colors.Red) return playlistExiste;
 
         // Comprueba si existe la playlist y elimina la canción
-        const result = await coleccion.updateOne(
+        const result = await coleccionPlaylists.updateOne(
             { serverId, [nombrePlaylist]: { $exists: true } },
             { $unset: { [`${nombrePlaylist}.${tituloCancion}`]: "" } },
         );
@@ -145,13 +133,11 @@ async function eliminarCancionPlaylist(serverId, nombrePlaylist, tituloCancion) 
     } catch (error) {
         console.error("Error eliminando la canción:", error);
         return { color: Colors.Red, mensaje: `Error eliminando la canción a la playlist **${nombrePlaylist}**` };
-    } finally {
-        await mongo.close();
     }
 }
 
 async function playCheckPlaylist(serverId, nombrePlaylist) {
-    await mongo.connect();
+    nombrePlaylist = limpiarKey(nombrePlaylist);
     try {
         const playlistExiste = await checkExistPlaylist(serverId, nombrePlaylist);
         if (playlistExiste.color !== Colors.Red) return playlistExiste;
@@ -159,14 +145,13 @@ async function playCheckPlaylist(serverId, nombrePlaylist) {
         return { color: Colors.Green, mensaje: `La playlist **${nombrePlaylist}** se añadio a la cola correctamente` };
     } catch (error) {
         console.error(error);
-    } finally {
-        await mongo.close();
     }
 }
 
 async function checkExistPlaylist(serverId, nombrePlaylist) {
+    nombrePlaylist = limpiarKey(nombrePlaylist);
     try {
-        const resultado = await coleccion.findOne({ serverId, [nombrePlaylist]: { $exists: true } });
+        const resultado = await coleccionPlaylists.findOne({ serverId, [nombrePlaylist]: { $exists: true } });
 
         if (!resultado) return { color: Colors.Green, mensaje: `La playlist **${nombrePlaylist}** no existe` };
         // Si existe la playlist
@@ -178,11 +163,11 @@ async function checkExistPlaylist(serverId, nombrePlaylist) {
 
 // Añade la canción a la playlist
 async function playPlaylist(serverId, nombrePlaylist, interaction) {
-    await mongo.connect();
     const player = useMainPlayer();
+    nombrePlaylist = limpiarKey(nombrePlaylist);
 
     try {
-        const resultado = await coleccion.find({ serverId }).toArray();
+        const resultado = await coleccionPlaylists.find({ serverId }).toArray();
 
         for (const playlist of resultado) {
             if (playlist[nombrePlaylist] && typeof playlist[nombrePlaylist] === "object") {

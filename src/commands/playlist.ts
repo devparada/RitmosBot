@@ -1,3 +1,4 @@
+import { coleccionPlaylists } from "@/config/db";
 import { useMainPlayer } from "discord-player";
 import {
     ApplicationCommandOptionChoiceData,
@@ -8,17 +9,6 @@ import {
     EmbedBuilder,
     SlashCommandBuilder,
 } from "discord.js";
-import { MongoClient } from "mongodb";
-
-const MONGO_URI = process.env.MONGODB_URI;
-if (!MONGO_URI) {
-    throw new Error("La variable de entorno MONGODB_URI no está definida");
-}
-
-const mongo = new MongoClient(MONGO_URI);
-const db = mongo.db("ritmosbot");
-const coleccion = db.collection("playlists");
-
 import {
     crearPlaylist,
     eliminarPlaylist,
@@ -108,9 +98,8 @@ module.exports = {
         const guildId = interaction.guildId;
         if (!guildId) return;
 
-        await mongo.connect();
         try {
-            const docs = await coleccion.find({ serverId: guildId }).toArray();
+            const docs = await coleccionPlaylists.find({ serverId: guildId }).toArray();
             const playlists: Record<string, unknown> = docs[0] ?? {};
 
             const obtenerPlaylistNombres = (): string[] => {
@@ -236,8 +225,6 @@ module.exports = {
             }
         } catch (error) {
             console.error("Error en el autocompletado playlist: " + error);
-        } finally {
-            await mongo.close();
         }
     },
 
@@ -246,13 +233,22 @@ module.exports = {
         const embed = new EmbedBuilder();
         const player = useMainPlayer();
 
+        async function responderEmbed(
+            interaction: ChatInputCommandInteraction,
+            result: { color: ColorResolvable; mensaje: string; titulo?: string },
+        ) {
+            const embed = new EmbedBuilder().setColor(result.color).setDescription(result.mensaje);
+            if (result.titulo) embed.setTitle(result.titulo);
+            await interaction.reply({ embeds: [embed] });
+        }
+
         switch (options.getSubcommand()) {
             case "create":
                 try {
                     let arrayCrear = await crearPlaylist(guildId, options.getString("name"));
                     if (arrayCrear) {
-                        embed.setColor(arrayCrear["color"] as ColorResolvable).setDescription(arrayCrear["mensaje"]);
-                        await interaction.reply({ embeds: [embed] });
+                        const embedData = { color: arrayCrear["color"], mensaje: arrayCrear["mensaje"] };
+                        await responderEmbed(interaction, embedData);
                     }
                 } catch (error) {
                     console.log(error);
@@ -261,11 +257,12 @@ module.exports = {
             case "list":
                 try {
                     let arrayLista = await mostrarPlaylists(guildId);
-                    embed
-                        .setColor(arrayLista["color"] as ColorResolvable)
-                        .setTitle("🎶 Lista de Playlists 🎶")
-                        .setDescription(arrayLista["mensaje"]);
-                    await interaction.reply({ embeds: [embed] });
+                    const embedData = {
+                        color: arrayLista["color"],
+                        mensaje: arrayLista["mensaje"],
+                        titulo: "🎶 Lista de Playlists 🎶",
+                    };
+                    await responderEmbed(interaction, embedData);
                 } catch (error) {
                     console.log("Error al mostrar las playlists:" + error);
                 }
@@ -291,8 +288,8 @@ module.exports = {
                         color: Colors.Red,
                         mensaje: "Error inesperado.",
                     };
-                    embed.setColor(arrayAdd["color"] as ColorResolvable).setDescription(arrayAdd["mensaje"]);
-                    await interaction.reply({ embeds: [embed] });
+                    const embedData = { color: arrayAdd["color"], mensaje: arrayAdd["mensaje"] };
+                    await responderEmbed(interaction, embedData);
                 } catch (error) {
                     console.log(error);
                 }
@@ -310,6 +307,8 @@ module.exports = {
                         .setColor(arrayPlayCheck["color"] as ColorResolvable)
                         .setDescription(arrayPlayCheck["mensaje"]);
                     await interaction.reply({ embeds: [embed] });
+                    const embedData = { color: arrayPlayCheck["color"], mensaje: arrayPlayCheck["mensaje"] };
+                    await responderEmbed(interaction, embedData);
                     if (Number(arrayPlayCheck["color"]) === Colors.Green) {
                         playPlaylist(guildId, options.getString("name"), interaction);
                     }
@@ -320,8 +319,8 @@ module.exports = {
             case "remove":
                 try {
                     let arrayRemove = await eliminarPlaylist(guildId, options.getString("name"));
-                    embed.setColor(arrayRemove["color"] as ColorResolvable).setDescription(arrayRemove["mensaje"]);
-                    await interaction.reply({ embeds: [embed] });
+                    const embedData = { color: arrayRemove["color"], mensaje: arrayRemove["mensaje"] };
+                    await responderEmbed(interaction, embedData);
                 } catch (error) {
                     console.log(error);
                 }
@@ -333,8 +332,8 @@ module.exports = {
                         options.getString("playlist"),
                         options.getString("name"),
                     )) ?? { color: Colors.Red, mensaje: "Error inesperado." };
-                    embed.setColor(arrayDelete["color"] as ColorResolvable).setDescription(arrayDelete["mensaje"]);
-                    await interaction.reply({ embeds: [embed] });
+                    const embedData = { color: arrayDelete["color"], mensaje: arrayDelete["mensaje"] };
+                    await responderEmbed(interaction, embedData);
                 } catch (error) {
                     console.log(error);
                 }

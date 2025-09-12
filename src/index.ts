@@ -17,6 +17,7 @@ import { SpotifyExtractor, AttachmentExtractor } from "@discord-player/extractor
 import { YoutubeiExtractor } from "discord-player-youtubei";
 import { Track, GuildQueue, Player } from "discord-player";
 import playerConfig from "@/config/player.config";
+import { connectMongo } from "@/config/db";
 import { QueueMetadata } from "@/types/types";
 
 // Carga las variables del archivo .env en silencio
@@ -130,6 +131,7 @@ if (LOAD_SLASH) {
     // Cuando el bot está listo
     client.on("clientReady", () => {
         console.log(`Logeado como ${client.user?.tag}`);
+        connectMongo();
 
         // <---------------------- Presencia Bot ------------------------------------->
 
