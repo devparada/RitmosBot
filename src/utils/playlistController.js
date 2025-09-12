@@ -2,10 +2,21 @@ const { coleccionPlaylists } = require("@/config/db");
 const { useMainPlayer } = require("discord-player");
 const { Colors } = require("discord.js");
 
-// Función para normalizar claves de MongoDB
+/**
+ * Normaliza el parámetro para quitar puntos y signos de dolares
+ */
 function limpiarKey(key) {
     // Reemplaza puntos y signos de dólar por caracteres seguros
     return key.replace(/\./g, "·").replace(/\$/g, "₀");
+}
+
+/**
+ * Quita el parametro list de las URLs de Youtube pasadas como parámetro
+ */
+function quitarListParam(url) {
+    const u = new URL(url);
+    u.searchParams.delete("list");
+    return u.toString();
 }
 
 // Crea la playlist con un nombre y un serverId
@@ -81,7 +92,7 @@ async function mostrarPlaylists(serverId) {
 
 // Añade la canción a la playlist
 async function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) {
-    url = limpiarKey(url);
+    url = quitarListParam(url);
     nombrePlaylist = limpiarKey(nombrePlaylist);
     tituloCancion = limpiarKey(tituloCancion);
     try {

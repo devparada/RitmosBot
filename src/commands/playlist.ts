@@ -230,7 +230,6 @@ module.exports = {
 
     run: async ({ interaction }: { interaction: ChatInputCommandInteraction }) => {
         const { options, guildId } = interaction;
-        const embed = new EmbedBuilder();
         const player = useMainPlayer();
 
         async function responderEmbed(
@@ -238,6 +237,7 @@ module.exports = {
             result: { color: ColorResolvable; mensaje: string; titulo?: string },
         ) {
             const embed = new EmbedBuilder().setColor(result.color).setDescription(result.mensaje);
+            // Si hay titulo lo añade al embed
             if (result.titulo) embed.setTitle(result.titulo);
             await interaction.reply({ embeds: [embed] });
         }
@@ -251,7 +251,7 @@ module.exports = {
                         await responderEmbed(interaction, embedData);
                     }
                 } catch (error) {
-                    console.log(error);
+                    console.log("Error al crear una playlist: " + error);
                 }
                 break;
             case "list":
@@ -264,7 +264,7 @@ module.exports = {
                     };
                     await responderEmbed(interaction, embedData);
                 } catch (error) {
-                    console.log("Error al mostrar las playlists:" + error);
+                    console.log("Error al mostrar las playlists: " + error);
                 }
                 break;
             case "add":
@@ -291,7 +291,7 @@ module.exports = {
                     const embedData = { color: arrayAdd["color"], mensaje: arrayAdd["mensaje"] };
                     await responderEmbed(interaction, embedData);
                 } catch (error) {
-                    console.log(error);
+                    console.log("Error al añadir una canción a la playlist: " + error);
                 }
                 break;
             case "play":
@@ -303,17 +303,13 @@ module.exports = {
                         color: Colors.Red,
                         mensaje: "Error inesperado.",
                     };
-                    embed
-                        .setColor(arrayPlayCheck["color"] as ColorResolvable)
-                        .setDescription(arrayPlayCheck["mensaje"]);
-                    await interaction.reply({ embeds: [embed] });
                     const embedData = { color: arrayPlayCheck["color"], mensaje: arrayPlayCheck["mensaje"] };
                     await responderEmbed(interaction, embedData);
                     if (Number(arrayPlayCheck["color"]) === Colors.Green) {
                         playPlaylist(guildId, options.getString("name"), interaction);
                     }
                 } catch (error) {
-                    console.log(error);
+                    console.log("Error al reproducir una playlist: " + error);
                 }
                 break;
             case "remove":
@@ -322,7 +318,7 @@ module.exports = {
                     const embedData = { color: arrayRemove["color"], mensaje: arrayRemove["mensaje"] };
                     await responderEmbed(interaction, embedData);
                 } catch (error) {
-                    console.log(error);
+                    console.log("Error al eliminar una playlist: " + error);
                 }
                 break;
             case "delete":
@@ -335,7 +331,7 @@ module.exports = {
                     const embedData = { color: arrayDelete["color"], mensaje: arrayDelete["mensaje"] };
                     await responderEmbed(interaction, embedData);
                 } catch (error) {
-                    console.log(error);
+                    console.log("Error al eliminar una canción en la playlist: " + error);
                 }
                 break;
         }
