@@ -5,6 +5,7 @@ import {
     ChatInputCommandInteraction,
     GuildMember,
     Colors,
+    Attachment,
 } from "discord.js";
 import { useMainPlayer } from "discord-player";
 import { usuarioEnVoiceChannel } from "@/utils/voiceUtils";
@@ -25,32 +26,40 @@ module.exports = {
         const query = options.getString("url");
         const file = options.getAttachment("file");
 
-        if (member instanceof GuildMember) {
-            const voiceChannel = member.voice.channel;
-            const embed = new EmbedBuilder();
+        if (!(member instanceof GuildMember)) return false;
 
-            if (!(await usuarioEnVoiceChannel(interaction))) {
-                return false;
-                // Verifica si el usuario pone /play con la URL y un archivo adjunto
-            } else if (query && file) {
-                embed.setColor(Colors.Red).setDescription("Sólo puedes usar **una** opción: `url` o `file` no ambas");
-                return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
-                // Verifica si el usuario sólo pone /play sin la URL o un archivo adjunto
-            } else if (!query && !file) {
-                embed
-                    .setColor(Colors.Red)
-                    .setDescription("Debes especificar una URL o subir un archivo para reproducir música");
-                return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
-            }
+        const voiceChannel = member.voice.channel;
+        const embed = new EmbedBuilder();
 
+        // Validaciones iniciales
+        if (!voiceChannel) {
+            return interaction.reply({
+                embeds: [
+                    embed
+                        .setColor(Colors.Red)
+                        .setDescription("¡Debes estar en un canal de voz para reproducir música!"),
+                ],
+                flags: MessageFlags.Ephemeral,
+            });
+        }
+
+        if (!(await usuarioEnVoiceChannel(interaction))) return false;
+
+        const validarArgumentos = validatePlayOptions(query, file, embed);
+        if (validarArgumentos) {
+            return interaction.reply({ embeds: [validarArgumentos], flags: MessageFlags.Ephemeral });
+        }
+
+        await interaction.deferReply();
+
+        try {
+            const searchQuery = file ? file.url : query!;
             const player = useMainPlayer();
-            await interaction.deferReply();
+
             const queue =
-                player.nodes.get(interaction.guild!.id) ||
+                player.nodes.get(interaction.guild!.id) ??
                 player.nodes.create(interaction.guild!, {
-                    metadata: {
-                        channel: interaction.channel,
-                    },
+                    metadata: interaction,
                     // Ensordece al bot
                     selfDeaf: true,
                     leaveOnEmpty: false,
@@ -58,43 +67,62 @@ module.exports = {
                     leaveOnStop: false,
                 });
 
-            try {
-                // Si es un archivo adjunto usa la URL, sino usa la URL de query
-                const searchQuery = file ? file.url : query;
-                const result = await player.search(searchQuery!, {
-                    requestedBy: interaction.user,
-                });
-
-                if (!result?.tracks?.length) {
-                    embed.setColor(Colors.Red).setDescription("No se ha podido encontrar la canción");
+            if (!queue.connection) {
+                try {
+                    await queue.connect(voiceChannel);
+                } catch (err) {
+                    console.error("No se pudo conectar al canal de voz:", err);
+                    embed.setColor(Colors.Red).setDescription("No se pudo unir al canal de voz");
                     return interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
                 }
-
-                if (!queue.connection && voiceChannel) await queue.connect(voiceChannel);
-
-                if (result.playlist) {
-                    // Si es una playlist, añade todas las canciones
-                    queue.addTrack(result.tracks);
-                    embed
-                        .setColor(Colors.Green)
-                        .setDescription(`💿 Añadida la playlist con ${result.tracks.length} canciones 💿`);
-                } else {
-                    // Si es una sola canción, añade solo esa
-                    queue.addTrack(result.tracks[0]);
-                    embed.setColor(Colors.Green).setDescription(`💿 Añadido a la cola: ${result.tracks[0].title} 💿`);
-                }
-
-                await interaction.followUp({ embeds: [embed] });
-
-                // Sólo reproduce si no está sonando ni pausado y hay canciones en cola
-                if (!queue.node.isPlaying() && !queue.node.isPaused() && queue.tracks.size > 0) {
-                    await queue.node.play();
-                }
-            } catch (error) {
-                console.error(error);
-                embed.setColor(Colors.Red).setDescription("Hubo un error al intentar reproducir la canción");
-                await interaction.followUp({ embeds: [embed] });
             }
+
+            // Buscar track o playlist
+            const searchResult = await player.search(searchQuery, { requestedBy: interaction.user });
+            if (!searchResult.tracks.length) {
+                embed.setColor(Colors.Red).setDescription("No se ha podido encontrar la canción");
+                return interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
+            }
+
+            // Añadir track a la cola
+            if (searchResult.playlist) {
+                queue.addTrack(searchResult.tracks);
+                embed
+                    .setColor(Colors.Green)
+                    .setDescription(`💿 Añadida la playlist con ${searchResult.tracks.length} canciones 💿`);
+            } else {
+                queue.addTrack(searchResult.tracks[0]);
+                embed.setColor(Colors.Green).setDescription(`💿 Añadido a la cola: ${searchResult.tracks[0].title} 💿`);
+            }
+
+            await interaction.followUp({ embeds: [embed] });
+
+            // Sólo reproduce si no está sonando ni pausado y hay canciones en cola
+            if (!queue.node.isPlaying() && !queue.node.isPaused() && queue.tracks.size > 0) {
+                await queue.node.play();
+            }
+        } catch (error) {
+            console.error(error);
+            embed.setColor(Colors.Red).setDescription("Hubo un error al intentar reproducir la canción");
+            await interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
+        }
+
+        function validatePlayOptions(
+            query: string | null,
+            file: Attachment | null,
+            embed: EmbedBuilder,
+        ): EmbedBuilder | null {
+            if (query && file) {
+                return embed
+                    .setColor(Colors.Red)
+                    .setDescription("Sólo puedes usar **una** opción: `url` o `file`, no ambas");
+            }
+            if (!query && !file) {
+                return embed
+                    .setColor(Colors.Red)
+                    .setDescription("Debes especificar una URL o subir un archivo para reproducir música");
+            }
+            return null;
         }
     },
 };

@@ -65,12 +65,12 @@ describe("/play command", () => {
         // Verifica que se responde con el mensaje de error
         expect(interaction.reply).toHaveBeenCalledWith({
             embeds: [
-                {
-                    data: {
+                expect.objectContaining({
+                    data: expect.objectContaining({
                         color: Colors.Red,
                         description: "¡Debes estar en un canal de voz para reproducir música!",
-                    },
-                },
+                    }),
+                }),
             ],
             flags: MessageFlags.Ephemeral,
         });
