@@ -25,17 +25,22 @@ jobs:
       - name: Clona el repositorio
         uses: actions/checkout@v4
 
+      - name: Instala pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Usando Node ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: "npm"
+          cache: "pnpm"
 
       - name: Instala las dependencias
-        run: npm ci
+        run:  pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Ejecuta los tests
-        run: npm test
+        run: pnpm test
 
       - name: Ejecuta el linter ESLint
-        run: npm run lint
+        run: pnpm run lint
