@@ -14,7 +14,8 @@
     "test": "jest --verbose"
   },
   "overrides": {
-    "glob": "11.0.3"
+    "glob": "11.0.3",
+    "source-map": "0.7.6"
   },
   "dependencies": {
     "@discord-player/extractor": "7.1.0",
@@ -46,5 +47,11 @@
   "optionalDependencies": {
     "mediaplex-linux-arm64-gnu": "1.0.0",
     "mediaplex-linux-x64-gnu": "1.0.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "glob": "11.0.3",
+      "source-map": "0.7.6"
+    }
   }
 }
