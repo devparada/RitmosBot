@@ -36,7 +36,6 @@ case $opcion in
     pnpm install --frozen-lockfile --ignore-scripts
     pnpm run build
     node . slash
-    pnpm prune --prod
     ;;
 
 2)

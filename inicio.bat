@@ -40,7 +40,6 @@ goto :case-%errorlevel%
     echo Selecionada Recrear los comandos slash
         CALL pnpm install --frozen-lockfile --ignore-scripts
         CALL pnpm run build
-        CALL pnpm prune --prod
         CALL node . slash
         GOTO fin
 
