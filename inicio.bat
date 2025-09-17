@@ -38,8 +38,9 @@ goto :case-%errorlevel%
 
 :case-1
     echo Selecionada Recrear los comandos slash
-        CALL npm ci
-        CALL npm run build
+        CALL pnpm install --frozen-lockfile --ignore-scripts
+        CALL pnpm run build
+        CALL pnpm prune --prod
         CALL node . slash
         GOTO fin
 

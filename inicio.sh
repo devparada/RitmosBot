@@ -33,9 +33,10 @@ read -p "Selecciona una opcion:" opcion
 
 case $opcion in
 1)
-    npm ci
-    npm run build
+    pnpm install --frozen-lockfile --ignore-scripts
+    pnpm run build
     node . slash
+    pnpm prune --prod
     ;;
 
 2)
