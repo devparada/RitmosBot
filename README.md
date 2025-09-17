@@ -18,15 +18,24 @@ Bot de música que permite a los usuarios disfrutar de su música en Discord
 
 ## ⚙️ Instalación
 
-1. **Clona el repositorio**  
+1. **Clona el repositorio**
    ```bash
    git clone https://github.com/devparada/RitmosBot.git
    cd RitmosBot
    ```
-2. **Instala las dependencias (solo las de producción)**  
+
+2. **Instala todas las dependencias**
    ```bash
-   npm install --omit=dev
+   pnpm install --frozen-lockfile --ignore-scripts
    ```
+
+   > **💡 Instalar PNPM:** Para usar pnpm sin instalarlo manualmente:
+   >
+   > ```bash
+   > corepack enable
+   > corepack prepare pnpm@latest --activate
+   > ```
+
 3. **Configura tus variables de entorno**
 
    Modifica el archivo `env` con tus variables de entorno y cambia la variable `ENVIROMENT` a `production`.
@@ -35,15 +44,18 @@ Bot de música que permite a los usuarios disfrutar de su música en Discord
    ```bash
    npm run build
    ```
-
-5. **Inicia el bot**  
+5. **Elimina las dependencias de desarrollo**
+   ```bash
+   pnpm prune --prod
+   ```
+6. **Inicia el bot**
    ```bash
    node .
    ```
 
 > **💡 Consejo:** Si quieres ejecutar los tests o aplicar ESLint, instala todas las dependencias:  
 > ```bash
-> npm install
+> pnpm install --frozen-lockfile --ignore-scripts
 > ```
 
 ## 🚀 Tecnologías
@@ -51,6 +63,7 @@ Bot de música que permite a los usuarios disfrutar de su música en Discord
 ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
 ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
 ![NodeJS](https://img.shields.io/badge/node.js-339933?style=for-the-badge&logo=Node.js&logoColor=white)
+![PNPM](https://img.shields.io/badge/pnpm-%234a4a4a.svg?style=for-the-badge&logo=pnpm&logoColor=f69220)
 ![Jest](https://img.shields.io/badge/Jest-323330?style=for-the-badge&logo=Jest&logoColor=white)
 
 ## 📄 Licencia
