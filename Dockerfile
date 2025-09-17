@@ -3,21 +3,22 @@ FROM node:24.7-slim AS builder
 
 WORKDIR /ritmosbot
 
-# Copiamos package.json, package-lock.json y tsconfig.json
-COPY --chown=root:root --chmod=755 package.json package-lock.json tsconfig.json ./
 
-# Instalamos TODAS las dependencias
-RUN npm ci --ignore-scripts
+# Copiamos package.json, pnpm-lock.yaml y tsconfig.json
+COPY --chown=root:root --chmod=755 package.json pnpm-lock.yaml tsconfig.json ./
 
 # Copia el código fuente y lo asigna al propietario root
 # También asegura los permisos de escritura y ejecución para todos y sólo escritura para root
 COPY --chown=root:root --chmod=755 src ./src
 
-# Compila el TypeScript a JavaScript
-RUN npm run build
-
-# Eliminamos las devDependencies para reducir el tamaño
-RUN npm prune --omit=dev
+# Habilitamos corepack para manejar pnpm automáticamente
+RUN corepack enable && corepack prepare pnpm@latest --activate && \
+    # Instalamos TODAS las dependencias
+    pnpm install --frozen-lockfile --ignore-scripts && \
+    # Compila el TypeScript a JavaScript
+    pnpm run build && \
+    # Eliminamos las devDependencies para reducir el tamaño
+    pnpm prune --prod
 
 # Etapa 2: Runtime
 FROM node:24.7-slim
@@ -31,10 +32,10 @@ RUN apt update -y && apt upgrade -y && \
 # Directorio de trabajo
 WORKDIR /ritmosbot
 
-# Copia el node_modules, dist, package.json y package-lock.json desde el builder
+# Copia el node_modules, dist y package.json desde el builder
 COPY --from=builder --chown=root:root --chmod=755 /ritmosbot/node_modules ./node_modules
 COPY --from=builder --chown=root:root --chmod=755 /ritmosbot/dist ./dist
-COPY --from=builder --chown=root:root --chmod=755 /ritmosbot/package*.json ./
+COPY --from=builder --chown=root:root --chmod=755 /ritmosbot/package.json ./
 
 # Usamos el usuario node
 USER node
