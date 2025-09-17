@@ -19,6 +19,7 @@ import {
     eliminarCancionPlaylist,
 } from "@/utils/playlistController.js";
 import { usuarioEnVoiceChannel } from "@/utils/voiceUtils";
+import { ServerPlaylistsDoc } from "@/types/types";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -99,8 +100,8 @@ module.exports = {
         if (!guildId) return;
 
         try {
-            const docs = await coleccionPlaylists.find({ serverId: guildId }).toArray();
-            const playlists: Record<string, unknown> = docs[0] ?? {};
+            const docs = await coleccionPlaylists.find<ServerPlaylistsDoc>({ serverId: guildId }).toArray();
+            const playlists = docs[0] ?? { serverId: guildId };
 
             const obtenerPlaylistNombres = (): string[] => {
                 const set = new Set<string>();
