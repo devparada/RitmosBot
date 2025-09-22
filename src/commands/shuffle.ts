@@ -1,6 +1,5 @@
 import { type ChatInputCommandInteraction, Colors, EmbedBuilder, SlashCommandBuilder } from "discord.js";
-import { useMainPlayer } from "discord-player";
-import { usuarioEnVoiceChannel } from "@/utils/voiceUtils";
+import { getValidatedQueue, usuarioEnVoiceChannel } from "@/utils/voiceUtils";
 
 module.exports = {
     data: new SlashCommandBuilder().setName("shuffle").setDescription("Mezcla las canciones de la cola actual"),
@@ -11,24 +10,17 @@ module.exports = {
         if (!(await usuarioEnVoiceChannel(interaction))) {
             return false;
         } else {
-            const player = useMainPlayer();
+            const queue = await getValidatedQueue(interaction, "No hay ninguna canción en la cola");
+            if (!queue) return;
 
-            const guild = interaction.guild;
-            if (!guild) return;
-
-            const queue = player.nodes.get(guild.id);
-
-            if (!queue) {
-                embed.setColor(Colors.Red).setDescription("No hay ninguna canción en la cola");
-                return await interaction.reply({ embeds: [embed] });
-            } else if (!queue.tracks.size) {
+            if (!queue.tracks.size) {
                 embed.setColor(Colors.Red).setDescription("No hay más canciones en la cola");
                 return await interaction.reply({ embeds: [embed] });
-            } else {
-                queue.tracks.shuffle();
-                embed.setColor(Colors.Blue).setDescription("¡La cola ha sido mezclada!");
-                return await interaction.reply({ embeds: [embed] });
             }
+
+            queue.tracks.shuffle();
+            embed.setColor(Colors.Blue).setDescription("¡La cola ha sido mezclada!");
+            return await interaction.reply({ embeds: [embed] });
         }
     },
 };

@@ -1,42 +1,37 @@
 import { type ChatInputCommandInteraction, Colors, EmbedBuilder, SlashCommandBuilder } from "discord.js";
-import { useMainPlayer } from "discord-player";
-import { usuarioEnVoiceChannel } from "@/utils/voiceUtils";
+import { getValidatedQueue, usuarioEnVoiceChannel } from "@/utils/voiceUtils";
 
 module.exports = {
     data: new SlashCommandBuilder().setName("skip").setDescription("Salta la canción actual"),
 
     run: async ({ interaction }: { interaction: ChatInputCommandInteraction }) => {
-        const embed = new EmbedBuilder();
-
         if (!(await usuarioEnVoiceChannel(interaction))) {
             return false;
         } else {
-            const player = useMainPlayer();
+            const queue = await getValidatedQueue(
+                interaction,
+                "No hay ninguna canción reproduciéndose en este momento",
+            );
+            if (!queue) return;
 
-            const guild = interaction.guild;
-            if (!guild) return;
+            const embed = new EmbedBuilder();
 
-            const queue = player.nodes.get(guild.id);
-
-            if (!queue) {
-                embed.setColor(Colors.Red).setDescription("No hay ninguna canción reproduciéndose en este momento");
-                return await interaction.reply({ embeds: [embed] });
-            } else if (queue.tracks.data.length === 0) {
+            // Si no hay más canciones en la cola
+            if (queue.tracks.size === 0) {
                 queue.node.stop();
                 embed.setColor(Colors.Blue).setDescription("Se ha saltado la canción que se estaba reproduciendo");
                 return await interaction.reply({ embeds: [embed] });
-            } else {
-                try {
-                    queue.node.skip();
-                } catch (error) {
-                    console.log(error);
-                    embed.setColor(Colors.Red).setDescription("Error al intentar skipear la canción");
-                    return await interaction.reply({ embeds: [embed] });
-                }
-
-                embed.setColor(Colors.Green).setDescription("✅ Canción skipeada con éxito");
-                return await interaction.reply({ embeds: [embed] });
             }
+
+            try {
+                queue.node.skip();
+                embed.setColor(Colors.Green).setDescription("✅ Canción skipeada con éxito");
+            } catch (error) {
+                console.log(error);
+                embed.setColor(Colors.Red).setDescription("Error al intentar skipear la canción");
+            }
+
+            return await interaction.reply({ embeds: [embed] });
         }
     },
 };

@@ -1,4 +1,5 @@
 import { type ChatInputCommandInteraction, Colors, EmbedBuilder, GuildMember, MessageFlags } from "discord.js";
+import { type GuildQueue, type Track, useMainPlayer } from "discord-player";
 
 /**
  * Verifica si el usuario está en un canal de voz y envia el embed si no lo está
@@ -23,4 +24,27 @@ export async function usuarioEnVoiceChannel(interaction: ChatInputCommandInterac
         }
     }
     return true;
+}
+
+export async function getValidatedQueue(
+    interaction: ChatInputCommandInteraction,
+    emptyMessage: string,
+): Promise<GuildQueue<Track> | null> {
+    if (!(await usuarioEnVoiceChannel(interaction))) {
+        return null;
+    }
+
+    const guild = interaction.guild;
+    if (!guild) return null;
+
+    const player = useMainPlayer();
+    const queue = player.nodes.get<Track>(guild.id);
+
+    if (!queue) {
+        const embed = new EmbedBuilder().setColor(Colors.Red).setDescription(emptyMessage);
+        await interaction.reply({ embeds: [embed] });
+        return null;
+    }
+
+    return queue;
 }
