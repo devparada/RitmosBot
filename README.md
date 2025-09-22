@@ -53,7 +53,7 @@ Bot de música que permite a los usuarios disfrutar de su música en Discord
    node .
    ```
 
-> **💡 Consejo:** Si quieres ejecutar los tests o aplicar ESLint, instala todas las dependencias:  
+> **💡 Consejo:** Si quieres ejecutar los tests o aplicar Biome, instala todas las dependencias:  
 > ```bash
 > pnpm install --frozen-lockfile --ignore-scripts
 > ```
