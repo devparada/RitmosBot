@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, Colors, EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import { type ChatInputCommandInteraction, Colors, EmbedBuilder, SlashCommandBuilder } from "discord.js";
 import { useMainPlayer } from "discord-player";
 import { usuarioEnVoiceChannel } from "@/utils/voiceUtils";
 
@@ -12,7 +12,11 @@ module.exports = {
             return false;
         } else {
             const player = useMainPlayer();
-            const queue = player.nodes.get(interaction.guild!.id);
+
+            const guild = interaction.guild;
+            if (!guild) return;
+
+            const queue = player.nodes.get(guild);
             await interaction.deferReply();
 
             if (!queue?.currentTrack) {

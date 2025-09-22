@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, Colors, EmbedBuilder, GuildMember, MessageFlags } from "discord.js";
+import { type ChatInputCommandInteraction, Colors, EmbedBuilder, GuildMember, MessageFlags } from "discord.js";
 
 /**
  * Verifica si el usuario está en un canal de voz y envia el embed si no lo está

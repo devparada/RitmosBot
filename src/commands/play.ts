@@ -1,11 +1,11 @@
 import {
-    EmbedBuilder,
-    SlashCommandBuilder,
-    MessageFlags,
-    ChatInputCommandInteraction,
-    GuildMember,
+    type Attachment,
+    type ChatInputCommandInteraction,
     Colors,
-    Attachment,
+    EmbedBuilder,
+    GuildMember,
+    MessageFlags,
+    SlashCommandBuilder,
 } from "discord.js";
 import { useMainPlayer } from "discord-player";
 import { usuarioEnVoiceChannel } from "@/utils/voiceUtils";
@@ -53,12 +53,15 @@ module.exports = {
         await interaction.deferReply();
 
         try {
-            const searchQuery = file ? file.url : query!;
+            const searchQuery = file ? file.url : (query ?? "");
             const player = useMainPlayer();
 
+            const guild = interaction.guild;
+            if (!guild) return;
+
             const queue =
-                player.nodes.get(interaction.guild!.id) ??
-                player.nodes.create(interaction.guild!, {
+                player.nodes.get(guild.id) ??
+                player.nodes.create(interaction.guild, {
                     metadata: interaction,
                     // Ensordece al bot
                     selfDeaf: true,

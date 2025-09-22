@@ -1,5 +1,5 @@
-import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
+import { MongoClient } from "mongodb";
 
 // Carga las variables del archivo .env en silencio
 dotenv.config({ quiet: true });

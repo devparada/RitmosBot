@@ -1,31 +1,36 @@
-import dotenv from "dotenv";
-import path from "path";
-import fs from "fs";
+import fs from "node:fs";
+import path from "node:path";
+import { AttachmentExtractor, SpotifyExtractor } from "@discord-player/extractor";
+import { REST } from "@discordjs/rest";
 import {
+    ActivityType,
     Client,
     Collection,
+    Colors,
     EmbedBuilder,
     GatewayIntentBits,
-    Interaction,
-    ActivityType,
-    VoiceState,
-    Colors,
+    type Interaction,
+    type VoiceState,
 } from "discord.js";
-import { Routes, RESTPostAPIChatInputApplicationCommandsJSONBody } from "discord-api-types/v10";
-import { REST } from "@discordjs/rest";
-import { SpotifyExtractor, AttachmentExtractor } from "@discord-player/extractor";
+import { type RESTPostAPIChatInputApplicationCommandsJSONBody, Routes } from "discord-api-types/v10";
+import { type GuildQueue, Player, type Track } from "discord-player";
 import { YoutubeiExtractor } from "discord-player-youtubei";
-import { Track, GuildQueue, Player } from "discord-player";
-import playerConfig from "@/config/player.config";
+import dotenv from "dotenv";
 import { connectMongo } from "@/config/db";
-import { QueueMetadata } from "@/types/types";
+import playerConfig from "@/config/player.config";
+import type { QueueMetadata } from "@/types/types";
 
 // Carga las variables del archivo .env en silencio
 dotenv.config({ quiet: true });
-const TOKEN = process.env.TOKEN!;
-const CLIENT_ID = process.env.CLIENT_ID!;
-const ENVIRONMENT = process.env.ENVIRONMENT!;
-const GUILD_ID = process.env.GUILD_ID!;
+const TOKEN = process.env.TOKEN;
+const CLIENT_ID = process.env.CLIENT_ID;
+const ENVIRONMENT = process.env.ENVIRONMENT;
+const GUILD_ID = process.env.GUILD_ID;
+
+if (!TOKEN) throw new Error("La variable TOKEN no está definida");
+if (!CLIENT_ID) throw new Error("La variable CLIENT_ID no está definida");
+if (!ENVIRONMENT) throw new Error("La variable ENVIRONMENT no está definida");
+if (!GUILD_ID) throw new Error("La variable GUILD_ID no está definida");
 
 interface ExtendedClient extends Client {
     slashcommands: Collection<string, SlashCommand>;
@@ -135,7 +140,7 @@ if (LOAD_SLASH) {
 
         // <---------------------- Presencia Bot ------------------------------------->
 
-        let status = [
+        const status = [
             {
                 name: "Ritmos",
                 type: ActivityType.Listening,
@@ -203,7 +208,7 @@ if (LOAD_SLASH) {
                 // Actualiza el canal asociado a la cola
                 queue.metadata = { ...(queue.metadata as QueueMetadata), channel: nuevoCanal };
             } catch (error) {
-                console.log("Error al reconectar: " + error);
+                console.log(`Error al reconectar: ${error}`);
             }
         }
     });

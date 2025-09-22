@@ -96,8 +96,8 @@ async function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) 
     nombrePlaylist = limpiarKey(nombrePlaylist);
     tituloCancion = limpiarKey(tituloCancion);
     try {
-        let playlistExiste = checkExistPlaylist(serverId, nombrePlaylist);
-        if (playlistExiste["color"] === Colors.Red) return playlistExiste;
+        const playlistExiste = checkExistPlaylist(serverId, nombrePlaylist);
+        if (playlistExiste.color === Colors.Red) return playlistExiste;
 
         // Comprueba si existe la playlist y añade la canción
         const result = await coleccionPlaylists.updateOne(
@@ -124,8 +124,8 @@ async function eliminarCancionPlaylist(serverId, nombrePlaylist, tituloCancion) 
     nombrePlaylist = limpiarKey(nombrePlaylist);
     tituloCancion = limpiarKey(tituloCancion);
     try {
-        let playlistExiste = checkExistPlaylist(serverId, nombrePlaylist);
-        if (playlistExiste["color"] === Colors.Red) return playlistExiste;
+        const playlistExiste = checkExistPlaylist(serverId, nombrePlaylist);
+        if (playlistExiste.color === Colors.Red) return playlistExiste;
 
         // Comprueba si existe la playlist y elimina la canción
         const result = await coleccionPlaylists.updateOne(

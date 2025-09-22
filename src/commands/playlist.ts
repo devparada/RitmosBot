@@ -1,25 +1,25 @@
-import { coleccionPlaylists } from "@/config/db";
-import { useMainPlayer } from "discord-player";
 import {
-    ApplicationCommandOptionChoiceData,
-    AutocompleteInteraction,
-    ChatInputCommandInteraction,
-    ColorResolvable,
+    type ApplicationCommandOptionChoiceData,
+    type AutocompleteInteraction,
+    type ChatInputCommandInteraction,
+    type ColorResolvable,
     Colors,
     EmbedBuilder,
     SlashCommandBuilder,
 } from "discord.js";
+import { useMainPlayer } from "discord-player";
+import { coleccionPlaylists } from "@/config/db";
+import type { ServerPlaylistsDoc } from "@/types/types";
 import {
-    crearPlaylist,
-    eliminarPlaylist,
-    playPlaylist,
-    playCheckPlaylist,
-    mostrarPlaylists,
     addCancionPlaylist,
+    crearPlaylist,
     eliminarCancionPlaylist,
+    eliminarPlaylist,
+    mostrarPlaylists,
+    playCheckPlaylist,
+    playPlaylist,
 } from "@/utils/playlistController.js";
 import { usuarioEnVoiceChannel } from "@/utils/voiceUtils";
-import { ServerPlaylistsDoc } from "@/types/types";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -225,7 +225,7 @@ module.exports = {
                     break;
             }
         } catch (error) {
-            console.error("Error en el autocompletado playlist: " + error);
+            console.error(`Error en el autocompletado playlist: ${error}`);
         }
     },
 
@@ -246,26 +246,26 @@ module.exports = {
         switch (options.getSubcommand()) {
             case "create":
                 try {
-                    let arrayCrear = await crearPlaylist(guildId, options.getString("name"));
+                    const arrayCrear = await crearPlaylist(guildId, options.getString("name"));
                     if (arrayCrear) {
-                        const embedData = { color: arrayCrear["color"], mensaje: arrayCrear["mensaje"] };
+                        const embedData = { color: arrayCrear.color, mensaje: arrayCrear.mensaje };
                         await responderEmbed(interaction, embedData);
                     }
                 } catch (error) {
-                    console.log("Error al crear una playlist: " + error);
+                    console.log(`Error al crear una playlist: ${error}`);
                 }
                 break;
             case "list":
                 try {
-                    let arrayLista = await mostrarPlaylists(guildId);
+                    const arrayLista = await mostrarPlaylists(guildId);
                     const embedData = {
-                        color: arrayLista["color"],
-                        mensaje: arrayLista["mensaje"],
+                        color: arrayLista.color,
+                        mensaje: arrayLista.mensaje,
                         titulo: "🎶 Lista de Playlists 🎶",
                     };
                     await responderEmbed(interaction, embedData);
                 } catch (error) {
-                    console.log("Error al mostrar las playlists: " + error);
+                    console.log(`Error al mostrar las playlists: ${error}`);
                 }
                 break;
             case "add":
@@ -283,16 +283,16 @@ module.exports = {
                     });
 
                     const track = result.tracks[0];
-                    let tituloCancion = track?.title ?? "Título no encontrado";
+                    const tituloCancion = track?.title ?? "Título no encontrado";
 
-                    let arrayAdd = (await addCancionPlaylist(guildId, url, playlistName, tituloCancion)) ?? {
+                    const arrayAdd = (await addCancionPlaylist(guildId, url, playlistName, tituloCancion)) ?? {
                         color: Colors.Red,
                         mensaje: "Error inesperado.",
                     };
-                    const embedData = { color: arrayAdd["color"], mensaje: arrayAdd["mensaje"] };
+                    const embedData = { color: arrayAdd.color, mensaje: arrayAdd.mensaje };
                     await responderEmbed(interaction, embedData);
                 } catch (error) {
-                    console.log("Error al añadir una canción a la playlist: " + error);
+                    console.log(`Error al añadir una canción a la playlist: ${error}`);
                 }
                 break;
             case "play":
@@ -300,39 +300,39 @@ module.exports = {
                     return false;
                 }
                 try {
-                    let arrayPlayCheck = (await playCheckPlaylist(guildId, options.getString("name"))) ?? {
+                    const arrayPlayCheck = (await playCheckPlaylist(guildId, options.getString("name"))) ?? {
                         color: Colors.Red,
                         mensaje: "Error inesperado.",
                     };
-                    const embedData = { color: arrayPlayCheck["color"], mensaje: arrayPlayCheck["mensaje"] };
+                    const embedData = { color: arrayPlayCheck.color, mensaje: arrayPlayCheck.mensaje };
                     await responderEmbed(interaction, embedData);
-                    if (Number(arrayPlayCheck["color"]) === Colors.Green) {
+                    if (Number(arrayPlayCheck.color) === Colors.Green) {
                         playPlaylist(guildId, options.getString("name"), interaction);
                     }
                 } catch (error) {
-                    console.log("Error al reproducir una playlist: " + error);
+                    console.log(`Error al reproducir una playlist: ${error}`);
                 }
                 break;
             case "remove":
                 try {
-                    let arrayRemove = await eliminarPlaylist(guildId, options.getString("name"));
-                    const embedData = { color: arrayRemove["color"], mensaje: arrayRemove["mensaje"] };
+                    const arrayRemove = await eliminarPlaylist(guildId, options.getString("name"));
+                    const embedData = { color: arrayRemove.color, mensaje: arrayRemove.mensaje };
                     await responderEmbed(interaction, embedData);
                 } catch (error) {
-                    console.log("Error al eliminar una playlist: " + error);
+                    console.log(`Error al eliminar una playlist: ${error}`);
                 }
                 break;
             case "delete":
                 try {
-                    let arrayDelete = (await eliminarCancionPlaylist(
+                    const arrayDelete = (await eliminarCancionPlaylist(
                         guildId,
                         options.getString("playlist"),
                         options.getString("name"),
                     )) ?? { color: Colors.Red, mensaje: "Error inesperado." };
-                    const embedData = { color: arrayDelete["color"], mensaje: arrayDelete["mensaje"] };
+                    const embedData = { color: arrayDelete.color, mensaje: arrayDelete.mensaje };
                     await responderEmbed(interaction, embedData);
                 } catch (error) {
-                    console.log("Error al eliminar una canción en la playlist: " + error);
+                    console.log(`Error al eliminar una canción en la playlist: ${error}`);
                 }
                 break;
         }

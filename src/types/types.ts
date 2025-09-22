@@ -1,4 +1,4 @@
-import { TextChannel } from "discord.js";
+import type { TextChannel } from "discord.js";
 
 /**
  * Este tipo es para la metadata que guarda cada cola de música.

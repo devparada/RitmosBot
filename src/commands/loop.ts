@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { type ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { useMainPlayer } from "discord-player";
 import { usuarioEnVoiceChannel } from "@/utils/voiceUtils";
 
@@ -31,7 +31,7 @@ module.exports = {
             }
 
             const opcion = interaction.options.getString("modo");
-            let response;
+            let response: string = "";
 
             switch (opcion) {
                 case "on":
