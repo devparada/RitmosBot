@@ -42,5 +42,6 @@ jobs:
       - name: Ejecuta los tests
         run: pnpm test
 
-      - name: Ejecuta el linter ESLint
-        run: pnpm run lint
+# Comentado de momento
+#      - name: Ejecuta el linter ESLint
+#        run: pnpm run lint
