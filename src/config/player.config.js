@@ -6,7 +6,7 @@ module.exports = {
     ytdlOptions: {
         filter: "audioonly",
         quality: "highestaudio",
-        highWaterMark: 1 << 28, // 256MB
+        highWaterMark: 1024 * 1024, // 1MB
         dlChunkSize: 0, // Auto para que lo maneje ytdl
         requestOptions: {
             headers: {

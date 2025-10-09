@@ -46,7 +46,16 @@ const player = new Player(client, playerConfig);
 
 // Registra el reproductor de Youtube, Spotify y Attachment
 player.extractors.register(SpotifyExtractor, {});
-player.extractors.register(YoutubeiExtractor, {});
+player.extractors.register(YoutubeiExtractor, {
+    innertubeConfigRaw: {
+        player_id: "0004de42",
+    },
+    generateWithPoToken: true,
+    streamOptions: {
+        useClient: "WEB_EMBEDDED",
+        highWaterMark: 1024 * 1024,
+    },
+});
 player.extractors.register(AttachmentExtractor, {});
 client.player = player;
 
@@ -252,6 +261,10 @@ if (LOAD_SLASH) {
 
     client.player.events.on("playerFinish", () => {
         lastTrackId = null;
+    });
+
+    client.player.events.on("error", (error) => {
+        console.error("Player error: ", error);
     });
 
     client.login(TOKEN);
