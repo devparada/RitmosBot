@@ -1,5 +1,5 @@
 # Etapa 1: Build
-FROM node:24.8.0-slim AS builder
+FROM node:24.9.0-slim AS builder
 
 WORKDIR /ritmosbot
 
@@ -21,7 +21,7 @@ RUN corepack enable && corepack prepare pnpm@latest --activate && \
     pnpm prune --prod
 
 # Etapa 2: Runtime
-FROM node:24.7-slim
+FROM node:24.9.0-slim
 
 # Actualiza los paquetes y instala ffmpeg en runtime
 RUN apt update -y && apt upgrade -y && \
