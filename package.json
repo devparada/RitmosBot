@@ -20,20 +20,20 @@
   "dependencies": {
     "@discord-player/extractor": "7.1.0",
     "@discordjs/rest": "2.6.0",
-    "discord-api-types": "0.38.29",
+    "discord-api-types": "0.38.31",
     "discord-player": "7.1.0",
     "discord-player-youtubei": "1.5.0",
-    "discord.js": "14.22.1",
+    "discord.js": "14.24.0",
     "dotenv": "17.2.3",
     "mediaplex": "1.0.0",
     "mongodb": "6.20.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.5",
+    "@biomejs/biome": "2.3.1",
     "@types/jest": "30.0.0",
-    "@types/node": "24.5.2",
+    "@types/node": "24.9.1",
     "jest": "30.2.0",
-    "ts-jest": "29.4.4",
+    "ts-jest": "29.4.5",
     "tsc-alias": "1.8.16",
     "typescript": "5.9.3"
   },
