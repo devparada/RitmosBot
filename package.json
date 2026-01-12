@@ -15,26 +15,25 @@
   },
   "overrides": {
     "glob": "12.0.0",
-    "source-map": "0.7.6",
-    "js-yaml": "3.14.2"
+    "source-map": "0.7.6"
   },
   "dependencies": {
     "@discord-player/extractor": "7.1.0",
     "@discordjs/rest": "2.6.0",
-    "discord-api-types": "0.38.31",
+    "discord-api-types": "0.38.37",
     "discord-player": "7.1.0",
     "discord-player-youtubei": "1.5.0",
-    "discord.js": "14.24.0",
+    "discord.js": "14.25.1",
     "dotenv": "17.2.3",
     "mediaplex": "1.0.0",
     "mongodb": "7.0.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.6",
+    "@biomejs/biome": "2.3.11",
     "@types/jest": "30.0.0",
-    "@types/node": "24.10.1",
+    "@types/node": "25.0.6",
     "jest": "30.2.0",
-    "ts-jest": "29.4.5",
+    "ts-jest": "29.4.6",
     "tsc-alias": "1.8.16",
     "typescript": "5.9.3"
   },
@@ -45,8 +44,7 @@
   "pnpm": {
     "overrides": {
       "glob": "12.0.0",
-      "source-map": "0.7.6",
-      "js-yaml": "3.14.2"
+      "source-map": "0.7.6"
     }
   }
 }
