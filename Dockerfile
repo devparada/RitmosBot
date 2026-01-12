@@ -1,5 +1,5 @@
 # Etapa 1: Build
-FROM node:24.9.0-slim AS builder
+FROM node:24.12.0-slim AS builder
 
 WORKDIR /ritmosbot
 
