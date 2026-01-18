@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 import { AttachmentExtractor, SpotifyExtractor } from "@discord-player/extractor";
-import { YoutubeSabrExtractor } from "discord-player-googlevideo";
 import { REST } from "@discordjs/rest";
 import {
     ActivityType,
@@ -15,6 +14,7 @@ import {
 } from "discord.js";
 import { type RESTPostAPIChatInputApplicationCommandsJSONBody, Routes } from "discord-api-types/v10";
 import { type GuildQueue, Player, type Track } from "discord-player";
+import { YoutubeSabrExtractor } from "discord-player-googlevideo";
 import dotenv from "dotenv";
 import { connectMongo } from "@/config/db";
 import playerConfig from "@/config/player.config";
