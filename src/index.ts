@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { AttachmentExtractor, SpotifyExtractor } from "@discord-player/extractor";
+import { YoutubeSabrExtractor } from "discord-player-googlevideo";
 import { REST } from "@discordjs/rest";
 import {
     ActivityType,
@@ -14,7 +15,6 @@ import {
 } from "discord.js";
 import { type RESTPostAPIChatInputApplicationCommandsJSONBody, Routes } from "discord-api-types/v10";
 import { type GuildQueue, Player, type Track } from "discord-player";
-import { YoutubeiExtractor } from "discord-player-youtubei";
 import dotenv from "dotenv";
 import { connectMongo } from "@/config/db";
 import playerConfig from "@/config/player.config";
@@ -46,15 +46,9 @@ const player = new Player(client, playerConfig);
 
 // Registra el reproductor de Youtube, Spotify y Attachment
 player.extractors.register(SpotifyExtractor, {});
-player.extractors.register(YoutubeiExtractor, {
-    innertubeConfigRaw: {
-        player_id: "0004de42",
-    },
-    generateWithPoToken: true,
-    streamOptions: {
-        useClient: "WEB_EMBEDDED",
-        highWaterMark: 1024 * 1024,
-    },
+player.extractors.register(YoutubeSabrExtractor, {
+    disableAdaptiveBitrate: true,
+    highWaterMark: 1 << 25,
 });
 player.extractors.register(AttachmentExtractor, {});
 client.player = player;
