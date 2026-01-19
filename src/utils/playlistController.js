@@ -7,7 +7,7 @@ const { Colors } = require("discord.js");
  */
 function limpiarKey(key) {
     // Reemplaza puntos y signos de dólar por caracteres seguros
-    return key.replace(/\./g, "·").replace(/\$/g, "₀");
+    return key.replaceAll(".", "·").replace("$", "₀");
 }
 
 /**
@@ -66,13 +66,14 @@ async function mostrarPlaylists(serverId) {
             return { color: Colors.Red, mensaje: "No hay playlists creadas en este servidor" };
 
         let playlistTexto = "";
+        const clavesIgnoradas = new Set(["serverId", "_id"]);
 
-        resultado.forEach((playlist) => {
-            Object.entries(playlist)
-                .filter(([key]) => key !== "serverId" && key !== "_id")
+        for (const playlist of resultado) {
+            for (const [nombrePlaylist, trackList] of Object.entries(playlist)) {
                 // Lee cada playlist
-                .forEach(([nombrePlaylist, trackList]) => {
+                if (!clavesIgnoradas.has(nombrePlaylist)) {
                     let canciones = "No hay canciones en esta playlist";
+
                     if (trackList !== null && Object.keys(trackList).length > 0) {
                         // Formatea la lista de canciones
                         canciones = Object.keys(trackList)
@@ -80,8 +81,9 @@ async function mostrarPlaylists(serverId) {
                             .join("\n - ");
                     }
                     playlistTexto += `**Playlist: ${nombrePlaylist}**\n - ${canciones}\n\n`;
-                });
-        });
+                }
+            }
+        }
 
         return { color: Colors.Blue, mensaje: playlistTexto };
     } catch (error) {

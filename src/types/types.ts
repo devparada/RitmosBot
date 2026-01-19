@@ -7,6 +7,7 @@ import type { TextChannel } from "discord.js";
  * avisos, comandos y demás cosas del bot.
  */
 export type QueueMetadata = {
+    lastTrackId: string | null;
     channel: TextChannel;
 };
 
