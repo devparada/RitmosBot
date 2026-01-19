@@ -10,7 +10,6 @@ import {
     EmbedBuilder,
     GatewayIntentBits,
     type Interaction,
-    type VoiceState,
 } from "discord.js";
 import { type RESTPostAPIChatInputApplicationCommandsJSONBody, Routes } from "discord-api-types/v10";
 import { type GuildQueue, Player, type Track } from "discord-player";
@@ -19,21 +18,12 @@ import dotenv from "dotenv";
 import { connectMongo } from "@/config/db";
 import playerConfig from "@/config/player.config";
 import type { QueueMetadata } from "@/types/types";
+import { getEnvVar } from "@/utils/env";
+import { voiceEvent } from "./events/voice";
 
 // ------------------- Configuración y Variables de Entorno -------------------
 
 dotenv.config({ quiet: true });
-
-/**
- * Obtiene de manera segura una variable de entorno.
- * @param name El nombre de la variable de entorno.
- * @returns El valor de la variable de entorno.
- */
-function getEnvVar(name: string): string {
-    const value = process.env[name];
-    if (!value) throw new Error(`La variable de entorno ${name} no está definida`);
-    return value;
-}
 
 const TOKEN = getEnvVar("TOKEN");
 const CLIENT_ID = getEnvVar("CLIENT_ID");
@@ -205,23 +195,7 @@ async function initCommands() {
         }
     });
 
-    client.on("voiceStateUpdate", async (oldState: VoiceState, newState: VoiceState) => {
-        if (oldState.channelId === newState.channelId) return;
-
-        const queue = player.nodes.get(newState.guild.id);
-        if (!queue) return;
-
-        const newChannel = newState.channel;
-        if (!newChannel || queue.channel?.id === newChannel.id) return;
-
-        try {
-            queue.connection?.destroy();
-            await queue.connect(newChannel);
-            queue.metadata = { ...(queue.metadata as QueueMetadata), channel: newChannel };
-        } catch (error) {
-            console.log(`Error al reconectar: ${error}`);
-        }
-    });
+    voiceEvent(client);
 
     const URLS_VALIDAS = [
         "https://youtube.com/",
