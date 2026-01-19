@@ -7,7 +7,7 @@ const { Colors } = require("discord.js");
  */
 function limpiarKey(key) {
     // Reemplaza puntos y signos de dólar por caracteres seguros
-    return key.replaceAll(".", "·").replace("$", "₀");
+    return key.replaceAll(".", "·").replaceAll("$", "₀");
 }
 
 /**
