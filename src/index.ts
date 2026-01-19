@@ -2,23 +2,15 @@ import fs from "node:fs";
 import path from "node:path";
 import { AttachmentExtractor, SpotifyExtractor } from "@discord-player/extractor";
 import { REST } from "@discordjs/rest";
-import {
-    ActivityType,
-    Client,
-    Collection,
-    Colors,
-    EmbedBuilder,
-    GatewayIntentBits,
-    type Interaction,
-} from "discord.js";
+import { ActivityType, Client, Collection, GatewayIntentBits, type Interaction } from "discord.js";
 import { type RESTPostAPIChatInputApplicationCommandsJSONBody, Routes } from "discord-api-types/v10";
-import { type GuildQueue, Player, type Track } from "discord-player";
+import { Player } from "discord-player";
 import { YoutubeSabrExtractor } from "discord-player-googlevideo";
 import dotenv from "dotenv";
 import { connectMongo } from "@/config/db";
 import playerConfig from "@/config/player.config";
-import type { QueueMetadata } from "@/types/types";
 import { getEnvVar } from "@/utils/env";
+import { playerEvents } from "./events/player";
 import { voiceEvent } from "./events/voice";
 
 // ------------------- Configuración y Variables de Entorno -------------------
@@ -150,7 +142,7 @@ async function initCommands() {
 
     // ------------------- Eventos del Bot -------------------
 
-    client.on("ready", () => {
+    client.on("clientReady", () => {
         console.log(`Logeado como ${client.user?.tag}`);
         connectMongo();
 
@@ -195,48 +187,8 @@ async function initCommands() {
         }
     });
 
+    playerEvents(player);
     voiceEvent(client);
-
-    const URLS_VALIDAS = [
-        "https://youtube.com/",
-        "https://www.youtube.com/",
-        "https://m.youtube.com/",
-        "https://open.spotify.com/",
-        "https://play.spotify.com/",
-    ];
-
-    client.player.events.on("playerStart", async (queue: GuildQueue, track: Track) => {
-        const metadata = queue.metadata as QueueMetadata;
-        const textChannel = metadata.channel;
-
-        if (metadata.lastTrackId === track.id) return;
-        metadata.lastTrackId = track.id;
-
-        const embed = new EmbedBuilder();
-        let urlThumbnail = "https://i.imgur.com/yd01iL2.jpeg";
-        let descripcion = `🎶 Reproduciendo: **${track.title}** `;
-
-        const videoURLValido = URLS_VALIDAS.some((url) => track.url.startsWith(url));
-
-        if (track.thumbnail && videoURLValido) {
-            urlThumbnail = track.thumbnail;
-            descripcion += `de **${track.author}** 🎶`;
-        } else {
-            descripcion += track.requestedBy ? `subido por **${track.requestedBy.username}** 🎶` : "";
-        }
-
-        embed.setColor(Colors.Blue).setThumbnail(urlThumbnail).setDescription(descripcion);
-        await textChannel.send({ embeds: [embed] });
-    });
-
-    client.player.events.on("playerFinish", (queue: GuildQueue) => {
-        const metadata = queue.metadata as QueueMetadata;
-        metadata.lastTrackId = null;
-    });
-
-    client.player.events.on("error", (error) => {
-        console.error("Player error: ", error);
-    });
 
     client.login(TOKEN);
 })();
