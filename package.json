@@ -14,9 +14,9 @@
     "test": "jest --verbose"
   },
   "overrides": {
-    "glob": "12.0.0",
+    "glob": "13.0.0",
     "lodash": "4.17.23",
-    "undici": "7.19.0"
+    "undici": "7.19.1"
   },
   "dependencies": {
     "@discord-player/extractor": "7.1.0",
@@ -32,7 +32,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.3.11",
     "@types/jest": "30.0.0",
-    "@types/node": "25.0.6",
+    "@types/node": "25.0.10",
     "jest": "30.2.0",
     "ts-jest": "29.4.6",
     "tsc-alias": "1.8.16",
@@ -44,9 +44,9 @@
   },
   "pnpm": {
     "overrides": {
-      "glob": "12.0.0",
+      "glob": "13.0.0",
       "lodash": "4.17.23",
-      "undici": "7.19.0"
+      "undici": "7.19.1"
     }
   }
 }
