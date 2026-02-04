@@ -1,1 +1,5 @@
 minimumReleaseAge: 1440 # 24 horas
+packages:
+  - .
+minimumReleaseAgeExclude:
+  - "@isaacs/brace-expansion"
