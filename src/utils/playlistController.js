@@ -2,6 +2,11 @@ const { coleccionPlaylists } = require("@/config/db");
 const { useMainPlayer } = require("discord-player");
 const { Colors } = require("discord.js");
 
+const DB_ERROR_MSG = {
+    color: Colors.Red,
+    mensaje: "La base de datos no está disponible. Esta función está desactivada.",
+};
+
 /**
  * Normaliza el parámetro para quitar puntos y signos de dolares
  */
@@ -21,6 +26,8 @@ function quitarListParam(url) {
 
 // Crea la playlist con un nombre y un serverId
 async function crearPlaylist(serverId, nombre) {
+    if (!coleccionPlaylists) return DB_ERROR_MSG;
+
     nombre = limpiarKey(nombre);
     try {
         const playlistExiste = await checkExistPlaylist(serverId, nombre);
@@ -40,6 +47,8 @@ async function crearPlaylist(serverId, nombre) {
 
 // Elimina la playlist con un nombre y un serverId
 async function eliminarPlaylist(serverId, nombrePlaylist) {
+    if (!coleccionPlaylists) return DB_ERROR_MSG;
+
     nombrePlaylist = limpiarKey(nombrePlaylist);
     try {
         const resultado = await coleccionPlaylists.updateOne(
@@ -60,6 +69,8 @@ async function eliminarPlaylist(serverId, nombrePlaylist) {
 
 // Muestra las playlists del servidor
 async function mostrarPlaylists(serverId) {
+    if (!coleccionPlaylists) return DB_ERROR_MSG;
+
     try {
         const resultado = await coleccionPlaylists.find({ serverId }).toArray();
         if (!resultado || resultado.length === 0)
@@ -94,6 +105,8 @@ async function mostrarPlaylists(serverId) {
 
 // Añade la canción a la playlist
 async function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) {
+    if (!coleccionPlaylists) return DB_ERROR_MSG;
+
     url = quitarListParam(url);
     nombrePlaylist = limpiarKey(nombrePlaylist);
     tituloCancion = limpiarKey(tituloCancion);
@@ -123,6 +136,8 @@ async function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) 
 
 // Elimina la canción de la playlist
 async function eliminarCancionPlaylist(serverId, nombrePlaylist, tituloCancion) {
+    if (!coleccionPlaylists) return DB_ERROR_MSG;
+
     nombrePlaylist = limpiarKey(nombrePlaylist);
     tituloCancion = limpiarKey(tituloCancion);
     try {
@@ -150,6 +165,8 @@ async function eliminarCancionPlaylist(serverId, nombrePlaylist, tituloCancion) 
 }
 
 async function playCheckPlaylist(serverId, nombrePlaylist) {
+    if (!coleccionPlaylists) return DB_ERROR_MSG;
+
     nombrePlaylist = limpiarKey(nombrePlaylist);
     try {
         const playlistExiste = await checkExistPlaylist(serverId, nombrePlaylist);
@@ -162,6 +179,8 @@ async function playCheckPlaylist(serverId, nombrePlaylist) {
 }
 
 async function checkExistPlaylist(serverId, nombrePlaylist) {
+    if (!coleccionPlaylists) return DB_ERROR_MSG;
+
     nombrePlaylist = limpiarKey(nombrePlaylist);
     try {
         const resultado = await coleccionPlaylists.findOne({ serverId, [nombrePlaylist]: { $exists: true } });
@@ -176,6 +195,8 @@ async function checkExistPlaylist(serverId, nombrePlaylist) {
 
 // Añade la canción a la playlist
 async function playPlaylist(serverId, nombrePlaylist, interaction) {
+    if (!coleccionPlaylists) return DB_ERROR_MSG;
+
     const player = useMainPlayer();
     nombrePlaylist = limpiarKey(nombrePlaylist);
 

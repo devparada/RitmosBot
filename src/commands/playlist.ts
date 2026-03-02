@@ -96,6 +96,11 @@ module.exports = {
     async autocomplete(interaction: ChatInputCommandInteraction | AutocompleteInteraction) {
         if (!interaction.isAutocomplete()) return;
 
+        // Si no hay base de datos, respondemos con un mensaje informativo
+        if (!coleccionPlaylists) {
+            return await interaction.respond([{ name: "Base de datos no disponible", value: "none" }]);
+        }
+
         const guildId = interaction.guildId;
         if (!guildId) return;
 
