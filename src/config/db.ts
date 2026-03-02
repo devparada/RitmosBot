@@ -1,8 +1,5 @@
-import dotenv from "dotenv";
 import { MongoClient } from "mongodb";
 
-// Carga las variables del archivo .env en silencio
-dotenv.config({ quiet: true });
 const MONGO_URI = process.env.MONGODB_URI;
 const MONGO_DB = process.env.MONGO_INITDB_DATABASE;
 

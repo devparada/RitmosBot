@@ -2,7 +2,6 @@ import { AttachmentExtractor, SpotifyExtractor } from "@discord-player/extractor
 import { Client, Collection, GatewayIntentBits } from "discord.js";
 import { Player } from "discord-player";
 import { YoutubeSabrExtractor } from "discord-player-googlevideo";
-import dotenv from "dotenv";
 
 // Importaciones de configuración y utilidades
 import { connectMongo } from "@/config/db";
@@ -13,9 +12,6 @@ import { getEnvVar } from "@/utils/env";
 import { loadCommands } from "./handlers/commandHandler";
 import { loadEvents } from "./handlers/eventHandler";
 import type { ExtendedClient } from "./types/discord";
-
-// Inicializar variables de entorno
-dotenv.config({ quiet: true });
 
 /**
  * Configuración del Cliente de Discord
