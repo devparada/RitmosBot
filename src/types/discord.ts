@@ -1,6 +1,6 @@
 import type { Client, Collection, Interaction } from "discord.js";
 import type { RESTPostAPIChatInputApplicationCommandsJSONBody } from "discord-api-types/v10";
-import type { Player } from "discord-player";
+import type { LavalinkManager } from "lavalink-client";
 
 /**
  * Define la estructura estándar para cualquier comando de barra (Slash Command).
@@ -21,6 +21,6 @@ export interface SlashCommand {
  * sin recurrir a variables globales.
  */
 export interface ExtendedClient extends Client {
+    lavalink: LavalinkManager;
     slashcommands: Collection<string, SlashCommand>;
-    player: Player;
 }
