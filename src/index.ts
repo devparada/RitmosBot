@@ -1,11 +1,9 @@
-import { AttachmentExtractor, SpotifyExtractor } from "@discord-player/extractor";
 import { Client, Collection, GatewayIntentBits } from "discord.js";
-import { Player } from "discord-player";
-import { YoutubeSabrExtractor } from "discord-player-googlevideo";
+import { LavalinkManager } from "lavalink-client";
 
 // Importaciones de configuración y utilidades
 import { connectMongo } from "@/config/db";
-import playerConfig from "@/config/player.config";
+//import playerConfig from "@/config/player.config";
 import { getEnvVar } from "@/utils/env";
 
 // Handlers y Tipos
@@ -20,26 +18,60 @@ const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
 }) as ExtendedClient;
 
-/**
- * Configuración del Reproductor (Discord Player)
- */
-const player = new Player(client, playerConfig);
-
-// Registro de extractores de música
-player.extractors.register(SpotifyExtractor, {});
-player.extractors.register(YoutubeSabrExtractor, {
-    disableAdaptiveBitrate: true,
-    highWaterMark: 1 << 25,
+// 1. Configurar LavalinkManager
+const lavalink = new LavalinkManager({
+    nodes: [
+        {
+            host: getEnvVar("LAVALINK_HOST", "lavalink"),
+            port: Number(getEnvVar("LAVALINK_PORT", "2333")),
+            authorization: getEnvVar("LAVALINK_PASSWORD", "password"),
+            secure: getEnvVar("LAVALINK_SECURE", "false") === "true",
+            retryAmount: Number(getEnvVar("LAVALINK_RETRY_AMOUNT", "5")),
+            retryDelay: Number(getEnvVar("LAVALINK_RETRY_DELAY", "5000")),
+        },
+    ],
+    sendToShard: (guildId, payload) => {
+        const guild = client.guilds.cache.get(guildId);
+        guild?.shard?.send(payload);
+    },
+    playerOptions: {
+        clientBasedPositionUpdateInterval: 150,
+        defaultSearchPlatform: "ytmsearch",
+    },
 });
-player.extractors.register(AttachmentExtractor, {});
 
-// Adjuntar instancias al cliente para acceso global
-client.player = player;
+client.lavalink = lavalink;
 client.slashcommands = new Collection();
 
-/**
- * Función principal de arranque
- */
+// 2. Eventos de Lavalink
+client.lavalink.nodeManager.on("connect", (node) => {
+    console.log(`NODO LAVALINK CONECTADO: ${node.id}`);
+});
+
+client.lavalink.nodeManager.on("error", (node, error) => {
+    console.log(`ERROR EN NODO LAVALINK ${node.id}:`, error.message);
+});
+
+// 3. Evento RAW (El puente de voz)
+client.on("raw", (d) => client.lavalink.sendRawData(d));
+
+// 4. Evento Ready mejorado
+client.on("ready", async (readyClient) => {
+    console.log(`Logeado como ${readyClient.user.tag}`);
+
+    try {
+        // Inicializamos lavalink UNA VEZ el cliente está listo
+        await client.lavalink.init({
+            id: readyClient.user.id,
+            username: readyClient.user.username,
+        });
+        console.log("LavalinkManager iniciado correctamente.");
+    } catch (err) {
+        console.error("Error iniciando LavalinkManager:", err);
+    }
+});
+
+// 5. Función de inicio
 async function start() {
     try {
         // Cargamos los comandos desde el sistema de archivos
@@ -54,9 +86,9 @@ async function start() {
 
         // Cargamos todos los eventos (Discord, Player y Voz)
         await loadEvents(client);
-
         // Conexión a la Base de Datos y login del bot
         await connectMongo();
+
         await client.login(getEnvVar("TOKEN"));
     } catch (error) {
         console.error("Error crítico durante el arranque:", error);

@@ -1,6 +1,6 @@
 import { ActivityType, type Interaction } from "discord.js";
-import { playerEvents } from "../events/player";
-import { voiceEvent } from "../events/voice";
+//import { playerEvents } from "../events/player";
+//import { voiceEvent } from "../events/voice";
 import type { ExtendedClient } from "../types/discord";
 
 export async function loadEvents(client: ExtendedClient) {
@@ -35,6 +35,9 @@ export async function loadEvents(client: ExtendedClient) {
             if (!slashcmd) return;
 
             try {
+                if (!interaction.deferred && !interaction.replied) {
+                    await interaction.deferReply();
+                }
                 await slashcmd.run({ client, interaction });
             } catch (error) {
                 console.error("Error al ejecutar el comando:", error);
@@ -53,6 +56,6 @@ export async function loadEvents(client: ExtendedClient) {
         }
     });
 
-    playerEvents(client.player);
-    voiceEvent(client);
+    //playerEvents(client.player);
+    //voiceEvent(client);
 }

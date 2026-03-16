@@ -3,21 +3,22 @@ FROM node:24.14.0-slim AS builder
 
 WORKDIR /ritmosbot
 
+# Habilitamos corepack para manejar pnpm automáticamente
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Copiamos package.json, pnpm-lock.yaml y tsconfig.json
 COPY --chown=root:root --chmod=755 package.json pnpm-lock.yaml tsconfig.json ./
+
+# Instalamos TODAS las dependencias
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Copia el código fuente y lo asigna al propietario root
 # También asegura los permisos de escritura y ejecución para todos y sólo escritura para root
 COPY --chown=root:root --chmod=755 src ./src
 
-# Habilitamos corepack para manejar pnpm automáticamente
-RUN corepack enable && corepack prepare pnpm@latest --activate && \
-    # Instalamos TODAS las dependencias
-    pnpm install --frozen-lockfile --ignore-scripts && \
-    # Compila el TypeScript a JavaScript
-    pnpm run build && \
-    # Eliminamos las devDependencies para reducir el tamaño
+# Compila el TypeScript a JavaScript
+RUN pnpm run build && \
+# Eliminamos las devDependencies para reducir el tamaño
     pnpm prune --prod
 
 # Etapa 2: Runtime
