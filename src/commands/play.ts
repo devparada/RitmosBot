@@ -1,131 +1,97 @@
 import {
-    type Attachment,
     type ChatInputCommandInteraction,
+    type ColorResolvable,
     Colors,
     EmbedBuilder,
-    GuildMember,
-    MessageFlags,
+    type GuildMember,
     SlashCommandBuilder,
 } from "discord.js";
-import { useMainPlayer } from "discord-player";
-import { usuarioEnVoiceChannel } from "@/utils/voiceUtils";
+import type { Track } from "lavalink-client";
+import type { ExtendedClient } from "@/types/discord";
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("play")
         .setDescription("Reproduce una canción o playlist")
-        .addStringOption((option) =>
-            option.setName("url").setDescription("Introduce una URL o texto").setRequired(false),
-        )
-        .addAttachmentOption((option) =>
-            option.setName("file").setDescription("Sube un archivo de audio o video").setRequired(false),
-        ),
+        .addStringOption((opt) => opt.setName("url").setDescription("URL o nombre"))
+        .addAttachmentOption((opt) => opt.setName("file").setDescription("Archivo de audio")),
 
-    run: async ({ interaction }: { interaction: ChatInputCommandInteraction }) => {
-        const { options, member } = interaction;
-        const query = options.getString("url");
-        const file = options.getAttachment("file");
-
-        if (!(member instanceof GuildMember)) return false;
-
-        const voiceChannel = member.voice.channel;
+    run: async ({ client, interaction }: { client: ExtendedClient; interaction: ChatInputCommandInteraction }) => {
+        const { options, member, guildId } = interaction;
+        const voiceChannel = (member as GuildMember)?.voice.channel;
+        const query = options.getAttachment("file")?.url || options.getString("url");
         const embed = new EmbedBuilder();
 
-        // Validaciones iniciales
-        if (!voiceChannel) {
-            return interaction.reply({
-                embeds: [
-                    embed
-                        .setColor(Colors.Red)
-                        .setDescription("¡Debes estar en un canal de voz para reproducir música!"),
-                ],
-                flags: MessageFlags.Ephemeral,
+        // Validaciones
+        if (!voiceChannel)
+            return interaction.editReply({
+                embeds: [embed.setColor(Colors.Red).setDescription("¡Debes estar en un canal de voz!")],
+            });
+
+        if (!query)
+            return interaction.editReply({
+                embeds: [embed.setColor(Colors.Red).setDescription("¡Debes proporcionar una búsqueda o archivo!")],
+            });
+
+        try {
+            const node = client.lavalink.nodeManager.leastUsedNodes("playingPlayers")[0];
+            if (!node || !node.connected) {
+                return interaction.editReply({
+                    embeds: [
+                        embed
+                            .setColor(Colors.Red)
+                            .setDescription(
+                                "¡El servidor de música (Lavalink) se está reiniciando! Prueba en unos segundos.",
+                            ),
+                    ],
+                });
+            }
+
+            const player =
+                client.lavalink.getPlayer(guildId!) ||
+                client.lavalink.createPlayer({
+                    guildId: guildId!,
+                    voiceChannelId: voiceChannel.id,
+                    textChannelId: interaction.channelId,
+                    selfDeaf: true,
+                    volume: 100,
+                });
+
+            if (!player.connected) await player.connect();
+
+            const res = await node.search(query.startsWith("http") ? query : `ytsearch:${query}`, interaction.user);
+            if (!res.tracks.length)
+                return interaction.editReply({
+                    embeds: [embed.setColor(Colors.Red).setDescription("No se encontraron resultados.")],
+                });
+
+            const track = res.tracks[0];
+            const isAddingToQueue = player.playing || player.queue.tracks.length > 0;
+
+            if (isAddingToQueue) {
+                player.queue.add(track);
+            } else {
+                await player.play({ track });
+            }
+
+            const responseEmbed = createPlayEmbed(track, isAddingToQueue, player.queue.tracks.length);
+            await interaction.editReply({ embeds: [responseEmbed] });
+        } catch (error: any) {
+            console.error("Error en Play:", error);
+            await interaction.editReply({
+                embeds: [embed.setColor(Colors.Red).setDescription(`Error: ${error.message}`)],
             });
         }
 
-        if (!(await usuarioEnVoiceChannel(interaction))) return false;
-
-        const validarArgumentos = validatePlayOptions(query, file, embed);
-        if (validarArgumentos) {
-            return interaction.reply({ embeds: [validarArgumentos], flags: MessageFlags.Ephemeral });
-        }
-
-        await interaction.deferReply();
-
-        try {
-            const searchQuery = file ? file.url : (query ?? "");
-            const player = useMainPlayer();
-
-            const guild = interaction.guild;
-            if (!guild) return;
-
-            const queue =
-                player.nodes.get(guild.id) ??
-                player.nodes.create(interaction.guild, {
-                    metadata: interaction,
-                    // Ensordece al bot
-                    selfDeaf: true,
-                    leaveOnEmpty: false,
-                    leaveOnEnd: false,
-                    leaveOnStop: false,
-                });
-
-            if (!queue.connection) {
-                try {
-                    await queue.connect(voiceChannel);
-                } catch (err) {
-                    console.error("No se pudo conectar al canal de voz:", err);
-                    embed.setColor(Colors.Red).setDescription("No se pudo unir al canal de voz");
-                    return interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
-                }
-            }
-
-            // Buscar track o playlist
-            const searchResult = await player.search(searchQuery, { requestedBy: interaction.user });
-            if (!searchResult.tracks.length) {
-                embed.setColor(Colors.Red).setDescription("No se ha podido encontrar la canción");
-                return interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
-            }
-
-            // Añadir track a la cola
-            if (searchResult.playlist) {
-                queue.addTrack(searchResult.tracks);
-                embed
-                    .setColor(Colors.Green)
-                    .setDescription(`💿 Añadida la playlist con ${searchResult.tracks.length} canciones 💿`);
-            } else {
-                queue.addTrack(searchResult.tracks[0]);
-                embed.setColor(Colors.Green).setDescription(`💿 Añadido a la cola: ${searchResult.tracks[0].title} 💿`);
-            }
-
-            await interaction.followUp({ embeds: [embed] });
-
-            // Sólo reproduce si no está sonando ni pausado y hay canciones en cola
-            if (!queue.node.isPlaying() && !queue.node.isPaused() && queue.tracks.size > 0) {
-                await queue.node.play();
-            }
-        } catch (error) {
-            console.error(error);
-            embed.setColor(Colors.Red).setDescription("Hubo un error al intentar reproducir la canción");
-            await interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
-        }
-
-        function validatePlayOptions(
-            query: string | null,
-            file: Attachment | null,
-            embed: EmbedBuilder,
-        ): EmbedBuilder | null {
-            if (query && file) {
-                return embed
-                    .setColor(Colors.Red)
-                    .setDescription("Sólo puedes usar **una** opción: `url` o `file`, no ambas");
-            }
-            if (!query && !file) {
-                return embed
-                    .setColor(Colors.Red)
-                    .setDescription("Debes especificar una URL o subir un archivo para reproducir música");
-            }
-            return null;
+        function createPlayEmbed(track: Track, isQueue: boolean, queuePos: number): EmbedBuilder {
+            return new EmbedBuilder()
+                .setColor((isQueue ? Colors.Blue : Colors.Green) as ColorResolvable)
+                .setTitle(track.info.title.substring(0, 256))
+                .setURL(track.info.uri ?? null)
+                .setThumbnail(track.info.artworkUrl ?? (track.info as any).pluginInfo?.artworkUrl ?? null)
+                .setDescription(`**Autor:** ${track.info.author}`)
+                .setFooter(isQueue ? { text: `Posición en cola: #${queuePos}` } : null)
+                .setTimestamp();
         }
     },
 };

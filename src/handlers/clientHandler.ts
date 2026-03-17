@@ -1,5 +1,5 @@
 import { ActivityType, type Interaction } from "discord.js";
-//import { playerEvents } from "../events/player";
+import { playerEvents } from "../events/playerEvents";
 //import { voiceEvent } from "../events/voice";
 import type { ExtendedClient } from "../types/discord";
 
@@ -7,7 +7,7 @@ export async function loadEvents(client: ExtendedClient) {
     /**
      * Se ejecuta cuando el bot se conecta exitosamente.
      */
-    client.on("clientReady", () => {
+    client.on("clientReady", async (readyClient) => {
         console.log(`Logeado como ${client.user?.tag}`);
 
         // Iniciamos el estado rotativo
@@ -22,29 +22,42 @@ export async function loadEvents(client: ExtendedClient) {
         setInterval(() => {
             client.user?.setActivity(status[i]);
             i = (i + 1) % status.length;
-        }, 10000);
+        }, 30000);
+
+        try {
+            // Inicializamos lavalink UNA VEZ el cliente está listo
+            await client.lavalink.init({
+                id: readyClient.user.id,
+                username: readyClient.user.username,
+            });
+            console.log("LavalinkManager iniciado correctamente.");
+        } catch (err) {
+            console.error("Error iniciando LavalinkManager:", err);
+        }
     });
+
+    client.on("raw", (d) => client.lavalink.sendRawData(d));
+
+    playerEvents(client);
 
     /**
      * Maneja la ejecución de comandos y el autocompletado.
      */
     client.on("interactionCreate", async (interaction: Interaction) => {
-        // Manejo de Comandos Slash
+        // --- Manejo de Comandos Slash ---
         if (interaction.isChatInputCommand()) {
+            await interaction.deferReply();
             const slashcmd = client.slashcommands.get(interaction.commandName);
             if (!slashcmd) return;
 
             try {
-                if (!interaction.deferred && !interaction.replied) {
-                    await interaction.deferReply();
-                }
                 await slashcmd.run({ client, interaction });
             } catch (error) {
                 console.error("Error al ejecutar el comando:", error);
             }
         }
 
-        // Manejo de Autocompletado
+        // --- Manejo de Autocompletado ---
         if (interaction.isAutocomplete()) {
             const command = client.slashcommands.get(interaction.commandName);
             try {
@@ -53,9 +66,6 @@ export async function loadEvents(client: ExtendedClient) {
                 console.error(`Error en autocompletado de ${interaction.commandName}:`, error);
                 await interaction.respond([]);
             }
-        }
+        };
     });
-
-    //playerEvents(client.player);
-    //voiceEvent(client);
 }
