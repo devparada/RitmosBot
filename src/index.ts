@@ -52,7 +52,7 @@ async function start() {
         if (process.argv[2] === "slash") {
             const { handleDeployment } = await import("./scripts/deploy");
             await handleDeployment(commandsData);
-            process.exit(0);
+            return setTimeout(() => process.exit(0), 200);
         }
 
         // Cargamos todos los eventos (Discord, Player y Voz)
