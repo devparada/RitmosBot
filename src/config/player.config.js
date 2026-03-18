@@ -1,26 +1,29 @@
 // Este módulo se encarga de configurar el Player
-module.exports = {
-    connectionTimeout: 30000,
-    bufferingTimeout: 8000,
-    smoothVolume: true,
-    ytdlOptions: {
-        filter: "audioonly",
-        quality: "highestaudio",
-        highWaterMark: 1024 * 1024, // 1MB
-        dlChunkSize: 0, // Auto para que lo maneje ytdl
-        requestOptions: {
-            headers: {
-                "User-Agent":
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
-            },
+import { getEnvVar } from "@/utils/env.ts";
+
+const playerConfig = {
+    /**
+     * @returns {import("lavalink-client").NodeOptions[]}
+     */
+    getNodes: () => [
+        {
+            host: getEnvVar("LAVALINK_HOST", "lavalink"),
+            port: Number(getEnvVar("LAVALINK_PORT", "2333")),
+            authorization: getEnvVar("LAVALINK_PASSWORD", "password"),
+            secure: getEnvVar("LAVALINK_SECURE", "false") === "true",
+            retryAmount: Number(getEnvVar("LAVALINK_RETRY_AMOUNT", "5")),
+            retryDelay: Number(getEnvVar("LAVALINK_RETRY_DELAY", "5000")),
         },
-    },
-    filters: {
-        bassboost: false,
-        karaoke: false,
-        nightcore: false,
-        phaser: false,
-        tremolo: false,
-        vibrato: false,
-    },
+    ],
+
+    /**
+     * @returns {import("lavalink-client").ManagerPlayerOptions}
+     */
+    getPlayerOptions: () => ({
+        clientBasedPositionUpdateInterval: 150,
+        defaultSearchPlatform: "ytmsearch",
+        defaultVolume: 90,
+    }),
 };
+
+export default playerConfig;

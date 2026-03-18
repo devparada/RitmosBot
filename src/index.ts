@@ -3,7 +3,7 @@ import { LavalinkManager } from "lavalink-client";
 
 // Importaciones de configuración y utilidades
 import { connectMongo } from "@/config/db";
-//import playerConfig from "@/config/player.config";
+import playerConfig from "./config/player.config";
 import { getEnvVar } from "@/utils/env";
 
 // Handlers y Tipos
@@ -20,22 +20,10 @@ const client = new Client({
 
 // Configurar LavalinkManager
 const lavalink = new LavalinkManager({
-    nodes: [
-        {
-            host: getEnvVar("LAVALINK_HOST", "lavalink"),
-            port: Number(getEnvVar("LAVALINK_PORT", "2333")),
-            authorization: getEnvVar("LAVALINK_PASSWORD", "password"),
-            secure: getEnvVar("LAVALINK_SECURE", "false") === "true",
-            retryAmount: Number(getEnvVar("LAVALINK_RETRY_AMOUNT", "5")),
-            retryDelay: Number(getEnvVar("LAVALINK_RETRY_DELAY", "5000")),
-        },
-    ],
+    nodes: playerConfig.getNodes(),
+    playerOptions: playerConfig.getPlayerOptions(),
     sendToShard: (guildId, payload) => {
         client.guilds.cache.get(guildId)?.shard.send(payload);
-    },
-    playerOptions: {
-        clientBasedPositionUpdateInterval: 150,
-        defaultSearchPlatform: "ytmsearch",
     },
 });
 
