@@ -27,3 +27,12 @@ export interface ServerPlaylistsDoc {
     serverId: string;
     [playlistName: string]: PlaylistTracks | string | undefined;
 }
+
+interface TrackPluginInfo {
+    artworkUrl?: string;
+}
+
+export interface ExtendedTrackInfo {
+    artworkUrl?: string;
+    pluginInfo?: TrackPluginInfo;
+}

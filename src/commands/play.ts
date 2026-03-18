@@ -8,6 +8,7 @@ import {
 } from "discord.js";
 import type { Track } from "lavalink-client";
 import type { ExtendedClient } from "@/types/discord";
+import type { ExtendedTrackInfo } from "@/types/types";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -23,14 +24,22 @@ module.exports = {
         const embed = new EmbedBuilder();
 
         // Validaciones
+        if (!guildId) {
+            return interaction.editReply("Este comando solo puede usarse en un servidor.");
+        }
+
         if (!voiceChannel)
             return interaction.editReply({
-                embeds: [embed.setColor(Colors.Red).setDescription("¡Debes estar en un canal de voz!")],
+                embeds: [
+                    embed
+                        .setColor(Colors.Red)
+                        .setDescription("¡Debes estar en un canal de voz para reproducir música!"),
+                ],
             });
 
         if (!query)
             return interaction.editReply({
-                embeds: [embed.setColor(Colors.Red).setDescription("¡Debes proporcionar una búsqueda o archivo!")],
+                embeds: [embed.setColor(Colors.Red).setDescription("Debes proporcionar una URL o un archivo.")],
             });
 
         try {
@@ -48,9 +57,9 @@ module.exports = {
             }
 
             const player =
-                client.lavalink.getPlayer(guildId!) ||
+                client.lavalink.getPlayer(guildId) ||
                 client.lavalink.createPlayer({
-                    guildId: guildId!,
+                    guildId: guildId,
                     voiceChannelId: voiceChannel.id,
                     textChannelId: interaction.channelId,
                     selfDeaf: true,
@@ -76,19 +85,21 @@ module.exports = {
 
             const responseEmbed = createPlayEmbed(track, isAddingToQueue, player.queue.tracks.length);
             await interaction.editReply({ embeds: [responseEmbed] });
-        } catch (error: any) {
-            console.error("Error en Play:", error);
-            await interaction.editReply({
-                embeds: [embed.setColor(Colors.Red).setDescription(`Error: ${error.message}`)],
-            });
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error("Error en Play:", error);
+                await interaction.editReply({
+                    embeds: [embed.setColor(Colors.Red).setDescription(`Error: ${error.message}`)],
+                });
+            }
         }
 
         function createPlayEmbed(track: Track, isQueue: boolean, queuePos: number): EmbedBuilder {
+            const info = track.info as ExtendedTrackInfo;
             return new EmbedBuilder()
                 .setColor((isQueue ? Colors.Blue : Colors.Green) as ColorResolvable)
                 .setTitle(track.info.title.substring(0, 256))
-                .setURL(track.info.uri ?? null)
-                .setThumbnail(track.info.artworkUrl ?? (track.info as any).pluginInfo?.artworkUrl ?? null)
+                .setThumbnail(track.info.artworkUrl ?? info.pluginInfo?.artworkUrl ?? null)
                 .setDescription(`**Autor:** ${track.info.author}`)
                 .setFooter(isQueue ? { text: `Posición en cola: #${queuePos}` } : null)
                 .setTimestamp();

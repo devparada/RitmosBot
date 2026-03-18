@@ -66,6 +66,6 @@ export async function loadEvents(client: ExtendedClient) {
                 console.error(`Error en autocompletado de ${interaction.commandName}:`, error);
                 await interaction.respond([]);
             }
-        };
+        }
     });
 }
