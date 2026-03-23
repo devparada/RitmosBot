@@ -3,8 +3,8 @@ import { LavalinkManager } from "lavalink-client";
 
 // Importaciones de configuración y utilidades
 import { connectMongo } from "@/config/db";
-import playerConfig from "./config/player.config";
 import { getEnvVar } from "@/utils/env";
+import playerConfig from "./config/player.config";
 
 // Handlers y Tipos
 import { loadEvents } from "./handlers/clientHandler";
