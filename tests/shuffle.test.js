@@ -1,16 +1,10 @@
 // Mockeamos las utilidades
 jest.mock("@/utils/voiceUtils", () => ({
     usuarioEnVoiceChannel: jest.fn(),
-    getValidatedQueue: jest.fn(),
-}));
-
-// Mockeamos discord-player
-jest.mock("discord-player", () => ({
-    useMainPlayer: jest.fn(),
 }));
 
 const shuffleCommand = require("@/commands/shuffle");
-const { usuarioEnVoiceChannel, getValidatedQueue } = require("@/utils/voiceUtils");
+const { usuarioEnVoiceChannel } = require("@/utils/voiceUtils");
 const { createVoiceInteraction } = require("@tests/mocks/discordMocks");
 const { Colors } = require("discord.js");
 
@@ -18,49 +12,63 @@ const { Colors } = require("discord.js");
 const SHUFFLE_TEST = { GUILD_ID: "test-guild-id" };
 
 describe("/shuffle command", () => {
-    let queueMock;
+    let clientMock;
+    let playerMock;
     let interaction;
 
     beforeEach(() => {
         jest.clearAllMocks();
 
-        // Creamos un mock de la cola
-        queueMock = {
-            tracks: {
-                size: 5,
-                shuffle: jest.fn(),
+        // Mock del Player de Lavalink
+        playerMock = {
+            connected: true,
+            queue: {
+                tracks: [{}, {}, {}], // 3 canciones por defecto
+                shuffle: jest.fn().mockResolvedValue(true),
+            },
+        };
+
+        // Mock del ExtendedClient
+        clientMock = {
+            lavalink: {
+                getPlayer: jest.fn((id) => (id === SHUFFLE_TEST.GUILD_ID ? playerMock : null)),
             },
         };
 
         interaction = createVoiceInteraction(SHUFFLE_TEST, "voice-channel-id");
-
-        // Configuramos los mocks de las utilidades por defecto para que "pasen"
         usuarioEnVoiceChannel.mockResolvedValue(true);
-        getValidatedQueue.mockResolvedValue(queueMock);
     });
 
     test("Intenta hacer el shuffle cuando no hay cola (getValidatedQueue falla)", async () => {
-        // Simulamos que getValidatedQueue ya manejó el error y devolvió null
-        getValidatedQueue.mockResolvedValue(null);
+        clientMock.lavalink.getPlayer.mockReturnValue(null);
 
-        await shuffleCommand.run({ interaction });
+        await shuffleCommand.run({ client: clientMock, interaction });
 
-        expect(queueMock.tracks.shuffle).not.toHaveBeenCalled();
-        // No verificamos interaction.reply porque se asume que getValidatedQueue ya respondió
+        expect(interaction.editReply).toHaveBeenCalledWith(
+            expect.objectContaining({
+                embeds: [
+                    expect.objectContaining({
+                        data: expect.objectContaining({
+                            description: "❌ No hay más canciones en la cola",
+                        }),
+                    }),
+                ],
+            }),
+        );
     });
 
     test("Intenta hacer el shuffle con 0 canciones en la cola", async () => {
-        queueMock.tracks.size = 0;
+        playerMock.queue.tracks = [];
 
-        await shuffleCommand.run({ interaction });
+        await shuffleCommand.run({ client: clientMock, interaction });
 
-        expect(interaction.reply).toHaveBeenCalledWith(
+        expect(interaction.editReply).toHaveBeenCalledWith(
             expect.objectContaining({
                 embeds: [
                     expect.objectContaining({
                         data: expect.objectContaining({
                             color: Colors.Red,
-                            description: "No hay más canciones en la cola",
+                            description: "❌ No hay más canciones en la cola",
                         }),
                     }),
                 ],
@@ -69,12 +77,11 @@ describe("/shuffle command", () => {
     });
 
     test("Hace el shuffle correctamente con canciones", async () => {
-        queueMock.tracks.size = 3;
+        await shuffleCommand.run({ client: clientMock, interaction });
 
-        await shuffleCommand.run({ interaction });
+        expect(playerMock.queue.shuffle).toHaveBeenCalledTimes(1);
 
-        expect(queueMock.tracks.shuffle).toHaveBeenCalledTimes(1);
-        expect(interaction.reply).toHaveBeenCalledWith(
+        expect(interaction.editReply).toHaveBeenCalledWith(
             expect.objectContaining({
                 embeds: [
                     expect.objectContaining({
@@ -92,9 +99,9 @@ describe("/shuffle command", () => {
         // Simulamos que la utilidad de validación de voz devuelve false
         usuarioEnVoiceChannel.mockResolvedValue(false);
 
-        const result = await shuffleCommand.run({ interaction });
+        await shuffleCommand.run({ client: clientMock, interaction });
 
-        expect(result).toBe(false);
-        expect(getValidatedQueue).not.toHaveBeenCalled();
+        expect(playerMock.queue.shuffle).not.toHaveBeenCalled();
+        expect(interaction.reply).not.toHaveBeenCalled();
     });
 });

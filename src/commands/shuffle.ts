@@ -1,26 +1,36 @@
 import { type ChatInputCommandInteraction, Colors, EmbedBuilder, SlashCommandBuilder } from "discord.js";
-import { getValidatedQueue, usuarioEnVoiceChannel } from "@/utils/voiceUtils";
+import type { ExtendedClient } from "@/types/discord";
+import { usuarioEnVoiceChannel } from "@/utils/voiceUtils";
 
 module.exports = {
     data: new SlashCommandBuilder().setName("shuffle").setDescription("Mezcla las canciones de la cola actual"),
 
-    run: async ({ interaction }: { interaction: ChatInputCommandInteraction }) => {
+    run: async ({ client, interaction }: { client: ExtendedClient; interaction: ChatInputCommandInteraction }) => {
         const embed = new EmbedBuilder();
 
         if (!(await usuarioEnVoiceChannel(interaction))) {
             return false;
-        } else {
-            const queue = await getValidatedQueue(interaction, "No hay ninguna canción en la cola");
-            if (!queue) return;
+        }
 
-            if (!queue.tracks.size) {
-                embed.setColor(Colors.Red).setDescription("No hay más canciones en la cola");
-                return await interaction.reply({ embeds: [embed] });
+        if (interaction.guildId) {
+            const player = client.lavalink.getPlayer(interaction.guildId);
+
+            if (!player?.connected || player.queue.tracks.length === 0) {
+                embed.setColor(Colors.Red).setDescription("❌ No hay más canciones en la cola");
+                return interaction.editReply({ embeds: [embed] });
             }
 
-            queue.tracks.shuffle();
-            embed.setColor(Colors.Blue).setDescription("¡La cola ha sido mezclada!");
-            return await interaction.reply({ embeds: [embed] });
+            try {
+                await player.queue.shuffle();
+
+                embed.setColor(Colors.Blue).setDescription("¡La cola ha sido mezclada!");
+            } catch (error) {
+                console.error("Error al mezclar la cola:", error);
+                embed.setColor(Colors.Red).setDescription("❌ Hubo un error al mezclar la cola");
+                return interaction.editReply({ embeds: [embed] });
+            }
+
+            return await interaction.editReply({ embeds: [embed] });
         }
     },
 };

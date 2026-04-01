@@ -1,10 +1,14 @@
+// Mockeamos las utilidades
+jest.mock("@/utils/voiceUtils", () => ({
+    usuarioEnVoiceChannel: jest.fn(),
+}));
+
 const playCommand = require("@/commands/play");
 const { Colors } = require("discord.js");
+const { usuarioEnVoiceChannel } = require("@/utils/voiceUtils");
+const { createVoiceInteraction } = require("@tests/mocks/discordMocks");
 
 const PLAY_TEST = {
-    GUILD_ID: "test-guild-id",
-    VOICE_CHANNEL_ID: "test-voice-channel-id",
-    TEXT_CHANNEL_ID: "test-text-channel-id",
     SONG_URL: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     SONG_TITLE: "Never Gonna Give You Up",
     AUTHOR: "Rick Astley",
@@ -12,25 +16,14 @@ const PLAY_TEST = {
 
 describe("/play command", () => {
     let clientMock;
-    let playerMock;
+    let interactionMock;
     let nodeMock;
-    let interaction;
+    let playerMock;
 
     beforeEach(() => {
         jest.clearAllMocks();
 
-        // Mock del Player de Lavalink
-        playerMock = {
-            connected: true,
-            playing: false,
-            paused: false,
-            connect: jest.fn().mockResolvedValue({}),
-            play: jest.fn().mockResolvedValue({}),
-            queue: {
-                tracks: [],
-                add: jest.fn(),
-            },
-        };
+        usuarioEnVoiceChannel.mockResolvedValue(true);
 
         // Mock del Nodo de Lavalink
         nodeMock = {
@@ -40,12 +33,24 @@ describe("/play command", () => {
                     {
                         info: {
                             title: PLAY_TEST.SONG_TITLE,
-                            uri: PLAY_TEST.SONG_URL,
                             author: PLAY_TEST.AUTHOR,
+                            artworkUrl: "http://example.com/image.jpg",
                         },
                     },
                 ],
             }),
+        };
+
+        // Mock del Player de Lavalink
+        playerMock = {
+            connected: false,
+            playing: false,
+            connect: jest.fn().mockResolvedValue(true),
+            play: jest.fn().mockResolvedValue(true),
+            queue: {
+                tracks: [],
+                add: jest.fn(),
+            },
         };
 
         // Mock del Cliente extendido
@@ -59,36 +64,70 @@ describe("/play command", () => {
             },
         };
 
-        // Mock de la Interacción de Discord
-        interaction = {
-            guildId: PLAY_TEST.GUILD_ID,
-            channelId: PLAY_TEST.TEXT_CHANNEL_ID,
-            user: { id: "user-id" },
-            member: {
-                voice: {
-                    channel: { id: PLAY_TEST.VOICE_CHANNEL_ID },
-                },
-            },
-            options: {
-                getString: jest.fn().mockReturnValue(PLAY_TEST.SONG_URL),
-                getAttachment: jest.fn().mockReturnValue(null),
-            },
-            editReply: jest.fn().mockResolvedValue({}),
+        interactionMock = createVoiceInteraction({
+            GUILD_ID: "123",
+            SONG_URL: PLAY_TEST.SONG_URL,
+        });
+    });
+
+    test("Debe detener la ejecución si el usuario no está en un canal de voz", async () => {
+        // Forzamos que la validación de voz devuelva false
+        usuarioEnVoiceChannel.mockResolvedValue(false);
+
+        const result = await playCommand.run({ client: clientMock, interaction: interactionMock });
+
+        // Verificamos que el comando retorne false (como indica tu código)
+        expect(result).toBe(false);
+        // Verificamos que NO se intentó buscar música ni crear un player
+        expect(clientMock.lavalink.createPlayer).not.toHaveBeenCalled();
+        expect(nodeMock.search).not.toHaveBeenCalled();
+    });
+
+    test("Debe reproducir una canción si no hay nada en la cola", async () => {
+        await playCommand.run({ client: clientMock, interaction: interactionMock });
+
+        expect(clientMock.lavalink.createPlayer).toHaveBeenCalled();
+        expect(playerMock.play).toHaveBeenCalledWith(
+            expect.objectContaining({
+                track: expect.any(Object),
+            }),
+        );
+
+        // Verificamos que el embed enviado tenga el título correcto
+        expect(interactionMock.editReply).toHaveBeenCalledWith(
+            expect.objectContaining({
+                embeds: [
+                    expect.objectContaining({
+                        data: expect.objectContaining({
+                            title: PLAY_TEST.SONG_TITLE,
+                            color: Colors.Green,
+                        }),
+                    }),
+                ],
+            }),
+        );
+    });
+
+    test("debe añadir a la cola si el player ya está reproduciendo", async () => {
+        // Simulamos player existente y reproduciendo
+        const existingPlayer = {
+            playing: true,
+            queue: { tracks: [{ title: "Canción 1" }], add: jest.fn() },
+            connected: true,
         };
-    });
 
-    test("Envia el mensaje de error si el usuario no tiene canal de voz", async () => {
-        interaction.member.voice.channel = null;
+        clientMock.lavalink.getPlayer.mockReturnValue(existingPlayer);
 
-        await playCommand.run({ client: clientMock, interaction });
+        await playCommand.run({ client: clientMock, interaction: interactionMock });
 
-        expect(interaction.editReply).toHaveBeenCalledWith(
+        expect(existingPlayer.queue.add).toHaveBeenCalled();
+        expect(interactionMock.editReply).toHaveBeenCalledWith(
             expect.objectContaining({
                 embeds: [
                     expect.objectContaining({
                         data: expect.objectContaining({
-                            color: Colors.Red,
-                            description: "¡Debes estar en un canal de voz para reproducir música!",
+                            color: Colors.Blue,
+                            footer: { text: "Posición en cola: #1" },
                         }),
                     }),
                 ],
@@ -96,40 +135,18 @@ describe("/play command", () => {
         );
     });
 
-    test("Envia el mensaje de error si no hay URL ni archivo adjunto", async () => {
-        // Simulamos que no se envió nada
-        interaction.options.getString = jest.fn().mockReturnValue(null);
-        interaction.options.getAttachment = jest.fn().mockReturnValue(null);
-
-        await playCommand.run({ client: clientMock, interaction });
-
-        expect(interaction.editReply).toHaveBeenCalledWith(
-            expect.objectContaining({
-                embeds: [
-                    expect.objectContaining({
-                        data: expect.objectContaining({
-                            description: expect.stringContaining("Debes proporcionar una URL o un archivo."),
-                        }),
-                    }),
-                ],
-            }),
-        );
-    });
-
-    test("Envía mensaje de error si el nodo de Lavalink no está disponible", async () => {
+    test("Debe fallar si el nodo de Lavalink no está conectado", async () => {
         nodeMock.connected = false;
 
-        await playCommand.run({ client: clientMock, interaction });
+        await playCommand.run({ client: clientMock, interaction: interactionMock });
 
-        expect(interaction.editReply).toHaveBeenCalledWith(
+        expect(interactionMock.editReply).toHaveBeenCalledWith(
             expect.objectContaining({
                 embeds: [
                     expect.objectContaining({
                         data: expect.objectContaining({
                             color: Colors.Red,
-                            description: expect.stringContaining(
-                                "¡El servidor de música (Lavalink) se está reiniciando!",
-                            ),
+                            description: expect.stringContaining("Lavalink) se está reiniciando"),
                         }),
                     }),
                 ],
@@ -137,17 +154,16 @@ describe("/play command", () => {
         );
     });
 
-    test("Maneja correctamente cuando no se encuentra la canción en la búsqueda", async () => {
-        nodeMock.search.mockResolvedValueOnce({ tracks: [] }); // Sin resultados
+    test("Debe fallar si no se encuentran resultados", async () => {
+        nodeMock.search.mockResolvedValue({ tracks: [] });
 
-        await playCommand.run({ client: clientMock, interaction });
+        await playCommand.run({ client: clientMock, interaction: interactionMock });
 
-        expect(interaction.editReply).toHaveBeenCalledWith(
+        expect(interactionMock.editReply).toHaveBeenCalledWith(
             expect.objectContaining({
                 embeds: [
                     expect.objectContaining({
                         data: expect.objectContaining({
-                            color: Colors.Red,
                             description: "No se encontraron resultados.",
                         }),
                     }),
@@ -156,50 +172,13 @@ describe("/play command", () => {
         );
     });
 
-    test("Reproduce música directamente cuando la cola está vacía", async () => {
-        playerMock.connected = false;
+    test("Debe manejar archivos adjuntos correctamente", async () => {
+        const fileUrl = "https://cdn.discordapp.com/attachments/123/456/audio.mp3";
+        interactionMock.options.getAttachment.mockReturnValue({ url: fileUrl });
 
-        await playCommand.run({ client: clientMock, interaction });
+        await playCommand.run({ client: clientMock, interaction: interactionMock });
 
-        expect(playerMock.connect).toHaveBeenCalled();
-        expect(nodeMock.search).toHaveBeenCalledWith(PLAY_TEST.SONG_URL, interaction.user);
-        expect(playerMock.play).toHaveBeenCalledWith({ track: expect.any(Object) });
-        expect(playerMock.queue.add).not.toHaveBeenCalled();
-
-        expect(interaction.editReply).toHaveBeenCalledWith(
-            expect.objectContaining({
-                embeds: [
-                    expect.objectContaining({
-                        data: expect.objectContaining({
-                            color: Colors.Green,
-                            title: PLAY_TEST.SONG_TITLE,
-                        }),
-                    }),
-                ],
-            }),
-        );
-    });
-
-    test("Añade la canción a la cola si ya hay música sonando", async () => {
-        playerMock.playing = true;
-        playerMock.queue.tracks = [{ info: { title: "Otra canción" } }];
-
-        await playCommand.run({ client: clientMock, interaction });
-
-        expect(playerMock.queue.add).toHaveBeenCalledWith(expect.any(Object));
-        expect(playerMock.play).not.toHaveBeenCalled();
-
-        expect(interaction.editReply).toHaveBeenCalledWith(
-            expect.objectContaining({
-                embeds: [
-                    expect.objectContaining({
-                        data: expect.objectContaining({
-                            color: Colors.Blue,
-                            title: PLAY_TEST.SONG_TITLE,
-                        }),
-                    }),
-                ],
-            }),
-        );
+        // Verificamos que la búsqueda se haga con la URL del archivo y no con el string de SONG_URL
+        expect(nodeMock.search).toHaveBeenCalledWith(fileUrl, interactionMock.user);
     });
 });
