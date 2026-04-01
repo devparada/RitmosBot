@@ -29,9 +29,9 @@ lavalink:
       snapshot: false
 
 plugins:
-youtube:
-  enabled: true
-  allowSearch: true
-  allowDirectVideoIds: true
-  allowDirectPlaylistIds: true
-  clients: ${YOUTUBE_CLIENTS:MUSIC,ANDROID_VR,WEBEMBEDDED,TVHTML5EMBEDDED}
+  youtube:
+    enabled: true
+    allowSearch: true
+    allowDirectVideoIds: true
+    allowDirectPlaylistIds: true
+    clients: ${YOUTUBE_CLIENTS:MUSIC,ANDROID_VR,WEBEMBEDDED}

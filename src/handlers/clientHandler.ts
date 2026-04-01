@@ -1,6 +1,5 @@
 import { ActivityType, type Interaction } from "discord.js";
 import { playerEvents } from "../events/playerEvents";
-//import { voiceEvent } from "../events/voice";
 import type { ExtendedClient } from "../types/discord";
 
 export async function loadEvents(client: ExtendedClient) {
