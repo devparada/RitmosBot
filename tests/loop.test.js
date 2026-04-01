@@ -59,7 +59,7 @@ describe("/loop command", () => {
     test("Activa la repetición y responde cuando el modo es 'on'", async () => {
         interaction = createModeInteraction(LOOP_TEST, LOOP_TEST.MODES.QUEUE);
 
-        await loopCommand.run({ client:clientMock, interaction });
+        await loopCommand.run({ client: clientMock, interaction });
 
         // Verifica modo 2 y el texto exacto con emoji
         expect(playerMock.setRepeatMode).toHaveBeenCalledWith("queue");
