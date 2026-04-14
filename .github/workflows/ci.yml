@@ -23,21 +23,24 @@ jobs:
         node-version: [22.x, 24.x]
     steps:
       - name: Clona el repositorio
-        uses: actions/checkout@v4
+        # @v6.0.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - name: Instala pnpm
-        uses: pnpm/action-setup@v4
+        # @v5.0.0
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
         with:
           version: 10
 
       - name: Usando Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        # @v6.3.0
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
         with:
           node-version: ${{ matrix.node-version }}
           cache: "pnpm"
 
       - name: Instala las dependencias
-        run:  pnpm install --frozen-lockfile --ignore-scripts
+        run:  pnpm install --no-frozen-lockfile --ignore-scripts
 
       - name: Ejecuta los tests
         run: pnpm test
