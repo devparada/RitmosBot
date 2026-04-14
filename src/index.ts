@@ -1,5 +1,7 @@
 import { Client, Collection, GatewayIntentBits } from "discord.js";
-import { LavalinkManager } from "lavalink-client";
+import { Kazagumo } from "kazagumo";
+import Spotify from "kazagumo-spotify";
+import { Connectors } from "shoukaku";
 
 // Importaciones de configuración y utilidades
 import { connectMongo } from "@/config/db";
@@ -19,15 +21,27 @@ const client = new Client({
 }) as ExtendedClient;
 
 // Configurar LavalinkManager
-const lavalink = new LavalinkManager({
-    nodes: playerConfig.getNodes(),
-    playerOptions: playerConfig.getPlayerOptions(),
-    sendToShard: (guildId, payload) => {
-        client.guilds.cache.get(guildId)?.shard.send(payload);
+const kazagumo = new Kazagumo(
+    {
+        defaultSearchEngine: "youtube",
+        send: (guildId, payload) => {
+            client.guilds.cache.get(guildId)?.shard.send(payload);
+        },
+        plugins: [
+            new Spotify({
+                clientId: "",
+                clientSecret: "",
+                playlistPageLimit: 2,
+                albumPageLimit: 2,
+                searchMarket: "ES",
+            }),
+        ],
     },
-});
+    new Connectors.DiscordJS(client),
+    playerConfig.getNodes(),
+);
 
-client.lavalink = lavalink;
+client.lavalink = kazagumo;
 client.slashcommands = new Collection();
 
 // Función de inicio

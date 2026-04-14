@@ -1,23 +1,18 @@
 import { Colors, EmbedBuilder, type TextChannel } from "discord.js";
+import type { KazagumoTrack } from "kazagumo";
 import type { ExtendedClient } from "../types/discord";
 
 export function playerEvents(client: ExtendedClient) {
-    // Eventos de Lavalink
-    client.lavalink.nodeManager.on("connect", (node) => {
-        console.log(`NODO LAVALINK CONECTADO: ${node.id}`);
+    client.lavalink.shoukaku.on("ready", (name) => {
+        console.log(`[LAVALINK] NODO CONECTADO: ${name}`);
     });
 
-    client.lavalink.nodeManager.on("error", (node, error) => {
-        console.log(`ERROR EN NODO LAVALINK ${node.id}:`, error.message);
+    client.lavalink.shoukaku.on("error", (name, error) => {
+        console.error(`[LAVALINK] ERROR EN NODO ${name}:`, error.message);
     });
 
-    /**
-     * Evento: Se dispara cuando una canción comienza a sonar.
-     */
-    client.lavalink.on("trackStart", (player, track) => {
-        if (!track?.info) return;
-
-        const channelId = player.textChannelId;
+    client.lavalink.on("playerStart", (player, track: KazagumoTrack) => {
+        const channelId = player.textId;
         if (!channelId) return;
 
         const channel = client.channels.cache.get(channelId) as TextChannel;
@@ -25,26 +20,29 @@ export function playerEvents(client: ExtendedClient) {
 
         const embed = new EmbedBuilder()
             .setColor(Colors.Green)
-            .setAuthor({ name: "Reproduciendo ahora", iconURL: client.user?.displayAvatarURL() })
-            .setTitle(track.info.title)
-            .setURL(track.info.uri || null)
-            .setThumbnail(track.info.artworkUrl || null)
+            .setAuthor({
+                name: "Reproduciendo ahora",
+                iconURL: client.user?.displayAvatarURL(),
+            })
+            .setTitle(track.title)
+            .setURL(track.uri || null)
+            .setThumbnail(track.thumbnail || null)
             .addFields(
-                { name: "🎤 Autor", value: track.info.author, inline: true },
-                { name: "⏳ Duración", value: formatDuration(track.info.duration), inline: true },
+                { name: "🎤 Autor", value: track.author || "Desconocido", inline: true },
+                { name: "⏳ Duración", value: formatDuration(track.length ?? 0), inline: true },
             )
             .setTimestamp();
 
-        channel.send({ embeds: [embed] }).catch((err) => console.error("Error enviando mensaje de trackStart:", err));
+        channel.send({ embeds: [embed] }).catch(console.error);
     });
 
-    /**
-     * Evento: Se dispara cuando hay un error en la reproducción (Ej: YouTube 403).
-     */
-    client.lavalink.on("trackError", (player, track, payload) => {
-        console.error(`❌ Error en track ${track?.info.title}:`, payload.error);
+    client.lavalink.on("playerException", (player, data) => {
+        const track = player.queue.current;
+        const error = data.exception?.message || "Error desconocido";
 
-        const channelId = player.textChannelId;
+        console.error(`❌ Error en track ${track?.title}:`, error);
+
+        const channelId = player.textId;
         if (!channelId) return;
 
         const channel = client.channels.cache.get(channelId) as TextChannel;
@@ -55,11 +53,25 @@ export function playerEvents(client: ExtendedClient) {
                         .setColor(Colors.Red)
                         .setTitle("⚠️ Error de reproducción")
                         .setDescription(
-                            `No se pudo reproducir **${track?.info.title}**.\n**Motivo:** ${payload.error || "Desconocido (posible bloqueo de YouTube)"}`,
+                            `No se pudo reproducir **${track?.title}**.\n**Motivo:** Error técnico en el nodo de Lavalink.`,
                         ),
                 ],
             });
         }
+    });
+
+    /**
+     * Evento: Cuando la cola se termina
+     */
+    client.lavalink.on("playerEmpty", (player) => {
+        const channelId = player.textId;
+        if (!channelId) return;
+        const channel = client.channels.cache.get(channelId) as TextChannel;
+
+        if (channel) {
+            channel.send("🎵 La cola ha terminado. ¡Añade más canciones!");
+        }
+        // player.destroy(); // Podrías destruirlo aquí si quieres que se salga del canal
     });
 }
 
@@ -67,7 +79,7 @@ export function playerEvents(client: ExtendedClient) {
  * Función auxiliar para formatear milisegundos a formato mm:ss
  */
 function formatDuration(ms: number): string {
-    if (ms <= 0) return "En vivo";
+    if (ms <= 0 || ms >= 36000000) return "En vivo";
     const minutes = Math.floor(ms / 60000);
     const seconds = Math.floor((ms % 60000) / 1000);
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;

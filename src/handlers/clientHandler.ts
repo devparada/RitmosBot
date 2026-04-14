@@ -6,7 +6,7 @@ export async function loadEvents(client: ExtendedClient) {
     /**
      * Se ejecuta cuando el bot se conecta exitosamente.
      */
-    client.on("clientReady", async (readyClient) => {
+    client.on("clientReady", async () => {
         console.log(`Logeado como ${client.user?.tag}`);
 
         // Iniciamos el estado rotativo
@@ -22,20 +22,7 @@ export async function loadEvents(client: ExtendedClient) {
             client.user?.setActivity(status[i]);
             i = (i + 1) % status.length;
         }, 30000);
-
-        try {
-            // Inicializamos lavalink UNA VEZ el cliente está listo
-            await client.lavalink.init({
-                id: readyClient.user.id,
-                username: readyClient.user.username,
-            });
-            console.log("LavalinkManager iniciado correctamente.");
-        } catch (err) {
-            console.error("Error iniciando LavalinkManager:", err);
-        }
     });
-
-    client.on("raw", (d) => client.lavalink.sendRawData(d));
 
     playerEvents(client);
 
