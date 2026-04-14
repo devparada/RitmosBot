@@ -1,5 +1,5 @@
 import { type ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { useMainPlayer } from "discord-player";
+import type { ExtendedClient } from "@/types/discord";
 import { usuarioEnVoiceChannel } from "@/utils/voiceUtils";
 
 module.exports = {
@@ -11,41 +11,48 @@ module.exports = {
                 .setName("modo")
                 .setDescription("Elige el modo de repetición")
                 .setRequired(true)
-                .addChoices({ name: "activado", value: "on" }, { name: "desactivado", value: "off" }),
+                .addChoices(
+                    { name: "activado (Cola)", value: "queue" },
+                    { name: "canción actual", value: "track" },
+                    { name: "desactivado", value: "none" },
+                ),
         ),
 
-    run: async ({ interaction }: { interaction: ChatInputCommandInteraction }) => {
-        const player = useMainPlayer();
-
+    run: async ({ client, interaction }: { client: ExtendedClient; interaction: ChatInputCommandInteraction }) => {
         if (!(await usuarioEnVoiceChannel(interaction))) {
             return false;
         }
-        if (interaction.guild != null) {
-            const queue = player.nodes.get(interaction.guild.id);
 
-            if (!queue?.isPlaying()) {
+        if (interaction.guildId) {
+            const player = client.lavalink.getPlayer(interaction.guildId);
+
+            if (!player) {
                 return await interaction.reply({
-                    content: "No hay ninguna canción reproduciéndose actualmente",
+                    content: "❌ No hay ninguna canción reproduciéndose actualmente",
                     ephemeral: true,
                 });
             }
 
-            const opcion = interaction.options.getString("modo");
+            const opcion = interaction.options.getString("modo") as "queue" | "track" | "none";
             let response: string = "";
 
+            player.setLoop(opcion);
+
             switch (opcion) {
-                case "on":
-                    queue.setRepeatMode(2);
+                case "queue":
                     response = "🔁 Repetición de la cola activada";
                     break;
 
-                case "off":
-                    queue.setRepeatMode(0);
+                case "track":
+                    response = "🔁 Repetición de la cola activada";
+                    break;
+
+                case "none":
                     response = "⏹️ Repetición desactivada";
                     break;
             }
 
-            return await interaction.reply({ content: response });
+            return await interaction.editReply({ content: response });
         }
     },
 };

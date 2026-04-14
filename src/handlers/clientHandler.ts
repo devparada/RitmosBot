@@ -1,13 +1,12 @@
 import { ActivityType, type Interaction } from "discord.js";
-import { playerEvents } from "../events/player";
-import { voiceEvent } from "../events/voice";
+import { playerEvents } from "../events/playerEvents";
 import type { ExtendedClient } from "../types/discord";
 
 export async function loadEvents(client: ExtendedClient) {
     /**
      * Se ejecuta cuando el bot se conecta exitosamente.
      */
-    client.on("clientReady", () => {
+    client.on("clientReady", async () => {
         console.log(`Logeado como ${client.user?.tag}`);
 
         // Iniciamos el estado rotativo
@@ -22,15 +21,18 @@ export async function loadEvents(client: ExtendedClient) {
         setInterval(() => {
             client.user?.setActivity(status[i]);
             i = (i + 1) % status.length;
-        }, 10000);
+        }, 30000);
     });
+
+    playerEvents(client);
 
     /**
      * Maneja la ejecución de comandos y el autocompletado.
      */
     client.on("interactionCreate", async (interaction: Interaction) => {
-        // Manejo de Comandos Slash
+        // --- Manejo de Comandos Slash ---
         if (interaction.isChatInputCommand()) {
+            await interaction.deferReply();
             const slashcmd = client.slashcommands.get(interaction.commandName);
             if (!slashcmd) return;
 
@@ -41,7 +43,7 @@ export async function loadEvents(client: ExtendedClient) {
             }
         }
 
-        // Manejo de Autocompletado
+        // --- Manejo de Autocompletado ---
         if (interaction.isAutocomplete()) {
             const command = client.slashcommands.get(interaction.commandName);
             try {
@@ -52,7 +54,4 @@ export async function loadEvents(client: ExtendedClient) {
             }
         }
     });
-
-    playerEvents(client.player);
-    voiceEvent(client);
 }

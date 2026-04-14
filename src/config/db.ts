@@ -1,23 +1,16 @@
-import { type Collection, type Db, MongoClient } from "mongodb";
+import { type Collection, MongoClient } from "mongodb";
 
 const MONGO_URI = process.env.MONGODB_URI;
 const MONGO_DB = process.env.MONGO_INITDB_DATABASE;
-
-export let mongoClient: MongoClient | null = null;
-export let db: Db | null = null;
-export let coleccionPlaylists: Collection | null = null;
-
-if (MONGO_URI && MONGO_DB) {
-    mongoClient = new MongoClient(MONGO_URI);
-    db = mongoClient.db(MONGO_DB);
-    coleccionPlaylists = db.collection("playlists");
-} else {
-    console.warn("MongoDB no configurado. Las funciones de guardado no estarán disponibles.");
-}
+export const mongoClient = MONGO_URI ? new MongoClient(MONGO_URI) : null;
 
 let connected = false;
 
-export async function connectMongo() {
+/**
+ * Conecta a la base de datos de MongoDB
+ * @returns Si no se ha configurado la URL de MongoDB, retorna null y el bot funciona sin base de datos
+ */
+export async function connectMongo(): Promise<void> {
     if (!mongoClient || connected) return;
     try {
         await mongoClient.connect();
@@ -26,4 +19,13 @@ export async function connectMongo() {
     } catch (err) {
         console.error("No se pudo conectar a MongoDB. El bot funciona sin base de datos: ", err);
     }
+}
+
+/**
+ * Muestra la colección de playlists de MongoDB
+ * @returns Si no se ha conectado a MongoDB, devuelve null
+ */
+export function getPlaylists(): Collection | null {
+    if (!mongoClient || !connected) return null;
+    return mongoClient.db(MONGO_DB).collection("playlists");
 }

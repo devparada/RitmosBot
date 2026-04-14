@@ -1,26 +1,31 @@
 // Este módulo se encarga de configurar el Player
-module.exports = {
-    connectionTimeout: 30000,
-    bufferingTimeout: 8000,
-    smoothVolume: true,
-    ytdlOptions: {
-        filter: "audioonly",
-        quality: "highestaudio",
-        highWaterMark: 1024 * 1024, // 1MB
-        dlChunkSize: 0, // Auto para que lo maneje ytdl
-        requestOptions: {
-            headers: {
-                "User-Agent":
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
-            },
+import { getEnvVar } from "@/utils/env";
+
+const playerConfig = {
+    /**
+     * Shoukaku espera un array de objetos para los nodos.
+     * Nota: Shoukaku NO usa una propiedad 'url' completa,
+     * usa 'url' (host:port) o separa 'host' y 'port'.
+     */
+    getNodes: () => [
+        {
+            name: getEnvVar("LAVALINK_NAME", "Principal"),
+            url: `${getEnvVar("LAVALINK_HOST", "lavalink")}:${getEnvVar("LAVALINK_PORT", "2333")}`,
+            auth: getEnvVar("LAVALINK_PASSWORD", "password"),
+            secure: getEnvVar("LAVALINK_SECURE", "false") === "true",
         },
-    },
-    filters: {
-        bassboost: false,
-        karaoke: false,
-        nightcore: false,
-        phaser: false,
-        tremolo: false,
-        vibrato: false,
-    },
+    ],
+
+    /**
+     * Opciones del Gestor de Shoukaku
+     */
+    getShoukakuOptions: () => ({
+        moveOnDisconnect: false,
+        resumable: false,
+        resumableTimeout: 60,
+        reconnectTries: 2,
+        restTimeout: 10000,
+    }),
 };
+
+export default playerConfig;

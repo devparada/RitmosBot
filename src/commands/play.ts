@@ -1,131 +1,132 @@
 import {
-    type Attachment,
     type ChatInputCommandInteraction,
+    type ColorResolvable,
     Colors,
     EmbedBuilder,
-    GuildMember,
-    MessageFlags,
+    type GuildMember,
     SlashCommandBuilder,
 } from "discord.js";
-import { useMainPlayer } from "discord-player";
+import fetch from "isomorphic-unfetch";
+import type { KazagumoSearchResult } from "kazagumo";
+import type { ExtendedClient } from "@/types/discord";
 import { usuarioEnVoiceChannel } from "@/utils/voiceUtils";
+
+const spotify = require("spotify-url-info")(fetch);
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("play")
-        .setDescription("Reproduce una canción o playlist")
-        .addStringOption((option) =>
-            option.setName("url").setDescription("Introduce una URL o texto").setRequired(false),
-        )
-        .addAttachmentOption((option) =>
-            option.setName("file").setDescription("Sube un archivo de audio o video").setRequired(false),
-        ),
+        .setDescription("Reproduce una canción o playlist (Soporta Spotify sin API)")
+        .addStringOption((opt) => opt.setName("url").setDescription("URL o nombre de la canción").setRequired(false))
+        .addAttachmentOption((opt) => opt.setName("file").setDescription("Archivo de audio").setRequired(false)),
 
-    run: async ({ interaction }: { interaction: ChatInputCommandInteraction }) => {
-        const { options, member } = interaction;
-        const query = options.getString("url");
-        const file = options.getAttachment("file");
-
-        if (!(member instanceof GuildMember)) return false;
-
-        const voiceChannel = member.voice.channel;
+    run: async ({ client, interaction }: { client: ExtendedClient; interaction: ChatInputCommandInteraction }) => {
+        const { options, member, guildId } = interaction;
+        const voiceChannel = (member as GuildMember).voice.channel;
+        let query = options.getAttachment("file")?.url || options.getString("url");
         const embed = new EmbedBuilder();
 
-        // Validaciones iniciales
-        if (!voiceChannel) {
-            return interaction.reply({
-                embeds: [
-                    embed
-                        .setColor(Colors.Red)
-                        .setDescription("¡Debes estar en un canal de voz para reproducir música!"),
-                ],
-                flags: MessageFlags.Ephemeral,
+        if (!guildId) return interaction.editReply("Este comando solo puede usarse en un servidor.");
+        if (!(await usuarioEnVoiceChannel(interaction))) return;
+
+        if (!query) {
+            return interaction.editReply({
+                embeds: [embed.setColor(Colors.Red).setDescription("Debes proporcionar una URL, nombre o archivo.")],
             });
         }
 
-        if (!(await usuarioEnVoiceChannel(interaction))) return false;
-
-        const validarArgumentos = validatePlayOptions(query, file, embed);
-        if (validarArgumentos) {
-            return interaction.reply({ embeds: [validarArgumentos], flags: MessageFlags.Ephemeral });
-        }
-
-        await interaction.deferReply();
-
         try {
-            const searchQuery = file ? file.url : (query ?? "");
-            const player = useMainPlayer();
+            // Lógica de extracción de Spotify
+            const isSpotify = /^(https?:\/\/)?(open\.spotify\.com|spotify\.link)\/(track|playlist|album)\/.+/.test(
+                query,
+            );
+            let spotifyTracks: string[] = [];
 
-            const guild = interaction.guild;
-            if (!guild) return;
-
-            const queue =
-                player.nodes.get(guild.id) ??
-                player.nodes.create(interaction.guild, {
-                    metadata: interaction,
-                    // Ensordece al bot
-                    selfDeaf: true,
-                    leaveOnEmpty: false,
-                    leaveOnEnd: false,
-                    leaveOnStop: false,
-                });
-
-            if (!queue.connection) {
+            if (isSpotify) {
                 try {
-                    await queue.connect(voiceChannel);
+                    const spData = await spotify.getDetails(query);
+                    const type = spData.type || spData.preview?.type;
+
+                    if (type === "track") {
+                        query = `${spData.preview.title} ${spData.preview.artist}`;
+                    } else if (spData.tracks) {
+                        // Es playlist o álbum
+                        const allTracks = spData.tracks.map(
+                            (t: any) => `${t.name} ${t.artist || t.artists?.[0]?.name || ""}`,
+                        );
+                        const first = allTracks.shift();
+                        if (first) {
+                            query = first;
+                            spotifyTracks = allTracks;
+                        }
+                    }
                 } catch (err) {
-                    console.error("No se pudo conectar al canal de voz:", err);
-                    embed.setColor(Colors.Red).setDescription("No se pudo unir al canal de voz");
-                    return interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
+                    console.error("Error extrayendo de Spotify:", err);
+                    // Si falla el scraping, intentamos limpiar la URL para que Lavalink busque algo
+                    query = query?.split("/").pop()?.split("?")[0] || query;
                 }
             }
 
-            // Buscar track o playlist
-            const searchResult = await player.search(searchQuery, { requestedBy: interaction.user });
-            if (!searchResult.tracks.length) {
-                embed.setColor(Colors.Red).setDescription("No se ha podido encontrar la canción");
-                return interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
+            // Obtener o crear el player con Kazagumo
+            const player = await client.lavalink.createPlayer({
+                guildId: guildId,
+                voiceId: voiceChannel!.id,
+                textId: interaction.channelId,
+                deaf: true,
+            });
+
+            // Buscar la primera canción
+            const result = await client.lavalink.search(query!, { requester: interaction.user });
+
+            if (!result.tracks.length) {
+                return interaction.editReply({
+                    embeds: [embed.setColor(Colors.Red).setDescription("No se encontraron resultados.")],
+                });
             }
 
-            // Añadir track a la cola
-            if (searchResult.playlist) {
-                queue.addTrack(searchResult.tracks);
-                embed
-                    .setColor(Colors.Green)
-                    .setDescription(`💿 Añadida la playlist con ${searchResult.tracks.length} canciones 💿`);
-            } else {
-                queue.addTrack(searchResult.tracks[0]);
-                embed.setColor(Colors.Green).setDescription(`💿 Añadido a la cola: ${searchResult.tracks[0].title} 💿`);
+            const track = result.tracks[0];
+            player.queue.add(track);
+
+            // Si es una playlist de Spotify, cargar el resto en segundo plano
+            if (spotifyTracks.length > 0) {
+                (async () => {
+                    for (const name of spotifyTracks) {
+                        try {
+                            const res: KazagumoSearchResult = await client.lavalink.search(name, {
+                                requester: interaction.user,
+                            });
+                            if (res.tracks.length > 0) player.queue.add(res.tracks[0]);
+                        } catch (e) {
+                            console.error(`Error en segundo plano para: ${name}`, e);
+                        }
+                    }
+                })();
             }
 
-            await interaction.followUp({ embeds: [embed] });
+            if (!player.playing && !player.paused) player.play();
 
-            // Sólo reproduce si no está sonando ni pausado y hay canciones en cola
-            if (!queue.node.isPlaying() && !queue.node.isPaused() && queue.tracks.size > 0) {
-                await queue.node.play();
-            }
+            const isQueue = player.queue.length > 1 || player.playing;
+            const responseEmbed = new EmbedBuilder()
+                .setColor((isQueue ? Colors.Blue : Colors.Green) as ColorResolvable)
+                .setTitle(track.title.substring(0, 256))
+                .setThumbnail(track.thumbnail || null)
+                .setDescription(`**Autor:** ${track.author}`)
+                .setFooter({
+                    text:
+                        spotifyTracks.length > 0
+                            ? `Añadiendo ${spotifyTracks.length} canciones más de la playlist...`
+                            : isQueue
+                              ? `Posición en cola: #${player.queue.length}`
+                              : "Reproduciendo ahora",
+                })
+                .setTimestamp();
+
+            return interaction.editReply({ embeds: [responseEmbed] });
         } catch (error) {
-            console.error(error);
-            embed.setColor(Colors.Red).setDescription("Hubo un error al intentar reproducir la canción");
-            await interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
-        }
-
-        function validatePlayOptions(
-            query: string | null,
-            file: Attachment | null,
-            embed: EmbedBuilder,
-        ): EmbedBuilder | null {
-            if (query && file) {
-                return embed
-                    .setColor(Colors.Red)
-                    .setDescription("Sólo puedes usar **una** opción: `url` o `file`, no ambas");
+            console.error("Error en comando Play:", error);
+            if (!interaction.replied) {
+                await interaction.editReply("Ocurrió un error al procesar la reproducción.");
             }
-            if (!query && !file) {
-                return embed
-                    .setColor(Colors.Red)
-                    .setDescription("Debes especificar una URL o subir un archivo para reproducir música");
-            }
-            return null;
         }
     },
 };

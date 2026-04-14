@@ -5,7 +5,7 @@ module.exports = {
 
     run: async ({ interaction }: { interaction: ChatInputCommandInteraction }) => {
         const fecha = Date.now();
-        await interaction.reply("🏓 Pong! Calculando latencia...");
+        await interaction.editReply("🏓 Pong! Calculando latencia...");
 
         const botLatencia = Date.now() - fecha;
         const apiLatencia = interaction.client.ws.ping;

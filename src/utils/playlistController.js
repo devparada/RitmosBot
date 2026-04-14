@@ -1,5 +1,4 @@
 const { coleccionPlaylists } = require("@/config/db");
-const { useMainPlayer } = require("discord-player");
 const { Colors } = require("discord.js");
 
 const DB_ERROR_MSG = {
@@ -12,6 +11,7 @@ const DB_ERROR_MSG = {
  */
 function limpiarKey(key) {
     // Reemplaza puntos y signos de dólar por caracteres seguros
+    if (typeof key !== "string") return key;
     return key.replaceAll(".", "·").replaceAll("$", "₀");
 }
 
@@ -19,9 +19,13 @@ function limpiarKey(key) {
  * Quita el parametro list de las URLs de Youtube pasadas como parámetro
  */
 function quitarListParam(url) {
-    const u = new URL(url);
-    u.searchParams.delete("list");
-    return u.toString();
+    try {
+        const u = new URL(url);
+        u.searchParams.delete("list");
+        return u.toString();
+    } catch {
+        return url;
+    }
 }
 
 // Crea la playlist con un nombre y un serverId
@@ -88,7 +92,7 @@ async function mostrarPlaylists(serverId) {
                     if (trackList !== null && Object.keys(trackList).length > 0) {
                         // Formatea la lista de canciones
                         canciones = Object.keys(trackList)
-                            .map((track) => `${track}: ${trackList[track]}`)
+                            .map((track) => track) // Solo mostramos los nombres para no saturar el mensaje
                             .join("\n - ");
                     }
                     playlistTexto += `**Playlist: ${nombrePlaylist}**\n - ${canciones}\n\n`;
@@ -96,7 +100,7 @@ async function mostrarPlaylists(serverId) {
             }
         }
 
-        return { color: Colors.Blue, mensaje: playlistTexto };
+        return { color: Colors.Blue, mensaje: playlistTexto || "No hay playlists creadas en este servidor" };
     } catch (error) {
         console.error("Error al mostrar la playlist:", error);
         return { color: Colors.Red, mensaje: "Error al mostrar la playlist" };
@@ -111,8 +115,9 @@ async function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) 
     nombrePlaylist = limpiarKey(nombrePlaylist);
     tituloCancion = limpiarKey(tituloCancion);
     try {
-        const playlistExiste = checkExistPlaylist(serverId, nombrePlaylist);
-        if (playlistExiste.color === Colors.Red) return playlistExiste;
+        // Corregido: Se añade await para comprobar correctamente
+        const check = await coleccionPlaylists.findOne({ serverId, [nombrePlaylist]: { $exists: true } });
+        if (!check) return { color: Colors.Red, mensaje: `La playlist **${nombrePlaylist}** no existe` };
 
         // Comprueba si existe la playlist y añade la canción
         const result = await coleccionPlaylists.updateOne(
@@ -141,9 +146,6 @@ async function eliminarCancionPlaylist(serverId, nombrePlaylist, tituloCancion) 
     nombrePlaylist = limpiarKey(nombrePlaylist);
     tituloCancion = limpiarKey(tituloCancion);
     try {
-        const playlistExiste = checkExistPlaylist(serverId, nombrePlaylist);
-        if (playlistExiste.color === Colors.Red) return playlistExiste;
-
         // Comprueba si existe la playlist y elimina la canción
         const result = await coleccionPlaylists.updateOne(
             { serverId, [nombrePlaylist]: { $exists: true } },
@@ -169,12 +171,17 @@ async function playCheckPlaylist(serverId, nombrePlaylist) {
 
     nombrePlaylist = limpiarKey(nombrePlaylist);
     try {
-        const playlistExiste = await checkExistPlaylist(serverId, nombrePlaylist);
-        if (playlistExiste.color !== Colors.Red) return playlistExiste;
+        const doc = await coleccionPlaylists.findOne({ serverId, [nombrePlaylist]: { $exists: true } });
 
-        return { color: Colors.Green, mensaje: `La playlist **${nombrePlaylist}** se añadio a la cola correctamente` };
+        // Si no existe o no tiene canciones
+        if (!doc?.[nombrePlaylist] || Object.keys(doc[nombrePlaylist]).length === 0) {
+            return { color: Colors.Red, mensaje: `La playlist **${nombrePlaylist}** no existe o está vacía` };
+        }
+
+        return { color: Colors.Green, mensaje: `La playlist **${nombrePlaylist}** se añadió a la cola correctamente` };
     } catch (error) {
         console.error(error);
+        return { color: Colors.Red, mensaje: "Error al validar la playlist" };
     }
 }
 
@@ -197,22 +204,40 @@ async function checkExistPlaylist(serverId, nombrePlaylist) {
 async function playPlaylist(serverId, nombrePlaylist, interaction) {
     if (!coleccionPlaylists) return DB_ERROR_MSG;
 
-    const player = useMainPlayer();
+    const { client } = interaction;
     nombrePlaylist = limpiarKey(nombrePlaylist);
 
     try {
-        const resultado = await coleccionPlaylists.find({ serverId }).toArray();
+        const doc = await coleccionPlaylists.findOne({ serverId });
+        if (!doc?.[nombrePlaylist]) return;
 
-        for (const playlist of resultado) {
-            if (playlist[nombrePlaylist] && typeof playlist[nombrePlaylist] === "object") {
-                const urls = Object.values(playlist[nombrePlaylist]);
-                for (const url of urls) {
-                    await player.play(interaction.member.voice.channel, url, {
-                        nodeOptions: { metadata: interaction },
-                    });
-                }
+        const urls = Object.values(doc[nombrePlaylist]);
+
+        // Obtener o crear el player de Lavalink
+        let player = client.lavalink.getPlayer(interaction.guildId);
+        if (!player) {
+            player = await client.lavalink.createPlayer({
+                guildId: interaction.guildId,
+                voiceChannelId: interaction.member.voice.channel.id,
+                textChannelId: interaction.channelId,
+                selfDeaf: true,
+            });
+        }
+
+        if (!player.connected) await player.connect();
+
+        const node = client.lavalink.nodeManager.leastUsedNodes("playingPlayers")[0];
+
+        // Iterar sobre las URLs guardadas en la DB
+        for (const url of urls) {
+            const res = await node.search(url, interaction.user);
+            if (res.tracks.length > 0) {
+                await player.queue.add(res.tracks[0]);
             }
         }
+
+        // Si no está reproduciendo nada, empezar
+        if (!player.playing && !player.paused) await player.play();
     } catch (error) {
         console.error("Error al reproducir la playlist:", error);
     }

@@ -1,5 +1,4 @@
 import {
-    type ApplicationCommandOptionChoiceData,
     type AutocompleteInteraction,
     type ChatInputCommandInteraction,
     type ColorResolvable,
@@ -7,8 +6,8 @@ import {
     EmbedBuilder,
     SlashCommandBuilder,
 } from "discord.js";
-import { useMainPlayer } from "discord-player";
-import { coleccionPlaylists } from "@/config/db";
+import { getPlaylists } from "@/config/db";
+import type { CustomClient } from "@/types/lavalink";
 import type { ServerPlaylistsDoc } from "@/types/types";
 import {
     addCancionPlaylist,
@@ -70,7 +69,7 @@ module.exports = {
                         .setAutocomplete(true),
                 )
                 .addStringOption((option) =>
-                    option.setName("url").setDescription("Url de la cancion").setRequired(true),
+                    option.setName("url").setDescription("Url o nombre de la canción").setRequired(true),
                 ),
         )
         .addSubcommand((sub) =>
@@ -87,259 +86,154 @@ module.exports = {
                 .addStringOption((option) =>
                     option
                         .setName("name")
-                        .setDescription("nombre de la cancion")
+                        .setDescription("Nombre de la canción")
                         .setRequired(true)
                         .setAutocomplete(true),
                 ),
         ),
 
-    async autocomplete(interaction: ChatInputCommandInteraction | AutocompleteInteraction) {
-        if (!interaction.isAutocomplete()) return;
-
-        // Si no hay base de datos, respondemos con un mensaje informativo
-        if (!coleccionPlaylists) {
-            return await interaction.respond([{ name: "Base de datos no disponible", value: "none" }]);
-        }
-
+    async autocomplete(interaction: AutocompleteInteraction) {
+        const playlistsDb = getPlaylists();
+        if (!playlistsDb) return;
         const guildId = interaction.guildId;
         if (!guildId) return;
 
         try {
-            const docs = await coleccionPlaylists.find<ServerPlaylistsDoc>({ serverId: guildId }).toArray();
+            const docs = await playlistsDb.find<ServerPlaylistsDoc>({ serverId: guildId }).toArray();
             const playlists = docs[0] ?? { serverId: guildId };
 
             const obtenerPlaylistNombres = (): string[] => {
                 const set = new Set<string>();
                 for (const doc of docs) {
                     for (const key of Object.keys(doc)) {
-                        if (key !== "serverId" && key !== "_id") {
-                            set.add(key);
-                        }
+                        if (key !== "serverId" && key !== "_id") set.add(key);
                     }
                 }
                 return Array.from(set);
             };
 
-            const crearOpciones = (items: string[]) => items.slice(0, 25).map((s) => ({ name: s, value: s })); // Discord limita a 25 opciones
-
+            const crearOpciones = (items: string[]) => items.slice(0, 25).map((s) => ({ name: s, value: s }));
             const sub = interaction.options.getSubcommand();
-            const focusedRaw = interaction.options.getFocused();
-            const focusedValue = focusedRaw ? String(focusedRaw) : "";
-            const focusedLower = focusedValue.toLowerCase();
-            const startsWith = (arr: string[]) => arr.filter((n) => n.toLowerCase().startsWith(focusedLower));
+            const focusedOption = interaction.options.getFocused(true);
+            const focusedValue = focusedOption.value.toLowerCase();
+            const startsWith = (arr: string[]) => arr.filter((n) => n.toLowerCase().startsWith(focusedValue));
 
             switch (sub) {
                 case "add":
-                case "remove": {
-                    // Todas las playlists del servidor
+                case "remove":
+                case "play": {
                     let playlistsFiltradas = obtenerPlaylistNombres();
-
-                    if (focusedValue.length > 0) {
-                        playlistsFiltradas = startsWith(playlistsFiltradas);
+                    if (sub === "play") {
+                        playlistsFiltradas = playlistsFiltradas.filter(
+                            (name) => Object.keys(playlists[name] ?? {}).length > 0,
+                        );
                     }
-
-                    const respuesta =
-                        playlistsFiltradas.length > 0
-                            ? crearOpciones(playlistsFiltradas)
-                            : [
-                                  {
-                                      name: focusedValue
-                                          ? `No hay playlists que empiecen por "${focusedValue}"`
-                                          : "No existen playlists en este servidor",
-                                      value: "none",
-                                  },
-                              ];
-                    await interaction.respond(respuesta);
+                    return await interaction.respond(crearOpciones(startsWith(playlistsFiltradas)));
+                }
+                case "delete": {
+                    if (focusedOption.name === "playlist") {
+                        const playlistConCanciones = obtenerPlaylistNombres().filter(
+                            (k) => Object.keys(playlists[k] ?? {}).length > 0,
+                        );
+                        return await interaction.respond(crearOpciones(startsWith(playlistConCanciones)));
+                    }
+                    if (focusedOption.name === "name") {
+                        const playlistSeleccionada = interaction.options.getString("playlist") ?? "";
+                        const canciones = playlists[playlistSeleccionada] ?? {};
+                        return await interaction.respond(crearOpciones(startsWith(Object.keys(canciones))));
+                    }
                     break;
                 }
-                case "delete":
-                    {
-                        const focusedOption = interaction.options.getFocused(true).name;
-
-                        switch (focusedOption) {
-                            case "playlist":
-                                {
-                                    // Filtra las playlists que tengan al menos una canción
-                                    let playlistConCanciones = Object.keys(playlists).filter(
-                                        (k) =>
-                                            k !== "serverId" &&
-                                            k !== "_id" &&
-                                            Object.keys(playlists[k] ?? {}).length > 0,
-                                    );
-
-                                    // Si el usuario está escribiendo, filtrar las playlists que empiecen por este texto
-                                    if (focusedValue) playlistConCanciones = startsWith(playlistConCanciones);
-
-                                    // Si hay playlists filtradas, se mapean a objetos {name, value}
-                                    // Si no hay coincidencias, se devuelve un mensaje indicando que no hay playlists
-                                    const respuesta =
-                                        playlistConCanciones.length > 0
-                                            ? crearOpciones(playlistConCanciones)
-                                            : [
-                                                  {
-                                                      name: focusedValue
-                                                          ? `No hay playlists que empiecen por ${focusedValue}`
-                                                          : "No existen playlists",
-                                                      value: "__empty__", // Valor especial para indicar que no hay opción válida
-                                                  },
-                                              ];
-
-                                    await interaction.respond(respuesta);
-                                }
-                                break;
-                            case "name": {
-                                const playlistSeleccionada = interaction.options.getString("playlist") ?? "";
-
-                                // Obtenemos las canciones de esa playlist del objeto 'playlistsData'
-                                // Si no existe la playlist, usamos un objeto vacío para evitar errores
-                                const canciones = playlists[playlistSeleccionada] ?? {};
-                                const nombresCanciones = Object.keys(canciones);
-
-                                const respuesta: ApplicationCommandOptionChoiceData<string>[] =
-                                    nombresCanciones.length > 0 // Si hay canciones
-                                        ? crearOpciones(nombresCanciones)
-                                        : [{ name: "No hay canciones en esta playlist", value: "none" }];
-
-                                await interaction.respond(respuesta);
-                            }
-                        }
-                    }
-                    break;
-                case "play":
-                    {
-                        let obtenerPlaylists = obtenerPlaylistNombres().filter((name) => {
-                            const songs = playlists[name] ?? {};
-                            return songs && typeof songs === "object" && Object.keys(songs).length > 0;
-                        });
-
-                        if (focusedValue) obtenerPlaylists = startsWith(obtenerPlaylists);
-
-                        const respuesta =
-                            obtenerPlaylists.length > 0
-                                ? crearOpciones(obtenerPlaylists)
-                                : [
-                                      {
-                                          name: focusedValue
-                                              ? `No hay playlists que empiecen por + "${focusedValue.toLowerCase()}"`
-                                              : "No hay playlists disponibles para reproducir",
-                                          value: "none",
-                                      },
-                                  ];
-                        await interaction.respond(respuesta);
-                    }
-                    break;
             }
         } catch (error) {
-            console.error(`Error en el autocompletado playlist: ${error}`);
+            console.error(error);
         }
     },
 
-    run: async ({ interaction }: { interaction: ChatInputCommandInteraction }) => {
+    run: async ({ client, interaction }: { client: CustomClient; interaction: ChatInputCommandInteraction }) => {
         const { options, guildId } = interaction;
-        const player = useMainPlayer();
+        if (!guildId) return;
 
         async function responderEmbed(
             interaction: ChatInputCommandInteraction,
-            result: { color: ColorResolvable; mensaje: string; titulo?: string },
+            result: { color: ColorResolvable; mensaje: string; titulo?: string } | undefined,
         ) {
+            if (!result) return;
             const embed = new EmbedBuilder().setColor(result.color).setDescription(result.mensaje);
-            // Si hay titulo lo añade al embed
             if (result.titulo) embed.setTitle(result.titulo);
-            await interaction.reply({ embeds: [embed] });
+
+            if (interaction.replied || interaction.deferred) {
+                await interaction.editReply({ embeds: [embed] });
+            } else {
+                await interaction.reply({ embeds: [embed] });
+            }
         }
 
-        switch (options.getSubcommand()) {
-            case "create":
-                try {
-                    const arrayCrear = await crearPlaylist(guildId, options.getString("name"));
-                    if (arrayCrear) {
-                        const embedData = { color: arrayCrear.color, mensaje: arrayCrear.mensaje };
-                        await responderEmbed(interaction, embedData);
-                    }
-                } catch (error) {
-                    console.log(`Error al crear una playlist: ${error}`);
-                }
-                break;
-            case "list":
-                try {
-                    const arrayLista = await mostrarPlaylists(guildId);
-                    const embedData = {
-                        color: arrayLista.color,
-                        mensaje: arrayLista.mensaje,
-                        titulo: "🎶 Lista de Playlists 🎶",
-                    };
-                    await responderEmbed(interaction, embedData);
-                } catch (error) {
-                    console.log(`Error al mostrar las playlists: ${error}`);
-                }
-                break;
-            case "add":
-                try {
-                    const playlistName = options.getString("playlist");
-                    const url = options.getString("url");
+        const subcommand = options.getSubcommand();
 
-                    if (!playlistName || !url) {
-                        await interaction.reply("❌| Faltan el nombre de la playlist o la url");
-                        return;
-                    }
+        switch (subcommand) {
+            case "create": {
+                const name = options.getString("name") ?? "Nueva Playlist";
+                const arrayCrear = await crearPlaylist(guildId, name);
+                await responderEmbed(interaction, arrayCrear);
+                break;
+            }
 
-                    const result = await player.search(url, {
-                        requestedBy: interaction.user,
-                    });
+            case "list": {
+                const arrayLista = await mostrarPlaylists(guildId);
+                await responderEmbed(interaction, { ...arrayLista, titulo: "🎶 Lista de Playlists 🎶" });
+                break;
+            }
 
-                    const track = result.tracks[0];
-                    const tituloCancion = track?.title ?? "Título no encontrado";
+            case "add": {
+                const playlistName = options.getString("playlist") ?? "";
+                const query = options.getString("url") ?? "";
+                await interaction.deferReply();
 
-                    const arrayAdd = (await addCancionPlaylist(guildId, url, playlistName, tituloCancion)) ?? {
-                        color: Colors.Red,
-                        mensaje: "Error inesperado.",
-                    };
-                    const embedData = { color: arrayAdd.color, mensaje: arrayAdd.mensaje };
-                    await responderEmbed(interaction, embedData);
-                } catch (error) {
-                    console.log(`Error al añadir una canción a la playlist: ${error}`);
+                const node = client.lavalink.nodeManager.leastUsedNodes("playingPlayers")[0];
+                if (!node?.connected) {
+                    return await responderEmbed(interaction, { color: Colors.Red, mensaje: "Servidor no disponible." });
+                }
+
+                const res = await node.search(query.startsWith("http") ? query : `ytsearch:${query}`, interaction.user);
+                if (!res.tracks.length) {
+                    return await responderEmbed(interaction, { color: Colors.Red, mensaje: "Sin resultados." });
+                }
+
+                const track = res.tracks[0];
+                const arrayAdd = await addCancionPlaylist(guildId, track.info.uri, playlistName, track.info.title);
+                await responderEmbed(interaction, arrayAdd);
+                break;
+            }
+
+            case "play": {
+                if (!(await usuarioEnVoiceChannel(interaction))) return;
+                const playlistToPlay = options.getString("name") ?? "";
+                const arrayPlayCheck = await playCheckPlaylist(guildId, playlistToPlay);
+
+                if (arrayPlayCheck && Number(arrayPlayCheck.color) === Colors.Green) {
+                    await responderEmbed(interaction, arrayPlayCheck);
+                    await playPlaylist(guildId, playlistToPlay, interaction);
+                } else {
+                    await responderEmbed(interaction, arrayPlayCheck);
                 }
                 break;
-            case "play":
-                if (!(await usuarioEnVoiceChannel(interaction))) {
-                    return false;
-                }
-                try {
-                    const arrayPlayCheck = (await playCheckPlaylist(guildId, options.getString("name"))) ?? {
-                        color: Colors.Red,
-                        mensaje: "Error inesperado.",
-                    };
-                    const embedData = { color: arrayPlayCheck.color, mensaje: arrayPlayCheck.mensaje };
-                    await responderEmbed(interaction, embedData);
-                    if (Number(arrayPlayCheck.color) === Colors.Green) {
-                        playPlaylist(guildId, options.getString("name"), interaction);
-                    }
-                } catch (error) {
-                    console.log(`Error al reproducir una playlist: ${error}`);
-                }
+            }
+
+            case "remove": {
+                const removeName = options.getString("name") ?? "";
+                const arrayRemove = await eliminarPlaylist(guildId, removeName);
+                await responderEmbed(interaction, arrayRemove);
                 break;
-            case "remove":
-                try {
-                    const arrayRemove = await eliminarPlaylist(guildId, options.getString("name"));
-                    const embedData = { color: arrayRemove.color, mensaje: arrayRemove.mensaje };
-                    await responderEmbed(interaction, embedData);
-                } catch (error) {
-                    console.log(`Error al eliminar una playlist: ${error}`);
-                }
+            }
+
+            case "delete": {
+                const delPlaylist = options.getString("playlist") ?? "";
+                const delSong = options.getString("name") ?? "";
+                const arrayDelete = await eliminarCancionPlaylist(guildId, delPlaylist, delSong);
+                await responderEmbed(interaction, arrayDelete);
                 break;
-            case "delete":
-                try {
-                    const arrayDelete = (await eliminarCancionPlaylist(
-                        guildId,
-                        options.getString("playlist"),
-                        options.getString("name"),
-                    )) ?? { color: Colors.Red, mensaje: "Error inesperado." };
-                    const embedData = { color: arrayDelete.color, mensaje: arrayDelete.mensaje };
-                    await responderEmbed(interaction, embedData);
-                } catch (error) {
-                    console.log(`Error al eliminar una canción en la playlist: ${error}`);
-                }
-                break;
+            }
         }
     },
 };

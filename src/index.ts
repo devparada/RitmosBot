@@ -1,16 +1,16 @@
-import { AttachmentExtractor, SpotifyExtractor } from "@discord-player/extractor";
 import { Client, Collection, GatewayIntentBits } from "discord.js";
-import { Player } from "discord-player";
-import { YoutubeSabrExtractor } from "discord-player-googlevideo";
+import { Kazagumo } from "kazagumo";
+import Spotify from "kazagumo-spotify";
+import { Connectors } from "shoukaku";
 
 // Importaciones de configuración y utilidades
 import { connectMongo } from "@/config/db";
-import playerConfig from "@/config/player.config";
 import { getEnvVar } from "@/utils/env";
+import playerConfig from "./config/player.config";
 
 // Handlers y Tipos
+import { loadEvents } from "./handlers/clientHandler";
 import { loadCommands } from "./handlers/commandHandler";
-import { loadEvents } from "./handlers/eventHandler";
 import type { ExtendedClient } from "./types/discord";
 
 /**
@@ -20,26 +20,31 @@ const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
 }) as ExtendedClient;
 
-/**
- * Configuración del Reproductor (Discord Player)
- */
-const player = new Player(client, playerConfig);
+// Configurar LavalinkManager
+const kazagumo = new Kazagumo(
+    {
+        defaultSearchEngine: "youtube",
+        send: (guildId, payload) => {
+            client.guilds.cache.get(guildId)?.shard.send(payload);
+        },
+        plugins: [
+            new Spotify({
+                clientId: "",
+                clientSecret: "",
+                playlistPageLimit: 2,
+                albumPageLimit: 2,
+                searchMarket: "ES",
+            }),
+        ],
+    },
+    new Connectors.DiscordJS(client),
+    playerConfig.getNodes(),
+);
 
-// Registro de extractores de música
-player.extractors.register(SpotifyExtractor, {});
-player.extractors.register(YoutubeSabrExtractor, {
-    disableAdaptiveBitrate: true,
-    highWaterMark: 1 << 25,
-});
-player.extractors.register(AttachmentExtractor, {});
-
-// Adjuntar instancias al cliente para acceso global
-client.player = player;
+client.lavalink = kazagumo;
 client.slashcommands = new Collection();
 
-/**
- * Función principal de arranque
- */
+// Función de inicio
 async function start() {
     try {
         // Cargamos los comandos desde el sistema de archivos
@@ -49,14 +54,14 @@ async function start() {
         if (process.argv[2] === "slash") {
             const { handleDeployment } = await import("./scripts/deploy");
             await handleDeployment(commandsData);
-            process.exit(0);
+            return setTimeout(() => process.exit(0), 200);
         }
 
         // Cargamos todos los eventos (Discord, Player y Voz)
         await loadEvents(client);
-
-        // Conexión a la Base de Datos y login del bot
+        // Conexión a la Base de Datos
         await connectMongo();
+
         await client.login(getEnvVar("TOKEN"));
     } catch (error) {
         console.error("Error crítico durante el arranque:", error);

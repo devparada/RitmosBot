@@ -1,0 +1,37 @@
+server:
+  port: ${LAVALINK_PORT}
+  address: ${LAVALINK_ADDRESS}
+lavalink:
+  server:
+    # Estabilidad del flujo UDP
+    bufferDurationMs: 600
+    frameBufferDurationMs: 5000
+
+    # Seguridad
+    password: ${LAVALINK_PASSWORD}
+
+    # Fuentes de audio (deshabilitado por defecto youtube)
+    sources:
+      youtube: false
+      bandcamp: true
+      soundcloud: true
+      twitch: true
+      vimeo: true
+      http: true
+      local: true
+    
+    # Filtros
+    filters:
+      volume: true
+      equalizer: true
+  plugins:
+    - dependency: "dev.lavalink.youtube:youtube-plugin:${YOUTUBE_PLUGIN_VERSION:1.18.0}"
+      snapshot: false
+
+plugins:
+  youtube:
+    enabled: true
+    allowSearch: true
+    allowDirectVideoIds: true
+    allowDirectPlaylistIds: true
+    clients: ${YOUTUBE_CLIENTS:MUSIC,ANDROID_VR,WEBEMBEDDED}
