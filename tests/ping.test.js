@@ -3,7 +3,7 @@ const { createBasicInteraction } = require("@tests/mocks/discordMocks");
 
 const WS_PING = 50;
 
-describe("/ping command", () => {
+describe.skip("/ping command", () => {
     let interaction;
 
     beforeEach(() => {

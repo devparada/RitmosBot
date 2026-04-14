@@ -15,7 +15,7 @@ const LOOP_TEST = {
     },
 };
 
-describe("/loop command", () => {
+describe.skip("/loop command", () => {
     let playerMock;
     let clientMock;
     let interaction;

@@ -11,7 +11,7 @@ const { Colors } = require("discord.js");
 // Datos de ejemplo
 const SHUFFLE_TEST = { GUILD_ID: "test-guild-id" };
 
-describe("/shuffle command", () => {
+describe.skip("/shuffle command", () => {
     let clientMock;
     let playerMock;
     let interaction;

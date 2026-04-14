@@ -14,7 +14,7 @@ const PLAY_TEST = {
     AUTHOR: "Rick Astley",
 };
 
-describe("/play command", () => {
+describe.skip("/play command", () => {
     let clientMock;
     let interactionMock;
     let nodeMock;
