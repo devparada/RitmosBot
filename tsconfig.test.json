@@ -1,6 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    /* --- Extensiones para Tests --- */
     "types": ["node", "jest"]
   },
 }

@@ -1,22 +1,37 @@
 {
   "compilerOptions": {
+    /* --- Compatibilidad y Entorno --- */
     "target": "ES2021",
     "module": "CommonJS",
     "moduleResolution": "node",
-    "esModuleInterop": true,
-    "strict": true,
-    "outDir": "dist",
-    "baseUrl": ".",
-    "resolveJsonModule": true,
-    "types": ["node"],
     "allowJs": true,
-    "skipLibCheck": true,
-    "isolatedModules": true,
+    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+
+    /* --- Nivel de Estrictez --- */
+    "strict": true,
+    "skipLibCheck": true,
+    "ignoreDeprecations": "6.0",
+
+    /* --- Rutas y Salida --- */
+    "baseUrl": ".",
+    "rootDir": ".",
+    "outDir": "dist",
+    "noEmit": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+
+    /* --- Alias de Rutas (Paths) --- */
     "paths": {
       "@/*": ["./src/*"],
       "@tests/*": ["tests/*"]
-    }
+    },
+
+    /* --- Definición de Tipos Globales --- */
+    "types": ["node", "jest"],
   },
-  "include": ["src"],
+
+  /* --- Inclusión y Exclusión de Archivos --- */
+  "include": ["src/**/*", "tests/**/*"],
+  "exclude": ["node_modules", "dist"]
 }
