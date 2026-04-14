@@ -15,25 +15,24 @@
   },
   "dependencies": {
     "@discordjs/rest": "2.6.1",
-    "discord-api-types": "0.38.45",
+    "discord-api-types": "0.38.46",
     "discord.js": "14.26.2",
     "isomorphic-unfetch": "4.0.2",
     "kazagumo": "3.4.3",
     "kazagumo-spotify": "2.1.1",
-    "lavalink-client": "2.10.0",
     "mediaplex": "1.0.0",
     "mongodb": "7.1.1",
     "shoukaku": "4.3.0",
     "spotify-url-info": "3.3.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.9",
+    "@biomejs/biome": "2.4.11",
     "@types/jest": "30.0.0",
     "@types/node": "25.5.0",
     "jest": "30.3.0",
-    "ts-jest": "29.4.6",
+    "ts-jest": "29.4.9",
     "tsc-alias": "1.8.16",
-    "typescript": "5.9.3"
+    "typescript": "6.0.2"
   },
   "optionalDependencies": {
     "mediaplex-linux-arm64-gnu": "1.0.0",
@@ -44,13 +43,13 @@
   },
   "pnpm": {
     "overrides": {
-      "brace-expansion": "2.0.3",
+      "brace-expansion": "2.1.0",
       "glob": "12.0.0",
       "handlebars": "4.7.9",
       "lodash": "4.18.1",
       "minimatch": "9.0.9",
       "picomatch": "4.0.4",
-      "undici": "7.24.8"
+      "undici": "7.25.0"
     }
   }
 }
