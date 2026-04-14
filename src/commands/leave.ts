@@ -16,7 +16,7 @@ module.exports = {
         if (interaction.guildId) {
             const player = client.lavalink.getPlayer(interaction.guildId);
 
-            if (!player?.connected) {
+            if (!player) {
                 embed.setColor(Colors.Red).setDescription("❌ No estoy conectado a ningún canal de voz.");
             } else {
                 await player.destroy();

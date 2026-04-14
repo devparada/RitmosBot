@@ -22,7 +22,7 @@ module.exports = {
 
             try {
                 const currentTrack = player.queue.current;
-                const tracks = player.queue.tracks;
+                const tracks = player.queue;
                 const cancionesLimite = 20;
 
                 let description = "";
@@ -32,7 +32,7 @@ module.exports = {
                         .slice(0, cancionesLimite)
                         .map(
                             (song, id) =>
-                                `🎶 **${id + 1}.** ${song.info.title} - \`${song.info.duration ? formatMS(song.info.duration) : "Live"}\``,
+                                `🎶 **${id + 1}.** ${song.title} - \`${song.length ? formatMS(song.length) : "Live"}\``,
                         )
                         .join("\n");
 
@@ -46,12 +46,12 @@ module.exports = {
                 embed
                     .setColor(Colors.Blue)
                     .setTitle(`Cola de reproducción`)
-                    .setThumbnail(currentTrack.info.artworkUrl || null)
+                    .setThumbnail(currentTrack.thumbnail || null)
                     .setDescription(
-                        `💿 **Está reproduciéndose**\n[${currentTrack.info.title}](${currentTrack.info.uri}) - \`${formatMS(currentTrack.info.duration)}\`\n\n` +
+                        `💿 **Está reproduciéndose**\n[${currentTrack.title}](${currentTrack.uri}) - \`${formatMS(currentTrack.length ?? 0)}\`\n\n` +
                             `**Próximas canciones:**\n${description}`,
                     )
-                    .setFooter({ text: `Total en cola: ${tracks.length + 1} | Modo repetición: ${player.repeatMode}` });
+                    .setFooter({ text: `Total en cola: ${tracks.length + 1} | Modo repetición: ${player.loop}` });
 
                 return await interaction.followUp({ embeds: [embed] });
             } catch (error) {

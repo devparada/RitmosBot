@@ -15,13 +15,13 @@ module.exports = {
         if (interaction.guildId) {
             const player = client.lavalink.getPlayer(interaction.guildId);
 
-            if (!player?.connected || player.queue.tracks.length === 0) {
+            if (!player || player.queue.length <= 1) {
                 embed.setColor(Colors.Red).setDescription("❌ No hay más canciones en la cola");
                 return interaction.editReply({ embeds: [embed] });
             }
 
             try {
-                await player.queue.shuffle();
+                player.queue.shuffle();
 
                 embed.setColor(Colors.Blue).setDescription("¡La cola ha sido mezclada!");
             } catch (error) {

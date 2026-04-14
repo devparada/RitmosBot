@@ -14,7 +14,7 @@ module.exports = {
                 .addChoices(
                     { name: "activado (Cola)", value: "queue" },
                     { name: "canción actual", value: "track" },
-                    { name: "desactivado", value: "off" },
+                    { name: "desactivado", value: "none" },
                 ),
         ),
 
@@ -26,17 +26,17 @@ module.exports = {
         if (interaction.guildId) {
             const player = client.lavalink.getPlayer(interaction.guildId);
 
-            if (!player?.connected || !player.playing) {
+            if (!player) {
                 return await interaction.reply({
                     content: "❌ No hay ninguna canción reproduciéndose actualmente",
                     ephemeral: true,
                 });
             }
 
-            const opcion = interaction.options.getString("modo") as "off" | "track" | "queue";
+            const opcion = interaction.options.getString("modo") as "queue" | "track" | "none";
             let response: string = "";
 
-            await player.setRepeatMode(opcion);
+            player.setLoop(opcion);
 
             switch (opcion) {
                 case "queue":
@@ -47,7 +47,7 @@ module.exports = {
                     response = "🔁 Repetición de la cola activada";
                     break;
 
-                case "off":
+                case "none":
                     response = "⏹️ Repetición desactivada";
                     break;
             }

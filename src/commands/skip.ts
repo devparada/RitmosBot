@@ -15,7 +15,7 @@ module.exports = {
         if (interaction.guildId) {
             const player = client.lavalink.getPlayer(interaction.guildId);
 
-            if (!player?.connected) {
+            if (!player) {
                 embed.setColor(Colors.Red).setDescription("❌ No hay ninguna canción reproduciéndose en este momento");
                 return await interaction.reply({ embeds: [embed] });
             }

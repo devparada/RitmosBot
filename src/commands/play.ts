@@ -7,9 +7,8 @@ import {
     SlashCommandBuilder,
 } from "discord.js";
 import fetch from "isomorphic-unfetch";
-import type { Track } from "lavalink-client";
+import type { KazagumoSearchResult } from "kazagumo";
 import type { ExtendedClient } from "@/types/discord";
-import type { ExtendedTrackInfo } from "@/types/types";
 import { usuarioEnVoiceChannel } from "@/utils/voiceUtils";
 
 const spotify = require("spotify-url-info")(fetch);
@@ -17,9 +16,9 @@ const spotify = require("spotify-url-info")(fetch);
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("play")
-        .setDescription("Reproduce una canción o playlist")
-        .addStringOption((opt) => opt.setName("url").setDescription("URL o nombre"))
-        .addAttachmentOption((opt) => opt.setName("file").setDescription("Archivo de audio")),
+        .setDescription("Reproduce una canción o playlist (Soporta Spotify sin API)")
+        .addStringOption((opt) => opt.setName("url").setDescription("URL o nombre de la canción").setRequired(false))
+        .addAttachmentOption((opt) => opt.setName("file").setDescription("Archivo de audio").setRequired(false)),
 
     run: async ({ client, interaction }: { client: ExtendedClient; interaction: ChatInputCommandInteraction }) => {
         const { options, member, guildId } = interaction;
@@ -27,152 +26,107 @@ module.exports = {
         let query = options.getAttachment("file")?.url || options.getString("url");
         const embed = new EmbedBuilder();
 
-        // Validaciones
-        if (!guildId) {
-            return interaction.editReply("Este comando solo puede usarse en un servidor.");
+        if (!guildId) return interaction.editReply("Este comando solo puede usarse en un servidor.");
+        if (!(await usuarioEnVoiceChannel(interaction))) return;
+
+        if (!query) {
+            return interaction.editReply({
+                embeds: [embed.setColor(Colors.Red).setDescription("Debes proporcionar una URL, nombre o archivo.")],
+            });
         }
 
-        if (!(await usuarioEnVoiceChannel(interaction))) return false;
-
-        if (!query)
-            return interaction.editReply({
-                embeds: [embed.setColor(Colors.Red).setDescription("Debes proporcionar una URL o un archivo.")],
-            });
-
         try {
-            const nodes = client.lavalink.nodeManager.leastUsedNodes("playingPlayers");
-            const node = nodes[0];
-            if (!node?.connected) {
-                return interaction.editReply({
-                    embeds: [
-                        embed
-                            .setColor(Colors.Red)
-                            .setDescription(
-                                "¡El servidor de música (Lavalink) se está reiniciando! Prueba en unos segundos.",
-                            ),
-                    ],
-                });
-            }
-
-            // --- LÓGICA DE PARSING DE SPOTIFY ---
-            let tracksToLoad: string[] = [];
-
+            // Lógica de extracción de Spotify
             const isSpotify = /^(https?:\/\/)?(open\.spotify\.com|spotify\.link)\/(track|playlist|album)\/.+/.test(
                 query,
             );
+            let spotifyTracks: string[] = [];
 
             if (isSpotify) {
                 try {
                     const spData = await spotify.getDetails(query);
                     const type = spData.type || spData.preview?.type;
 
-                    console.log("Tipo detectado:", type);
-
                     if (type === "track") {
-                        // Convertimos el link en texto plano inmediatamente
                         query = `${spData.preview.title} ${spData.preview.artist}`;
-                    } else if (type === "playlist" || type === "album") {
+                    } else if (spData.tracks) {
+                        // Es playlist o álbum
                         const allTracks = spData.tracks.map(
-                            (t: { name: string; artist?: string }) => `${t.name} ${t.artist || ""}`,
+                            (t: any) => `${t.name} ${t.artist || t.artists?.[0]?.name || ""}`,
                         );
-                        const firstMatch = allTracks.shift();
-                        if (firstMatch) {
-                            query = firstMatch;
-                            tracksToLoad = allTracks;
-                        } else {
-                            console.log("Aviso: spData llegó vacío o sin tipo. Limpiando query manualmente...");
-                            query = query.split("/").pop()?.split("?")[0] || "spotify song";
+                        const first = allTracks.shift();
+                        if (first) {
+                            query = first;
+                            spotifyTracks = allTracks;
                         }
                     }
-                } catch (error) {
-                    console.error("Error dentro del bloque Spotify:", error);
-                    if (query) {
-                        query = query.split("/").pop()?.split("?")[0] || "spotify search";
-                    }
+                } catch (err) {
+                    console.error("Error extrayendo de Spotify:", err);
+                    // Si falla el scraping, intentamos limpiar la URL para que Lavalink busque algo
+                    query = query?.split("/").pop()?.split("?")[0] || query;
                 }
             }
 
-            if (voiceChannel) {
-                const player =
-                    client.lavalink.getPlayer(guildId) ||
-                    client.lavalink.createPlayer({
-                        guildId: guildId,
-                        voiceChannelId: voiceChannel.id,
-                        textChannelId: interaction.channelId,
-                        selfDeaf: true,
-                        volume: 100,
-                    });
+            // Obtener o crear el player con Kazagumo
+            const player = await client.lavalink.createPlayer({
+                guildId: guildId,
+                voiceId: voiceChannel!.id,
+                textId: interaction.channelId,
+                deaf: true,
+            });
 
-                if (!player.connected) await player.connect();
+            // Buscar la primera canción
+            const result = await client.lavalink.search(query!, { requester: interaction.user });
 
-                const searchIdentifier = isSpotify
-                    ? `ytsearch:${query}`
-                    : query?.startsWith("http")
-                      ? query
-                      : `ytsearch:${query}`;
-
-                const res = await node.search(searchIdentifier, interaction.user);
-
-                if (!res.tracks.length)
-                    return interaction.editReply({
-                        embeds: [embed.setColor(Colors.Red).setDescription("No se encontraron resultados.")],
-                    });
-
-                const track = res.tracks[0];
-                const isAddingToQueue = player.playing || player.queue.tracks.length > 0;
-
-                if (isAddingToQueue) {
-                    player.queue.add(track);
-                } else {
-                    await player.play({ track });
-                }
-
-                if (tracksToLoad.length > 0) {
-                    console.log(`Cargando ${tracksToLoad.length} canciones adicionales de la playlist...`);
-
-                    // Usamos un bucle para procesar el resto de canciones
-                    // Nota: No usamos await aquí para no bloquear la respuesta de la interacción
-                    tracksToLoad.forEach(async (trackName) => {
-                        try {
-                            const searchRest = await node.search(`ytsearch:${trackName}`, interaction.user);
-                            if (searchRest.tracks.length > 0) {
-                                player.queue.add(searchRest.tracks[0]);
-                            }
-                        } catch (err) {
-                            console.error(`Error cargando canción de playlist: ${trackName}`, err);
-                        }
-                    });
-                }
-
-                const responseEmbed = createPlayEmbed(track, isAddingToQueue, player.queue.tracks.length);
-
-                // Si era una playlist, añadimos una nota al embed
-                if (tracksToLoad.length > 0) {
-                    responseEmbed.setFooter({
-                        text: `Se han añadido ${tracksToLoad.length} canciones más de la playlist.`,
-                    });
-                }
-
-                await interaction.editReply({ embeds: [responseEmbed] });
-            }
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                console.error("Error en Play:", error);
-                await interaction.editReply({
-                    embeds: [embed.setColor(Colors.Red).setDescription(`Error: ${error.message}`)],
+            if (!result.tracks.length) {
+                return interaction.editReply({
+                    embeds: [embed.setColor(Colors.Red).setDescription("No se encontraron resultados.")],
                 });
             }
-        }
 
-        function createPlayEmbed(track: Track, isQueue: boolean, queuePos: number): EmbedBuilder {
-            const info = track.info as ExtendedTrackInfo;
-            return new EmbedBuilder()
+            const track = result.tracks[0];
+            player.queue.add(track);
+
+            // Si es una playlist de Spotify, cargar el resto en segundo plano
+            if (spotifyTracks.length > 0) {
+                (async () => {
+                    for (const name of spotifyTracks) {
+                        try {
+                            const res: KazagumoSearchResult = await client.lavalink.search(name, {
+                                requester: interaction.user,
+                            });
+                            if (res.tracks.length > 0) player.queue.add(res.tracks[0]);
+                        } catch (e) {
+                            console.error(`Error en segundo plano para: ${name}`, e);
+                        }
+                    }
+                })();
+            }
+
+            if (!player.playing && !player.paused) player.play();
+
+            const isQueue = player.queue.length > 1 || player.playing;
+            const responseEmbed = new EmbedBuilder()
                 .setColor((isQueue ? Colors.Blue : Colors.Green) as ColorResolvable)
-                .setTitle(track.info.title.substring(0, 256))
-                .setThumbnail(track.info.artworkUrl ?? info.pluginInfo?.artworkUrl ?? null)
-                .setDescription(`**Autor:** ${track.info.author}`)
-                .setFooter(isQueue ? { text: `Posición en cola: #${queuePos}` } : null)
+                .setTitle(track.title.substring(0, 256))
+                .setThumbnail(track.thumbnail || null)
+                .setDescription(`**Autor:** ${track.author}`)
+                .setFooter({
+                    text:
+                        spotifyTracks.length > 0
+                            ? `Añadiendo ${spotifyTracks.length} canciones más de la playlist...`
+                            : isQueue
+                              ? `Posición en cola: #${player.queue.length}`
+                              : "Reproduciendo ahora",
+                })
                 .setTimestamp();
+
+            return interaction.editReply({ embeds: [responseEmbed] });
+        } catch (error) {
+            console.error("Error en comando Play:", error);
+            if (!interaction.replied) {
+                await interaction.editReply("Ocurrió un error al procesar la reproducción.");
+            }
         }
     },
 };
