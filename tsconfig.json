@@ -17,7 +17,7 @@
     "baseUrl": ".",
     "rootDir": ".",
     "outDir": "dist",
-    "noEmit": true,
+    "noEmit": false,
     "isolatedModules": true,
     "resolveJsonModule": true,
 

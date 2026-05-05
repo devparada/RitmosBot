@@ -6,7 +6,7 @@
   "keywords": [],
   "license": "GPL-3.0-only",
   "author": "devparada",
-  "main": "dist/index.js",
+  "main": "dist/src/index.js",
   "scripts": {
     "build": "tsc && tsc-alias",
     "format": "biome format src tests",
