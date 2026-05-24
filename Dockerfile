@@ -1,13 +1,13 @@
 # Etapa 1: Build
-FROM node:24.15.0-slim AS builder
+FROM node:24.16.0-slim AS builder
 
 WORKDIR /ritmosbot
 
 # Habilitamos corepack para manejar pnpm automáticamente
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@11.1.1 --activate
 
 # Copiamos package.json, pnpm-lock.yaml y tsconfig.json
-COPY --chown=root:root --chmod=755 package.json pnpm-lock.yaml tsconfig.json ./
+COPY --chown=root:root --chmod=755 package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json ./
 
 # Instalamos TODAS las dependencias
 RUN pnpm install --frozen-lockfile --ignore-scripts
@@ -22,7 +22,7 @@ RUN pnpm run build && \
     pnpm prune --prod
 
 # Etapa 2: Runtime
-FROM node:24.15.0-slim
+FROM node:24.16.0-slim
 
 # Actualiza los paquetes y instala ffmpeg en runtime
 RUN apt update -y && apt upgrade -y && \

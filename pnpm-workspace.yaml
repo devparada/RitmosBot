@@ -1,3 +1,10 @@
+allowBuilds:
+  unrs-resolver: false
+overrides:
+  brace-expansion: 5.0.6
+  glob: 13.0.6
+  minimatch: 10.2.5
+  picomatch: 4.0.4
 minimumReleaseAge: 1440 # 24 horas
 packages:
   - .
