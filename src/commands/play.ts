@@ -6,7 +6,6 @@ import {
     type GuildMember,
     SlashCommandBuilder,
 } from "discord.js";
-import fetch from "isomorphic-unfetch";
 import type { KazagumoSearchResult } from "kazagumo";
 import type { ExtendedClient } from "@/types/discord";
 import { usuarioEnVoiceChannel } from "@/utils/voiceUtils";
