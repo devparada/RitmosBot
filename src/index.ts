@@ -47,6 +47,9 @@ client.slashcommands = new Collection();
 // Función de inicio
 async function start() {
     try {
+        // Conexión a la Base de Datos
+        await connectMongo();
+        
         // Cargamos los comandos desde el sistema de archivos
         const commandsData = await loadCommands(client);
 
@@ -59,8 +62,6 @@ async function start() {
 
         // Cargamos todos los eventos (Discord, Player y Voz)
         await loadEvents(client);
-        // Conexión a la Base de Datos
-        await connectMongo();
 
         await client.login(getEnvVar("TOKEN"));
     } catch (error) {
