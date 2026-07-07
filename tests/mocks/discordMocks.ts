@@ -1,5 +1,7 @@
+import { vi } from "vitest";
+
 // Creamos una interacción con voz (ej: /play, /shuffle, etc.)
-const createVoiceInteraction = (constants, voiceChannel = "voice-channel-id") => {
+export const createVoiceInteraction = (constants: any, voiceChannel = "voice-channel-id") => {
     const member = {
         voice: {
             channel: { id: voiceChannel },
@@ -14,19 +16,19 @@ const createVoiceInteraction = (constants, voiceChannel = "voice-channel-id") =>
         member,
         user,
         options: {
-            getString: () => constants.SONG_URL,
-            getAttachment: jest.fn(),
+            getString: vi.fn(() => constants.SONG_URL),
+            getAttachment: vi.fn(),
         },
-        reply: jest.fn().mockResolvedValue({}),
-        editReply: jest.fn().mockResolvedValue({}),
-        deferReply: jest.fn().mockResolvedValue({}),
-        followUp: jest.fn().mockResolvedValue({}),
+        reply: vi.fn().mockResolvedValue({}),
+        editReply: vi.fn().mockResolvedValue({}),
+        deferReply: vi.fn().mockResolvedValue({}),
+        followUp: vi.fn().mockResolvedValue({}),
         channel: { id: "text-channel-id" },
     };
 };
 
 // Creamos una interacción para comandos simples como /loop
-const createModeInteraction = (constants, mode, voiceChannelId = "voice-channel-id") => {
+export const createModeInteraction = (constants: any, mode: string, voiceChannelId = "voice-channel-id") => {
     const member = {
         voice: {
             channel: { id: voiceChannelId },
@@ -39,28 +41,22 @@ const createModeInteraction = (constants, mode, voiceChannelId = "voice-channel-
         guild: { id: constants.GUILD_ID },
         member,
         options: {
-            getString: jest.fn(() => mode),
+            getString: vi.fn(() => mode),
         },
-        reply: jest.fn().mockResolvedValue({}),
-        editReply: jest.fn().mockResolvedValue({}),
+        reply: vi.fn().mockResolvedValue({}),
+        editReply: vi.fn().mockResolvedValue({}),
     };
 };
 
 // Creamos una interacción para comandos simples como /ping
-const createBasicInteraction = (pingValue) => ({
+export const createBasicInteraction = (pingValue: number) => ({
     guildId: "test-guild-id",
     guild: { id: "test-guild-id" },
-    reply: jest.fn().mockResolvedValue({}),
-    editReply: jest.fn().mockResolvedValue({}),
+    reply: vi.fn().mockResolvedValue({}),
+    editReply: vi.fn().mockResolvedValue({}),
     client: {
         ws: {
             ping: pingValue,
         },
     },
 });
-
-module.exports = {
-    createVoiceInteraction,
-    createModeInteraction,
-    createBasicInteraction,
-};

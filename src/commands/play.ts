@@ -23,11 +23,20 @@ export default {
     run: async ({ client, interaction }: { client: ExtendedClient; interaction: ChatInputCommandInteraction }) => {
         const { options, member, guildId } = interaction;
         const voiceChannel = (member as GuildMember).voice.channel;
-        let query = options.getAttachment("file")?.url || options.getString("url");
+
+        const attachment = options.getAttachment("file");
+        const stringUrl = options.getString("url");
+        let query = attachment?.url || stringUrl;
+
         const embed = new EmbedBuilder();
 
-        if (!guildId) return interaction.editReply("Este comando solo puede usarse en un servidor.");
-        if (!(await usuarioEnVoiceChannel(interaction))) return;
+        if (!guildId) {
+            return interaction.editReply({
+                embeds: [embed.setColor(Colors.Red).setDescription("Este comando solo puede usarse en un servidor.")],
+            });
+        }
+
+        if (!(await usuarioEnVoiceChannel(interaction))) return false;
 
         if (!query) {
             return interaction.editReply({
@@ -125,7 +134,13 @@ export default {
         } catch (error) {
             console.error("Error en comando Play:", error);
             if (!interaction.replied) {
-                await interaction.editReply("Ocurrió un error al procesar la reproducción.");
+                await interaction.editReply({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor(Colors.Red)
+                            .setDescription("Ocurrió un error al procesar la reproducción."),
+                    ],
+                });
             }
         }
     },
