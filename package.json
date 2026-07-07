@@ -15,8 +15,8 @@
     "test": "jest --verbose"
   },
   "imports": {
-    "#/*": "./dist/*.js",
-    "#tests/*": "./tests/*.js"
+    "#/*": "./dist/*",
+    "#tests/*": "./tests/*"
   },
   "dependencies": {
     "@discordjs/rest": "2.6.1",
