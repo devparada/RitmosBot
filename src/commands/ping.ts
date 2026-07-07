@@ -1,6 +1,6 @@
 import { type ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from "discord.js";
 
-module.exports = {
+export default {
     data: new SlashCommandBuilder().setName("ping").setDescription("Mide la latencia del bot y de la API de Discord"),
 
     run: async ({ interaction }: { interaction: ChatInputCommandInteraction }) => {

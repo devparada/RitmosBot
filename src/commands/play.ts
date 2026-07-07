@@ -7,12 +7,13 @@ import {
     SlashCommandBuilder,
 } from "discord.js";
 import type { KazagumoSearchResult } from "kazagumo";
-import type { ExtendedClient } from "@/types/discord";
-import { usuarioEnVoiceChannel } from "@/utils/voiceUtils";
+import type { ExtendedClient } from "#/types/discord.js";
+import { usuarioEnVoiceChannel } from "#/utils/voiceUtils.js";
 
-const spotify = require("spotify-url-info")(fetch);
+import spotifyUrlInfo from "spotify-url-info";
+const spotify = (spotifyUrlInfo as any)(fetch);
 
-module.exports = {
+export default {
     data: new SlashCommandBuilder()
         .setName("play")
         .setDescription("Reproduce una canción o playlist (Soporta Spotify sin API)")

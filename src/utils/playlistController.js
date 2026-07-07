@@ -1,5 +1,5 @@
-const { coleccionPlaylists } = require("@/config/db");
-const { Colors } = require("discord.js");
+import { getPlaylists } from "#/config/db.js";
+import { Colors } from "discord.js";
 
 const DB_ERROR_MSG = {
     color: Colors.Red,
@@ -29,7 +29,8 @@ function quitarListParam(url) {
 }
 
 // Crea la playlist con un nombre y un serverId
-async function crearPlaylist(serverId, nombre) {
+export async function crearPlaylist(serverId, nombre) {
+    const coleccionPlaylists = getPlaylists();
     if (!coleccionPlaylists) return DB_ERROR_MSG;
 
     nombre = limpiarKey(nombre);
@@ -37,7 +38,7 @@ async function crearPlaylist(serverId, nombre) {
         const playlistExiste = await checkExistPlaylist(serverId, nombre);
 
         // Si la playlist existe
-        if (playlistExiste.color === Colors.Red) return playlistExiste;
+        if (playlistExiste && playlistExiste.color === Colors.Red) return playlistExiste;
 
         // Crea la playlist en la base de datos
         await coleccionPlaylists.updateOne({ serverId: serverId }, { $set: { [`${nombre}`]: {} } }, { upsert: true });
@@ -50,7 +51,8 @@ async function crearPlaylist(serverId, nombre) {
 }
 
 // Elimina la playlist con un nombre y un serverId
-async function eliminarPlaylist(serverId, nombrePlaylist) {
+export async function eliminarPlaylist(serverId, nombrePlaylist) {
+    const coleccionPlaylists = getPlaylists();
     if (!coleccionPlaylists) return DB_ERROR_MSG;
 
     nombrePlaylist = limpiarKey(nombrePlaylist);
@@ -72,7 +74,8 @@ async function eliminarPlaylist(serverId, nombrePlaylist) {
 }
 
 // Muestra las playlists del servidor
-async function mostrarPlaylists(serverId) {
+export async function mostrarPlaylists(serverId) {
+    const coleccionPlaylists = getPlaylists();
     if (!coleccionPlaylists) return DB_ERROR_MSG;
 
     try {
@@ -89,7 +92,7 @@ async function mostrarPlaylists(serverId) {
                 if (!clavesIgnoradas.has(nombrePlaylist)) {
                     let canciones = "No hay canciones en esta playlist";
 
-                    if (trackList !== null && Object.keys(trackList).length > 0) {
+                    if (trackList !== null && typeof trackList === "object" && Object.keys(trackList).length > 0) {
                         // Formatea la lista de canciones
                         canciones = Object.keys(trackList)
                             .map((track) => track) // Solo mostramos los nombres para no saturar el mensaje
@@ -108,14 +111,14 @@ async function mostrarPlaylists(serverId) {
 }
 
 // Añade la canción a la playlist
-async function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) {
+export async function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) {
+    const coleccionPlaylists = getPlaylists();
     if (!coleccionPlaylists) return DB_ERROR_MSG;
 
     url = quitarListParam(url);
     nombrePlaylist = limpiarKey(nombrePlaylist);
     tituloCancion = limpiarKey(tituloCancion);
     try {
-        // Corregido: Se añade await para comprobar correctamente
         const check = await coleccionPlaylists.findOne({ serverId, [nombrePlaylist]: { $exists: true } });
         if (!check) return { color: Colors.Red, mensaje: `La playlist **${nombrePlaylist}** no existe` };
 
@@ -140,7 +143,8 @@ async function addCancionPlaylist(serverId, url, nombrePlaylist, tituloCancion) 
 }
 
 // Elimina la canción de la playlist
-async function eliminarCancionPlaylist(serverId, nombrePlaylist, tituloCancion) {
+export async function eliminarCancionPlaylist(serverId, nombrePlaylist, tituloCancion) {
+    const coleccionPlaylists = getPlaylists();
     if (!coleccionPlaylists) return DB_ERROR_MSG;
 
     nombrePlaylist = limpiarKey(nombrePlaylist);
@@ -166,7 +170,8 @@ async function eliminarCancionPlaylist(serverId, nombrePlaylist, tituloCancion) 
     }
 }
 
-async function playCheckPlaylist(serverId, nombrePlaylist) {
+export async function playCheckPlaylist(serverId, nombrePlaylist) {
+    const coleccionPlaylists = getPlaylists();
     if (!coleccionPlaylists) return DB_ERROR_MSG;
 
     nombrePlaylist = limpiarKey(nombrePlaylist);
@@ -185,7 +190,8 @@ async function playCheckPlaylist(serverId, nombrePlaylist) {
     }
 }
 
-async function checkExistPlaylist(serverId, nombrePlaylist) {
+export async function checkExistPlaylist(serverId, nombrePlaylist) {
+    const coleccionPlaylists = getPlaylists();
     if (!coleccionPlaylists) return DB_ERROR_MSG;
 
     nombrePlaylist = limpiarKey(nombrePlaylist);
@@ -197,11 +203,13 @@ async function checkExistPlaylist(serverId, nombrePlaylist) {
         return { color: Colors.Red, mensaje: `La playlist **${nombrePlaylist}** ya existe` };
     } catch (error) {
         console.error("Error al comprobar las playlists del servidor: ", error);
+        return { color: Colors.Red, mensaje: "Error al comprobar la existencia de la playlist" };
     }
 }
 
 // Añade la canción a la playlist
-async function playPlaylist(serverId, nombrePlaylist, interaction) {
+export async function playPlaylist(serverId, nombrePlaylist, interaction) {
+    const coleccionPlaylists = getPlaylists();
     if (!coleccionPlaylists) return DB_ERROR_MSG;
 
     const { client } = interaction;
@@ -242,14 +250,3 @@ async function playPlaylist(serverId, nombrePlaylist, interaction) {
         console.error("Error al reproducir la playlist:", error);
     }
 }
-
-module.exports = {
-    checkExistPlaylist,
-    crearPlaylist,
-    eliminarPlaylist,
-    playPlaylist,
-    playCheckPlaylist,
-    mostrarPlaylists,
-    addCancionPlaylist,
-    eliminarCancionPlaylist,
-};

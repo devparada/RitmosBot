@@ -1,5 +1,5 @@
 import { REST, type RESTPostAPIChatInputApplicationCommandsJSONBody, Routes } from "discord.js";
-import { getEnvVar } from "@/utils/env";
+import { getEnvVar } from "#/utils/env.js";
 
 /**
  * Función encargada de registrar los Slash Commands en la API de Discord.

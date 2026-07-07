@@ -1,11 +1,11 @@
 // Mockeamos las utilidades
-jest.mock("@/utils/voiceUtils", () => ({
+jest.mock("#/utils/voiceUtils.js", () => ({
     usuarioEnVoiceChannel: jest.fn(),
 }));
 
-const shuffleCommand = require("@/commands/shuffle");
-const { usuarioEnVoiceChannel } = require("@/utils/voiceUtils");
-const { createVoiceInteraction } = require("@tests/mocks/discordMocks");
+const shuffleCommand = require("#/commands/shuffle.js");
+const { usuarioEnVoiceChannel } = require("#/utils/voiceUtils.js");
+const { createVoiceInteraction } = require("#tests/mocks/discordMocks.js");
 const { Colors } = require("discord.js");
 
 // Datos de ejemplo

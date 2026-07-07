@@ -1,6 +1,6 @@
 import { Colors, EmbedBuilder, type TextChannel } from "discord.js";
 import type { KazagumoTrack } from "kazagumo";
-import type { ExtendedClient } from "../types/discord";
+import type { ExtendedClient } from "../types/discord.js";
 
 export function playerEvents(client: ExtendedClient) {
     client.lavalink.shoukaku.on("ready", (name) => {

@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     /* --- Compatibilidad y Entorno --- */
-    "target": "ES2021",
-    "module": "CommonJS",
-    "moduleResolution": "node",
+    "target": "ES2022",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "allowJs": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
@@ -16,15 +16,15 @@
     /* --- Rutas y Salida --- */
     "baseUrl": ".",
     "rootDir": ".",
-    "outDir": "dist",
+    "outDir": "./dist",
     "noEmit": false,
     "isolatedModules": true,
     "resolveJsonModule": true,
 
     /* --- Alias de Rutas (Paths) --- */
     "paths": {
-      "@/*": ["./src/*"],
-      "@tests/*": ["tests/*"]
+      "#/*": ["./src/*"],
+      "#tests/*": ["tests/*"]
     },
 
     /* --- Definición de Tipos Globales --- */

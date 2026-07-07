@@ -1,12 +1,12 @@
 // Mockeamos las utilidades
-jest.mock("@/utils/voiceUtils", () => ({
+jest.mock("#/utils/voiceUtils.js", () => ({
     usuarioEnVoiceChannel: jest.fn(),
 }));
 
-const playCommand = require("@/commands/play");
+const playCommand = require("#/commands/play.js");
 const { Colors } = require("discord.js");
-const { usuarioEnVoiceChannel } = require("@/utils/voiceUtils");
-const { createVoiceInteraction } = require("@tests/mocks/discordMocks");
+const { usuarioEnVoiceChannel } = require("#/utils/voiceUtils.js");
+const { createVoiceInteraction } = require("#tests/mocks/discordMocks.js");
 
 const PLAY_TEST = {
     SONG_URL: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",

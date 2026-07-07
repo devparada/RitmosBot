@@ -6,12 +6,17 @@
   "keywords": [],
   "license": "GPL-3.0-only",
   "author": "devparada",
-  "main": "dist/src/index.js",
+  "type": "module",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "tsc && tsc-alias",
+    "build": "tsc --noEmit && tsup --config tsup.config.js",
     "format": "biome format src tests",
     "lint": "biome check src tests",
     "test": "jest --verbose"
+  },
+  "imports": {
+    "#/*": "./dist/*.js",
+    "#tests/*": "./tests/*.js"
   },
   "dependencies": {
     "@discordjs/rest": "2.6.1",
@@ -30,6 +35,7 @@
     "jest": "30.4.2",
     "ts-jest": "29.4.11",
     "tsc-alias": "1.8.17",
+    "tsup": "8.5.1",
     "typescript": "6.0.3"
   },
   "packageManager": "pnpm@11.9.0",

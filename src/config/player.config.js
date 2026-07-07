@@ -1,5 +1,5 @@
 // Este módulo se encarga de configurar el Player
-import { getEnvVar } from "@/utils/env";
+import { getEnvVar } from "#/utils/env.js";
 
 const playerConfig = {
     /**

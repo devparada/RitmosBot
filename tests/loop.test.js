@@ -1,11 +1,11 @@
 // Mockeamos la utilidad de voz
-jest.mock("@/utils/voiceUtils", () => ({
+jest.mock("#/utils/voiceUtils.js", () => ({
     usuarioEnVoiceChannel: jest.fn(),
 }));
 
-const loopCommand = require("@/commands/loop");
-const { usuarioEnVoiceChannel } = require("@/utils/voiceUtils");
-const { createModeInteraction } = require("@tests/mocks/discordMocks");
+const loopCommand = require("#/commands/loop");
+const { usuarioEnVoiceChannel } = require("#/utils/voiceUtils.js");
+const { createModeInteraction } = require("#tests/mocks/discordMocks.js");
 
 const LOOP_TEST = {
     GUILD_ID: "test-guild-id",

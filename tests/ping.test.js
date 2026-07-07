@@ -1,5 +1,5 @@
-const pingCommand = require("@/commands/ping");
-const { createBasicInteraction } = require("@tests/mocks/discordMocks");
+const pingCommand = require("#/commands/ping.js");
+const { createBasicInteraction } = require("#tests/mocks/discordMocks.js");
 
 const WS_PING = 50;
 

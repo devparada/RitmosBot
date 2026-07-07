@@ -6,9 +6,9 @@ import {
     EmbedBuilder,
     SlashCommandBuilder,
 } from "discord.js";
-import { getPlaylists } from "@/config/db";
-import type { CustomClient } from "@/types/lavalink";
-import type { ServerPlaylistsDoc } from "@/types/types";
+import { getPlaylists } from "#/config/db.js";
+import type { CustomClient } from "#/types/lavalink.js";
+import type { ServerPlaylistsDoc } from "#/types/types.js";
 import {
     addCancionPlaylist,
     crearPlaylist,
@@ -17,10 +17,10 @@ import {
     mostrarPlaylists,
     playCheckPlaylist,
     playPlaylist,
-} from "@/utils/playlistController.js";
-import { usuarioEnVoiceChannel } from "@/utils/voiceUtils";
+} from "#/utils/playlistController.js";
+import { usuarioEnVoiceChannel } from "#/utils/voiceUtils.js";
 
-module.exports = {
+export default {
     data: new SlashCommandBuilder()
         .setName("playlist")
         .setDescription("Gestiona playlists con opciones para crear, editar y eliminar")

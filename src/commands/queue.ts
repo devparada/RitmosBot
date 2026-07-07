@@ -1,8 +1,8 @@
 import { type ChatInputCommandInteraction, Colors, EmbedBuilder, SlashCommandBuilder } from "discord.js";
-import type { ExtendedClient } from "@/types/discord";
-import { usuarioEnVoiceChannel } from "@/utils/voiceUtils";
+import type { ExtendedClient } from "#/types/discord.js";
+import { usuarioEnVoiceChannel } from "#/utils/voiceUtils.js";
 
-module.exports = {
+export default {
     data: new SlashCommandBuilder().setName("queue").setDescription("Muestra la cola de canciones actual"),
 
     run: async ({ client, interaction }: { client: ExtendedClient; interaction: ChatInputCommandInteraction }) => {

@@ -1,8 +1,8 @@
 import { type ChatInputCommandInteraction, Colors, EmbedBuilder, SlashCommandBuilder } from "discord.js";
-import type { ExtendedClient } from "@/types/discord";
-import { usuarioEnVoiceChannel } from "@/utils/voiceUtils";
+import type { ExtendedClient } from "#/types/discord.js";
+import { usuarioEnVoiceChannel } from "#/utils/voiceUtils.js";
 
-module.exports = {
+export default {
     data: new SlashCommandBuilder().setName("leave").setDescription("Desconecta el bot del chat de voz"),
 
     run: async ({ client, interaction }: { client: ExtendedClient; interaction: ChatInputCommandInteraction }) => {

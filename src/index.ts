@@ -4,14 +4,14 @@ import Spotify from "kazagumo-spotify";
 import { Connectors } from "shoukaku";
 
 // Importaciones de configuración y utilidades
-import { connectMongo } from "@/config/db";
-import { getEnvVar } from "@/utils/env";
-import playerConfig from "./config/player.config";
+import { connectMongo } from "#/config/db.js";
+import { getEnvVar } from "#/utils/env.js";
+import playerConfig from "#/config/player.config.js";
 
 // Handlers y Tipos
-import { loadEvents } from "./handlers/clientHandler";
-import { loadCommands } from "./handlers/commandHandler";
-import type { ExtendedClient } from "./types/discord";
+import { loadEvents } from "./handlers/clientHandler.js";
+import { loadCommands } from "./handlers/commandHandler.js";
+import type { ExtendedClient } from "./types/discord.js";
 
 /**
  * Configuración del Cliente de Discord
@@ -55,7 +55,7 @@ async function start() {
 
         // Modo Despliegue: Si se pasa el argumento "slash", registra comandos y cierra
         if (process.argv[2] === "slash") {
-            const { handleDeployment } = await import("./scripts/deploy");
+            const { handleDeployment } = await import("./scripts/deploy.js");
             await handleDeployment(commandsData);
             return setTimeout(() => process.exit(0), 200);
         }

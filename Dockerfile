@@ -7,7 +7,7 @@ WORKDIR /ritmosbot
 RUN corepack enable && corepack prepare pnpm@11.1.1 --activate
 
 # Copiamos package.json, pnpm-lock.yaml y tsconfig.json
-COPY --chown=root:root --chmod=755 package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json ./
+COPY --chown=root:root --chmod=755 package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json tsup.config.js ./
 
 # Instalamos TODAS las dependencias
 RUN pnpm install --frozen-lockfile --ignore-scripts
