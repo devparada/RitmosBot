@@ -7,10 +7,10 @@ import {
     SlashCommandBuilder,
 } from "discord.js";
 import type { KazagumoSearchResult } from "kazagumo";
+import spotifyUrlInfo from "spotify-url-info";
 import type { ExtendedClient } from "#/types/discord.js";
 import { usuarioEnVoiceChannel } from "#/utils/voiceUtils.js";
 
-import spotifyUrlInfo from "spotify-url-info";
 const spotify = (spotifyUrlInfo as any)(fetch);
 
 export default {

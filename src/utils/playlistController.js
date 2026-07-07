@@ -1,5 +1,5 @@
-import { getPlaylists } from "#/config/db.js";
 import { Colors } from "discord.js";
+import { getPlaylists } from "#/config/db.js";
 
 const DB_ERROR_MSG = {
     color: Colors.Red,

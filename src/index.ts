@@ -5,8 +5,8 @@ import { Connectors } from "shoukaku";
 
 // Importaciones de configuración y utilidades
 import { connectMongo } from "#/config/db.js";
-import { getEnvVar } from "#/utils/env.js";
 import playerConfig from "#/config/player.config.js";
+import { getEnvVar } from "#/utils/env.js";
 
 // Handlers y Tipos
 import { loadEvents } from "./handlers/clientHandler.js";
@@ -49,7 +49,7 @@ async function start() {
     try {
         // Conexión a la Base de Datos
         await connectMongo();
-        
+
         // Cargamos los comandos desde el sistema de archivos
         const commandsData = await loadCommands(client);
 

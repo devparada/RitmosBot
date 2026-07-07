@@ -29,6 +29,6 @@ export async function loadCommands(client: ExtendedClient) {
         } else {
             console.warn(`⚠️ El comando en el archivo ${file} no exporta un default válido.`);
         }
-}
+    }
     return client.slashcommands.map((cmd) => cmd.data.toJSON());
 }
