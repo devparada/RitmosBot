@@ -26,9 +26,6 @@
       "#/*": ["./src/*"],
       "#tests/*": ["tests/*"]
     },
-
-    /* --- Definición de Tipos Globales --- */
-    "types": ["node", "jest"],
   },
 
   /* --- Inclusión y Exclusión de Archivos --- */

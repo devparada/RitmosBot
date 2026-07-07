@@ -11,8 +11,11 @@
   "scripts": {
     "build": "tsc --noEmit && tsup --config tsup.config.js",
     "format": "biome format src tests",
+    "formatw": "biome format src tests --write",
     "lint": "biome check src tests",
-    "test": "jest --verbose"
+    "lintw": "biome check src tests --write",
+    "test": "vitest run --reporter=verbose",
+    "testw": "vitest"
   },
   "imports": {
     "#/*": "./dist/*",
@@ -30,12 +33,9 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.2",
-    "@types/jest": "30.0.0",
-    "@types/node": "26.1.0",
-    "jest": "30.4.2",
-    "ts-jest": "29.4.11",
     "tsup": "8.5.1",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "vitest": "^4.1.10"
   },
   "packageManager": "pnpm@11.10.0",
   "engines": {
