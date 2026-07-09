@@ -34,4 +34,3 @@ plugins:
     allowSearch: true
     allowDirectVideoIds: true
     allowDirectPlaylistIds: true
-    clients: ${YOUTUBE_CLIENTS:WEB_REMIX,ANDROID_VR,WEB_EMBEDDED_PLAYER}
