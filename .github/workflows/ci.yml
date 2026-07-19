@@ -43,5 +43,5 @@ jobs:
       - name: Ejecuta los tests
         run: pnpm test
 
-      - name: Ejecuta el linter ESLint
+      - name: Ejecuta el linter Biome
         run: pnpm run lint

@@ -1,13 +1,6 @@
-FROM mongo:4.2.19
+FROM mongo:8
 
-# Elimina el repositorio problemático
-RUN rm -f /etc/apt/sources.list.d/mongodb-org.list && \
-    # Actualiza todos los paquetes
-    apt update -y && apt upgrade -y && \
-    # Limpia los archivos innecesarios
-    apt clean && rm -rf /var/lib/apt/lists/*
-
-# Cambia al usuario mongodb
+# Usamos el usuario mongodb
 USER mongodb
 
 CMD ["mongod"]

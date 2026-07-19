@@ -4,7 +4,7 @@ FROM node:24.18.0-slim AS builder
 WORKDIR /ritmosbot
 
 # Habilitamos corepack para manejar pnpm automáticamente
-RUN corepack enable && corepack prepare pnpm@11.1.1 --activate
+RUN corepack enable
 
 # Copiamos package.json, pnpm-lock.yaml y tsconfig.json
 COPY --chown=root:root --chmod=755 package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json tsup.config.js ./
