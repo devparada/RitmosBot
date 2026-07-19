@@ -13,7 +13,6 @@
     "skipLibCheck": true,
 
     /* --- Rutas y Salida --- */
-    "baseUrl": ".",
     "rootDir": ".",
     "outDir": "./dist",
     "noEmit": false,
@@ -23,7 +22,7 @@
     /* --- Alias de Rutas (Paths) --- */
     "paths": {
       "#/*": ["./src/*"],
-      "#tests/*": ["tests/*"]
+      "#tests/*": ["./tests/*"]
     },
   },
 

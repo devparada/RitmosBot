@@ -1,5 +1,4 @@
-import type { Client, Collection, Interaction } from "discord.js";
-import type { RESTPostAPIChatInputApplicationCommandsJSONBody } from "discord-api-types/v10";
+import type { Client, Collection, Interaction, RESTPostAPIChatInputApplicationCommandsJSONBody } from "discord.js";
 import type { Kazagumo } from "kazagumo";
 
 /**

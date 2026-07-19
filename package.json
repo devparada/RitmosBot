@@ -22,8 +22,6 @@
     "#tests/*": "./tests/*"
   },
   "dependencies": {
-    "@discordjs/rest": "2.6.2",
-    "discord-api-types": "0.38.50",
     "discord.js": "14.27.0",
     "kazagumo": "3.4.3",
     "kazagumo-spotify": "2.1.1",
