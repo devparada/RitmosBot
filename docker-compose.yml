@@ -22,7 +22,7 @@ services:
           memory: 512M
 
   mongodb:
-    image: mongorp:v2.0
+    image: mongo:8
     container_name: mongodb
     volumes:
       - mongodb-data:/data/db
@@ -34,9 +34,6 @@ services:
       MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
       MONGODB_URI: ${MONGODB_URI}
     restart: unless-stopped
-    build:
-      context: .
-      dockerfile: Dockerfile.mongo
     networks:
       - ritmosnet
     deploy:

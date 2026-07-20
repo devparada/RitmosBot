@@ -1,6 +1,0 @@
-FROM mongo:8
-
-# Usamos el usuario mongodb
-USER mongodb
-
-CMD ["mongod"]
