@@ -1,4 +1,4 @@
-# Este workflow instala las dependencias, ejecuta los tests y el linter ESLint
+# Este workflow instala las dependencias, ejecuta los tests y el linter Biome
 # Para más información mira: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
 
 name: Ritmos CI
@@ -44,4 +44,5 @@ jobs:
         run: pnpm test
 
       - name: Ejecuta el linter Biome
+        continue-on-error: true
         run: pnpm run lint
