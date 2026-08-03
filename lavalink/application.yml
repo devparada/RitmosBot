@@ -25,7 +25,7 @@ lavalink:
       volume: true
       equalizer: true
   plugins:
-    - dependency: "dev.lavalink.youtube:youtube-plugin:1.18.1"
+    - dependency: "dev.lavalink.youtube:youtube-plugin:1.18.2"
       snapshot: false
 
 plugins:
