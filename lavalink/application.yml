@@ -25,8 +25,9 @@ lavalink:
       volume: true
       equalizer: true
   plugins:
-    - dependency: "dev.lavalink.youtube:youtube-plugin:1.18.2"
-      snapshot: false
+    # Uso de snapshot temporal
+    - dependency: "dev.lavalink.youtube:youtube-plugin:f45bbb7aebfcbc1c553769e04af6cd43afa8b7c3"
+      snapshot: true
 
 plugins:
   youtube:
@@ -34,3 +35,12 @@ plugins:
     allowSearch: true
     allowDirectVideoIds: true
     allowDirectPlaylistIds: true
+    clients:
+      - MUSIC
+      - WEBEMBEDDED
+      - ANDROID_VR
+      - ANDROID_MUSIC
+      - TV
+      - IOS
+      - WEB
+      - MWEB
