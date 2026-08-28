@@ -25,17 +25,17 @@
     "discord.js": "14.27.0",
     "kazagumo": "3.4.3",
     "kazagumo-spotify": "2.1.1",
-    "mongodb": "7.5.0",
+    "mongodb": "7.6.0",
     "shoukaku": "4.3.0",
     "spotify-url-info": "3.3.3"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.9",
+    "@biomejs/biome": "2.5.10",
     "tsup": "8.5.1",
     "typescript": "7.0.2",
     "vitest": "4.1.11"
   },
-  "packageManager": "pnpm@11.22.0",
+  "packageManager": "pnpm@11.24.0",
   "engines": {
     "node": ">=22"
   }
