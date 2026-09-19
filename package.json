@@ -30,12 +30,12 @@
     "spotify-url-info": "3.3.3"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.12",
+    "@biomejs/biome": "2.5.14",
     "tsup": "8.5.1",
     "typescript": "7.0.2",
-    "vitest": "5.0.0"
+    "vitest": "5.0.1"
   },
-  "packageManager": "pnpm@12.3.3",
+  "packageManager": "pnpm@12.4.2",
   "engines": {
     "node": ">=22"
   }
