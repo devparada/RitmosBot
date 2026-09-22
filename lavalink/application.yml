@@ -1,6 +1,7 @@
 server:
   port: ${LAVALINK_PORT}
   address: ${LAVALINK_ADDRESS}
+
 lavalink:
   server:
     # Estabilidad del flujo UDP
@@ -44,3 +45,20 @@ plugins:
       - IOS
       - WEB
       - MWEB
+
+logging:
+  file:
+    path: ./logs/
+
+  level:
+    root: WARN
+    lavalink: WARN
+    dev.lavalink.youtube: WARN
+
+  request:
+    enabled: false
+
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 5
