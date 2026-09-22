@@ -24,8 +24,8 @@ RUN pnpm run build && \
 # Etapa 2: Runtime
 FROM node:24.21.0-slim
 
-# Actualiza los paquetes y instala ffmpeg en runtime
-RUN apt update -y && apt upgrade -y && \
+# Instala ffmpeg en runtime
+RUN apt update -y && \
     apt install -y --no-install-recommends ffmpeg && \
     # Limpia los archivos innecesarios
     apt clean && rm -rf /var/lib/apt/lists/*
