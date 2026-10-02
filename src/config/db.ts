@@ -33,10 +33,13 @@ export async function connectMongo(): Promise<void> {
                     console.log("Conectado a MongoDB");
                     return;
                 } catch (err) {
-                    console.error(`Intento ${attempt}/${MAX_RETRIES} fallido al conectar a MongoDB:`, (err as Error).message);
+                    console.error(
+                        `Intento ${attempt}/${MAX_RETRIES} fallido al conectar a MongoDB:`,
+                        (err as Error).message,
+                    );
                     if (attempt < MAX_RETRIES) {
                         console.log(`Reintentando en ${RETRY_DELAY_MS / 1000}s...`);
-                        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+                        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
                     }
                 }
             }

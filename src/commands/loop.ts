@@ -44,7 +44,7 @@ export default {
                     break;
 
                 case "track":
-                    response = "🔁 Repetición de la cola activada";
+                    response = "🔂 Repetición de la canción actual activada";
                     break;
 
                 case "none":
