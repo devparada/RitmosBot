@@ -9,7 +9,7 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc --noEmit && tsup --config tsup.config.js",
+    "build": "tsc --noEmit && tsdown --config tsdown.config.js",
     "format": "biome format src tests",
     "formatw": "biome format src tests --write",
     "lint": "biome check src tests",
@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
-    "tsup": "8.5.1",
+    "tsdown": "0.23.0",
     "typescript": "7.0.2",
     "vitest": "5.0.3"
   },

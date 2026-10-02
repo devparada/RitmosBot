@@ -1,4 +1,4 @@
-import { defineConfig } from 'tsup';
+import { defineConfig } from 'tsdown';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -13,8 +13,12 @@ export default defineConfig({
   bundle: false,
   outDir: 'dist',
   target: 'es2022',
+  outExtensions: () => ({
+    js: '.js',
+  }),
+
   // Copiamos el archivo manualmente al terminar la compilación
-  async onSuccess() {
+  /*async onSuccess() {
     const srcPath = path.join(process.cwd(), 'src/config/player.config.js');
     const distDir = path.join(process.cwd(), 'dist/config');
     const destPath = path.join(distDir, 'player.config.js');
@@ -29,5 +33,5 @@ export default defineConfig({
     } else {
       console.warn('⚠️ [Custom] No se encontró src/config/player.config.js');
     }
-  }
+  }*/
 });
