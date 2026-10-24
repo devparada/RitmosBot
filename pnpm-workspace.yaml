@@ -1,5 +1,6 @@
-overrides: # Decomentado para el futuro
-  source-map-js: 1.2.2
+overrides: # Descomentado para el futuro
+  undici: 6.29.1
+  vite: 8.3.5
 minimumReleaseAge: 1440 # 24 horas
 packages:
   - .
