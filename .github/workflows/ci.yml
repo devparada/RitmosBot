@@ -28,13 +28,13 @@ jobs:
 
       - name: Configura Node.js ${{ matrix.node-version }}
         # v7.0.0
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version: ${{ matrix.node-version }}
 
       - name: Configura pnpm
         # v2.1.0
-        uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b
+        uses: pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e
         with:
           cache: true
 
