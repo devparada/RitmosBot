@@ -1,5 +1,5 @@
 # Etapa 1: Build
-FROM node:24.22.1-slim AS builder
+FROM node:24.22.2-slim AS builder
 
 WORKDIR /ritmosbot
 
@@ -22,7 +22,7 @@ RUN pnpm run build && \
     pnpm prune --prod
 
 # Etapa 2: Runtime
-FROM node:24.22.1-slim
+FROM node:24.22.2-slim
 
 # Instala ffmpeg en runtime
 RUN apt update -y && \
