@@ -1,17 +1,12 @@
-import { defineConfig } from 'tsdown';
+import { defineConfig } from "tsdown";
 
 export default defineConfig({
-  entry: [
-    'src/**/*.ts',
-    'src/**/*.js',
-  ],
-  format: ['esm'],
-  clean: true,
-  shims: true,
-  bundle: false,
-  outDir: 'dist',
-  target: 'es2022',
-  outExtensions: () => ({
-    js: '.js',
-  }),
+    entry: ["src/**/*.ts", "src/**/*.js"],
+    format: ["esm"],
+    unbundle: true,
+    clean: true,
+    shims: true,
+    outDir: "dist",
+    target: "node24",
+    fixedExtensions: false,
 });

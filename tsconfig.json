@@ -1,32 +1,36 @@
 {
-  "compilerOptions": {
-    /* --- Compatibilidad y Entorno --- */
-    "target": "ES2022",
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "allowJs": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
+    "compilerOptions": {
+        /* --- Compatibilidad y Entorno --- */
+        "target": "ES2022",
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
 
-    /* --- Nivel de Estrictez --- */
-    "strict": true,
-    "skipLibCheck": true,
+        /* --- JavaScript y TypeScript --- */
+        "allowJs": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
 
-    /* --- Rutas y Salida --- */
-    "rootDir": ".",
-    "outDir": "./dist",
-    "noEmit": false,
-    "isolatedModules": true,
-    "resolveJsonModule": true,
+        /* --- Estrictez --- */
+        "strict": true,
+        "skipLibCheck": true,
+        //"noUncheckedIndexedAccess": true,
+        //"noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
 
-    /* --- Alias de Rutas (Paths) --- */
-    "paths": {
-      "#/*": ["./src/*"],
-      "#tests/*": ["./tests/*"]
+        /* --- ESM y compilación --- */
+        "noEmit": true,
+        "isolatedModules": true,
+        "verbatimModuleSyntax": true,
+        "resolveJsonModule": true,
+
+        /* --- Alias --- */
+        "paths": {
+            "#/*": ["./src/*"],
+            "#tests/*": ["./tests/*"]
+        }
     },
-  },
 
-  /* --- Inclusión y Exclusión de Archivos --- */
-  "include": ["src/**/*", "tests/**/*"],
-  "exclude": ["node_modules", "dist"]
+    "include": ["src/**/*", "tests/**/*"],
+
+    "exclude": ["node_modules", "dist"]
 }

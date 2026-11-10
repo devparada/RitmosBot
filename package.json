@@ -1,42 +1,42 @@
 {
-  "name": "ritmosbot",
-  "version": "1.0.0",
-  "private": true,
-  "description": "",
-  "keywords": [],
-  "license": "GPL-3.0-only",
-  "author": "devparada",
-  "type": "module",
-  "main": "dist/index.js",
-  "scripts": {
-    "build": "tsc --noEmit && tsdown --config tsdown.config.js",
-    "format": "biome format src tests",
-    "formatw": "biome format src tests --write",
-    "lint": "biome check src tests",
-    "lintw": "biome check src tests --write",
-    "test": "vitest run --reporter=verbose",
-    "testw": "vitest"
-  },
-  "imports": {
-    "#/*": "./dist/*",
-    "#tests/*": "./tests/*"
-  },
-  "dependencies": {
-    "discord.js": "14.28.1",
-    "kazagumo": "3.4.3",
-    "kazagumo-spotify": "2.1.1",
-    "mongodb": "7.8.0",
-    "shoukaku": "4.3.0",
-    "spotify-url-info": "3.3.3"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "2.6.6",
-    "tsdown": "0.23.7",
-    "typescript": "7.0.2",
-    "vitest": "5.1.0"
-  },
-  "packageManager": "pnpm@12.18.0",
-  "engines": {
-    "node": ">=24"
-  }
+    "name": "ritmosbot",
+    "version": "1.0.0",
+    "private": true,
+    "description": "",
+    "keywords": [],
+    "license": "GPL-3.0-only",
+    "author": "devparada",
+    "type": "module",
+    "main": "dist/index.js",
+    "scripts": {
+        "build": "tsc --noEmit && tsdown --config tsdown.config.js",
+        "format": "biome format src tests",
+        "formatw": "biome format src tests --write",
+        "lint": "biome check src tests",
+        "lintw": "biome check src tests --write",
+        "test": "vitest run --reporter=verbose",
+        "testw": "vitest"
+    },
+    "imports": {
+        "#/*": "./dist/*",
+        "#tests/*": "./tests/*.ts"
+    },
+    "dependencies": {
+        "discord.js": "14.28.1",
+        "kazagumo": "3.4.3",
+        "kazagumo-spotify": "2.1.1",
+        "mongodb": "7.8.0",
+        "shoukaku": "4.3.0",
+        "spotify-url-info": "3.3.3"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "2.6.6",
+        "tsdown": "0.23.7",
+        "typescript": "7.0.2",
+        "vitest": "5.1.0"
+    },
+    "packageManager": "pnpm@12.18.0",
+    "engines": {
+        "node": ">=24.14.0"
+    }
 }
