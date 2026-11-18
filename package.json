@@ -7,7 +7,7 @@
     "license": "GPL-3.0-only",
     "author": "devparada",
     "type": "module",
-    "main": "dist/index.js",
+    "main": "dist/index.mjs",
     "scripts": {
         "build": "tsc --noEmit && tsdown --config tsdown.config.js",
         "format": "biome format src tests",
